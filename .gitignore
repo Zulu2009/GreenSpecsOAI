@@ -1,0 +1,4 @@
+# Local staging outputs
+yko_local_intel/data/yko_staging.sqlite
+yko_local_intel/json_snapshots/*.json
+yko_local_intel/sql_exports/*.sql
