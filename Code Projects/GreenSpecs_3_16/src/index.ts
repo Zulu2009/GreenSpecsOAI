@@ -767,6 +767,9 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   border:4px solid var(--cream);transition:transform 0.15s}
 .nav-scan:active{transform:scale(0.93)}
 .nav-scan svg{width:24px;height:24px;stroke:white;fill:none;stroke-width:2.5}
+.nav-item.compare-tab{color:#BA7517;font-weight:500}
+.nav-item.compare-tab svg{stroke:#BA7517}
+.cmp-nav-pill{background:#FAEEDA;border-radius:10px;padding:5px 7px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1px}
 
 /* ── DRAWER ── */
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:400;
@@ -970,6 +973,46 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .cmp-loading-spin{width:32px;height:32px;border:3px solid var(--warm);border-top-color:var(--forest);
   border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
 .cmp-loading-text{font-size:14px;color:var(--text-light)}
+
+/* ── COMPARE SNAP ── */
+.cmp-snap-hero{padding:40px 24px 28px;text-align:center}
+.cmp-snap-title{font-size:22px;font-weight:700;color:var(--forest);margin-bottom:6px}
+.cmp-snap-sub{font-size:14px;color:var(--text-mid);margin-bottom:28px;line-height:1.6}
+.cmp-snap-btn{display:inline-flex;align-items:center;gap:10px;background:var(--forest);color:white;border:none;border-radius:16px;padding:14px 26px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(27,67,50,0.3)}
+.cmp-snap-btn:active{opacity:0.85}
+.cmp-snap-btn svg{width:20px;height:20px;stroke:white;fill:none;stroke-width:2}
+.cmp-cards-wrap{padding:0 14px;display:flex;flex-direction:column;gap:12px}
+.cmp-card{background:white;border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(27,67,50,0.08)}
+.cmp-card-name{font-size:16px;font-weight:700;color:var(--forest);margin-bottom:3px}
+.cmp-card-brand{font-size:13px;color:var(--text-mid);margin-bottom:12px}
+.cmp-card-rows{display:flex;flex-direction:column}
+.cmp-card-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--warm)}
+.cmp-card-row:last-child{border-bottom:none}
+.cmp-card-row.winner{border-left:3px solid #1D9E75;margin-left:-16px;padding-left:13px}
+.cmp-row-label{font-size:12px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.6px;padding-top:1px}
+.cmp-row-val-wrap{text-align:right;max-width:58%}
+.cmp-row-val{font-size:14px;font-weight:600;color:var(--text)}
+.cmp-row-val.clean{color:#1D9E75}
+.cmp-row-val.mostly-clean{color:#5DCAA5}
+.cmp-row-val.mixed{color:#F59E0B}
+.cmp-row-val.avoid{color:#DC2626}
+.cmp-row-val.high{color:#1D9E75}
+.cmp-row-val.medium{color:#F59E0B}
+.cmp-row-val.low{color:var(--text-mid)}
+.cmp-row-val.minimal{color:var(--text-light)}
+.cmp-row-note{font-size:11px;color:var(--text-light);margin-top:2px;line-height:1.4}
+.cmp-snap-add{display:flex;align-items:center;justify-content:center;background:rgba(27,67,50,0.05);border-radius:14px;padding:14px;border:2px dashed rgba(27,67,50,0.15);cursor:pointer;gap:8px;font-size:14px;font-weight:600;color:var(--moss)}
+.cmp-snap-add svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:2.5}
+.cmp-snap-add:active{opacity:0.7}
+.cmp-summary-bar{margin:8px 14px 0;padding:14px 16px;background:var(--pale);border-radius:14px;font-size:15px;color:var(--forest);font-weight:500;line-height:1.55}
+.cmp-summary-label{font-size:11px;font-weight:700;color:var(--moss);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px}
+.cmp-skeleton{background:white;border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(27,67,50,0.08)}
+.sk-line{height:12px;border-radius:6px;background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;margin-bottom:10px}
+.sk-line.tall{height:18px;margin-bottom:12px}
+.sk-line.short{width:55%}
+.sk-line.med{width:75%}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.cmp-reading{font-size:12px;color:var(--text-light);text-align:center;padding:8px 0;font-style:italic}
 
 /* ── HOW WE SCORE ── */
 .method-hero{background:linear-gradient(155deg,var(--forest),var(--moss));
@@ -1239,10 +1282,27 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <div class="topbar">
     <div class="topbar-menu" onclick="openDrawer()"><span></span><span></span><span></span></div>
     <div class="topbar-title"><em>Compare</em></div>
-    <div style="width:40px"></div>
+    <div onclick="clearCompareSnap()" style="font-size:12px;color:var(--text-light);cursor:pointer;padding:8px">Clear</div>
   </div>
-  <div style="padding:4px 18px 0;font-size:12px;color:var(--text-light)" id="compare-sub"></div>
-  <div class="scrollable" id="compare-body"></div>
+  <div class="scrollable" id="compare-scroll">
+    <div id="cmp-entry-hero" class="cmp-snap-hero">
+      <div class="cmp-snap-title">Snap to compare</div>
+      <div class="cmp-snap-sub">Photograph up to 3 products.<br>We find the real differences.</div>
+      <button class="cmp-snap-btn" onclick="startCompareSnap()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+        Add first product
+      </button>
+    </div>
+    <div id="cmp-cards-area" class="cmp-cards-wrap"></div>
+    <div id="cmp-add-more" style="display:none;margin:12px 14px">
+      <div class="cmp-snap-add" onclick="startCompareSnap()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add another product
+      </div>
+    </div>
+    <div id="cmp-summary-area" style="display:none"></div>
+    <div style="height:20px"></div>
+  </div>
 </div>
 
 <!-- ══ HOW WE SCORE ══ -->
@@ -1359,8 +1419,10 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <div class="nav-scan" onclick="openNativeCamera()">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
   </div>
-  <div class="nav-item" id="nav-compare" onclick="showCompare()">
-    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  <div class="nav-item compare-tab" id="nav-compare" onclick="showCompare()">
+    <div class="cmp-nav-pill">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
     Compare
   </div>
   <div class="nav-item" id="nav-learn" onclick="showLearn()">
@@ -1820,133 +1882,158 @@ function updatePlayBtn(playing) {
     : '<svg viewBox="0 0 16 16" fill="white"><polygon points="4,2 14,8 4,14"/></svg>';
 }
 
-// ─── COMPARE ──────────────────────────────────────────────────────────────────
-function addToCompare() {
-  if (!currentScan) return;
-  if (compareList.find(s => s.id === currentScan.id)) { showToast('Already in comparison'); return; }
-  if (compareList.length >= 4) { showToast('Max 4 — remove one first'); return; }
-  compareList.push(currentScan);
-  localStorage.setItem('gs_compare', JSON.stringify(compareList));
-  showToast('Added to compare (' + compareList.length + '/4)');
+// ─── COMPARE SNAP ─────────────────────────────────────────────────────────────────
+let compareSnaps = [];
+
+function showCompare() { show('s-compare'); setActiveNav('s-compare'); renderCompareSnap(); }
+
+function startCompareSnap() {
+  if (compareSnaps.length >= 3) { showToast('Max 3 products to compare'); return; }
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+  inp.onchange = function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var idx = compareSnaps.length;
+    var entry = { status: 'loading', data: null, timer: null };
+    compareSnaps.push(entry);
+    renderCompareSnap();
+    entry.timer = setTimeout(function() {
+      var el = document.getElementById('cmp-reading-' + idx);
+      if (el) el.style.display = 'block';
+    }, 4000);
+    var t0 = performance.now();
+    fileToBase64(file).then(function(b64) {
+      return fetch(API + '/api/compare-snap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: b64, media_type: file.type || 'image/jpeg', session_id: session_id })
+      });
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      clearTimeout(entry.timer);
+      console.log('Compare card ' + idx + ' resolved in ' + Math.round(performance.now() - t0) + 'ms');
+      compareSnaps[idx].status = 'done';
+      compareSnaps[idx].data = d.result || d;
+      renderCompareSnap();
+    }).catch(function() {
+      clearTimeout(entry.timer);
+      compareSnaps[idx].status = 'error';
+      renderCompareSnap();
+    });
+  };
+  inp.click();
 }
 
-async function renderCompare() {
-  const sub = document.getElementById('compare-sub');
-  const body = document.getElementById('compare-body');
-  if (compareList.length < 2) {
-    sub.textContent = compareList.length === 1 ? '1 item — need at least 2' : 'Scan 2–4 products to compare';
-    body.innerHTML = '<div style="padding:50px 20px;text-align:center;color:var(--text-light)">'
-      + '<div style="font-size:14px;font-family:system-ui,-apple-system,sans-serif;color:var(--text);margin-bottom:8px">Nothing to compare yet</div>'
-      + '<div style="font-size:12px;line-height:1.6">' + (compareList.length === 1 ? 'Add one more scan to compare.' : 'Scan products and tap Compare from any result.') + '</div></div>';
+function clearCompareSnap() { compareSnaps = []; renderCompareSnap(); }
+function addToCompare() { showToast('Use Compare tab to snap products'); }
+
+function ingRank(q) { return {clean:4,'mostly clean':3,mixed:2,avoid:1}[q]||0; }
+function susRank(q) { return {high:4,medium:3,low:2,minimal:1}[q]||0; }
+function ingClass(q) { return {clean:'clean','mostly clean':'mostly-clean',mixed:'mixed',avoid:'avoid'}[q]||''; }
+function susClass(q) { return {high:'high',medium:'medium',low:'low',minimal:'minimal'}[q]||''; }
+
+function renderCompareSnap() {
+  var hero = document.getElementById('cmp-entry-hero');
+  var area = document.getElementById('cmp-cards-area');
+  var more = document.getElementById('cmp-add-more');
+  var sumArea = document.getElementById('cmp-summary-area');
+  if (!hero || !area) return;
+  if (compareSnaps.length === 0) {
+    hero.style.display = '';
+    area.innerHTML = '';
+    if (more) more.style.display = 'none';
+    if (sumArea) { sumArea.style.display = 'none'; sumArea.innerHTML = ''; }
     return;
   }
-  const sorted = [...compareList].sort((a, b) => Number(b.score) - Number(a.score));
-  sub.textContent = sorted.length + ' products';
-  // Show loading state
-  body.innerHTML = '<div class="cmp-loading"><div class="cmp-loading-spin"></div><div class="cmp-loading-text">Getting the real story...</div></div>';
-  try {
-    const res = await fetch(API + '/api/compare', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scan_ids: sorted.map(s => s.id) })
-    });
-    const data = await res.json();
-    const ai = data.ai;
-    const ranked = data.ranked || sorted;
-    // Build AI product map by id
-    const aiMap = {};
-    if (ai && ai.products) ai.products.forEach(p => { aiMap[p.id] = p; });
-    let html = '';
-    // Overall verdict banner
-    if (ai && ai.overall_verdict) {
-      html += '<div class="compare-summary"><div class="cs-label">The honest take</div><div class="cs-text">' + escH(ai.overall_verdict) + '</div></div>';
-    }
-    // Product cards
-    ranked.forEach((s, i) => {
-      const sc = Number(s.score) || 0;
-      const grade = letterGrade(sc);
-      const gColor = gradeColor(sc);
-      const ap = aiMap[s.id] || {};
-      const isWinner = ai ? s.id === ai.winner_id : i === 0;
-      html += '<div class="cmp-item' + (isWinner ? ' winner' : '') + '" onclick="loadAndShowScan(&apos;' + s.id + '&apos;)">'
-        + (isWinner ? '<div class="winner-badge">Best overall</div>' : '')
-        + '<div class="cmp-top">'
-        + '<div class="cmp-grade" style="background:' + gColor + '22">'
-        + '<div class="cmp-grade-letter" style="color:' + gColor + '">' + sc + '</div>'
-        + '<div class="cmp-grade-num" style="color:' + gColor + '">/100</div></div>'
-        + '<div class="cmp-info"><div class="cmp-name">' + escH(s.product_name) + '</div>'
-        + (ap.headline ? '<div class="cmp-ai-headline">' + escH(ap.headline) + '</div>' : '<div class="cmp-brand">' + escH(s.brand || '') + '</div>')
-        + '</div></div>';
-      if (ap.packaging || ap.ingredients || ap.transparency) {
-        html += '<div class="cmp-rows">'
-          + (ap.packaging ? '<div class="cmp-row"><span class="cmp-row-label">Packaging</span><span class="cmp-row-val">' + escH(ap.packaging) + '</span></div>' : '')
-          + (ap.ingredients ? '<div class="cmp-row"><span class="cmp-row-label">Ingredients</span><span class="cmp-row-val">' + escH(ap.ingredients) + '</span></div>' : '')
-          + (ap.transparency ? '<div class="cmp-row"><span class="cmp-row-label">Transparency</span><span class="cmp-row-val">' + escH(ap.transparency) + '</span></div>' : '')
-          + '</div>';
-      }
-      if (ap.takeaway) {
-        html += '<div class="cmp-takeaway">' + escH(ap.takeaway) + '</div>';
-      }
-      html += '</div>';
-    });
-    // Winner explanation
-    if (ai && ai.why_it_wins) {
-      const winnerScan = ranked.find(s => s.id === ai.winner_id) || ranked[0];
-      html += '<div class="cmp-winner-box">'
-        + '<div class="cwb-label">Why it wins</div>'
-        + '<div class="cwb-name">' + escH(winnerScan.product_name) + '</div>'
-        + '<div class="cwb-why">' + escH(ai.why_it_wins) + '</div>'
+  hero.style.display = 'none';
+  // Find winners
+  var ingWinner = -1, susWinner = -1, priceWinner = -1;
+  var bestIng = 0, bestSus = 0, bestPrice = Infinity;
+  var doneCount = 0;
+  compareSnaps.forEach(function(s, i) {
+    if (s.status !== 'done' || !s.data) return;
+    doneCount++;
+    var ing = ingRank(s.data.ingredients_quality);
+    var sus = susRank(s.data.sustainability_level);
+    var pr = s.data.price_per_unit_num || Infinity;
+    if (ing > bestIng) { bestIng = ing; ingWinner = i; }
+    if (sus > bestSus) { bestSus = sus; susWinner = i; }
+    if (pr < bestPrice) { bestPrice = pr; priceWinner = i; }
+  });
+  if (doneCount < 2) { ingWinner = -1; susWinner = -1; priceWinner = -1; }
+  // Build cards HTML
+  var html = '';
+  compareSnaps.forEach(function(snap, idx) {
+    if (snap.status === 'loading') {
+      html += '<div class="cmp-skeleton" id="cmp-card-' + idx + '">'
+        + '<div class="sk-line tall med"></div><div class="sk-line short"></div>'
+        + '<div style="height:6px"></div>'
+        + '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line short"></div>'
+        + '<div class="cmp-reading" id="cmp-reading-' + idx + '" style="display:none">still reading label...</div>'
         + '</div>';
+    } else if (snap.status === 'error') {
+      html += '<div class="cmp-card" id="cmp-card-' + idx + '">'
+        + '<div class="cmp-card-name" style="color:var(--text-light)">Could not read label</div>'
+        + '<div class="cmp-card-brand">Try a clearer photo</div></div>';
+    } else {
+      var d = snap.data;
+      var iW = ingWinner === idx, sW = susWinner === idx, pW = priceWinner === idx;
+      var ingQ = d.ingredients_quality || 'not detected';
+      var susL = d.sustainability_level || 'not detected';
+      var priceV = d.price_per_unit || d.price_detected || 'not detected';
+      html += '<div class="cmp-card" id="cmp-card-' + idx + '">'
+        + '<div class="cmp-card-name">' + escH(d.product_name || 'Product ' + (idx+1)) + '</div>'
+        + '<div class="cmp-card-brand">' + escH(d.brand || '') + '</div>'
+        + '<div class="cmp-card-rows">'
+        + '<div class="cmp-card-row' + (iW ? ' winner' : '') + '">'
+        + '<span class="cmp-row-label">Ingredients</span>'
+        + '<div class="cmp-row-val-wrap"><div class="cmp-row-val ' + ingClass(d.ingredients_quality) + '">' + escH(ingQ) + '</div>'
+        + (d.ingredients_notes ? '<div class="cmp-row-note">' + escH(d.ingredients_notes) + '</div>' : '') + '</div></div>'
+        + '<div class="cmp-card-row' + (sW ? ' winner' : '') + '">'
+        + '<span class="cmp-row-label">Sustainability</span>'
+        + '<div class="cmp-row-val-wrap"><div class="cmp-row-val ' + susClass(d.sustainability_level) + '">' + escH(susL) + '</div>'
+        + (d.sustainability_notes ? '<div class="cmp-row-note">' + escH(d.sustainability_notes) + '</div>' : '') + '</div></div>'
+        + '<div class="cmp-card-row' + (pW ? ' winner' : '') + '">'
+        + '<span class="cmp-row-label">Price</span>'
+        + '<div class="cmp-row-val-wrap"><div class="cmp-row-val">' + escH(priceV) + '</div></div></div>'
+        + '</div></div>';
     }
-    // Watch-out / tradeoffs
-    if (ai && ai.watch_out) {
-      let watchHtml = '<div class="cmp-watchout"><div class="cwo-label">Watch out</div><div class="cwo-text">' + escH(ai.watch_out) + '</div>';
-      if (ai.looks_greener) watchHtml += '<div style="margin-top:6px;font-size:12px;color:#92400e"><strong>Looks greener than it is:</strong> ' + escH(ai.looks_greener) + '</div>';
-      watchHtml += '</div>';
-      html += watchHtml;
-    }
-    // Confidence note
-    if (ai && ai.confidence) {
-      html += '<div class="cmp-confidence">' + escH(ai.confidence) + '</div>';
-    }
-    html += '<div style="margin:8px 14px 16px"><button class="action-btn secondary" style="width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" onclick="clearCompare()">Clear all</button></div>';
-    body.innerHTML = html;
-  } catch(e) {
-    // Fallback: simple score-ranked list
-    const gap = Number(sorted[0].score) - Number(sorted[sorted.length - 1].score);
-    const summary = gap >= 20
-      ? escH(sorted[0].product_name) + ' comes out clearly ahead.'
-      : gap >= 10 ? 'Close call — ' + escH(sorted[0].product_name) + ' edges ahead.'
-      : 'Very similar. Look at what none of them disclose.';
-    let html = '<div class="compare-summary"><div class="cs-label">Quick take</div><div class="cs-text">' + summary + '</div></div>';
-    sorted.forEach((s, i) => {
-      const sc = Number(s.score) || 0;
-      const grade = letterGrade(sc);
-      const gColor = gradeColor(sc);
-      html += '<div class="cmp-item' + (i === 0 ? ' winner' : '') + '" onclick="loadAndShowScan(&apos;' + s.id + '&apos;)">'
-        + (i === 0 ? '<div class="winner-badge">Best in scan</div>' : '')
-        + '<div class="cmp-top"><div class="cmp-grade" style="background:' + gColor + '22">'
-        + '<div class="cmp-grade-letter" style="color:' + gColor + '">' + sc + '</div>'
-        + '<div class="cmp-grade-num" style="color:' + gColor + '">/100</div></div>'
-        + '<div class="cmp-info"><div class="cmp-name">' + escH(s.product_name) + '</div>'
-        + '<div class="cmp-brand">' + escH(s.brand || '') + '</div></div></div></div>';
-    });
-    html += '<div style="margin:0 14px 16px"><button class="action-btn secondary" style="width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" onclick="clearCompare()">Clear all</button></div>';
-    body.innerHTML = html;
-  }
+  });
+  area.innerHTML = html;
+  if (more) more.style.display = (compareSnaps.length > 0 && compareSnaps.length < 3) ? '' : 'none';
+  // Summary
+  var dones = compareSnaps.filter(function(s) { return s.status === 'done' && s.data; }).map(function(s) { return s.data; });
+  if (dones.length >= 2 && sumArea) {
+    sumArea.innerHTML = '<div class="cmp-summary-bar"><div class="cmp-summary-label">Bottom line</div>' + escH(buildSnapSummary(dones)) + '</div>';
+    sumArea.style.display = '';
+  } else if (sumArea) { sumArea.style.display = 'none'; }
 }
-function clearCompare() { compareList = []; localStorage.removeItem('gs_compare'); renderCompare(); showToast('Comparison cleared'); }
+
+function buildSnapSummary(datas) {
+  var ranked = datas.map(function(d) {
+    return { d: d, s: ingRank(d.ingredients_quality) + susRank(d.sustainability_level) };
+  }).sort(function(a,b) { return b.s - a.s; });
+  var winner = ranked[0].d;
+  var loser = ranked[ranked.length-1].d;
+  var wName = (winner.brand || winner.product_name || 'One').split(' ')[0];
+  var lName = (loser.brand || loser.product_name || 'Another').split(' ')[0];
+  if (ranked[0].s === ranked[ranked.length-1].s) return 'Similar overall — price and availability are the deciding factors.';
+  if (winner.ingredients_quality === 'clean' && loser.ingredients_quality !== 'clean') return wName + ' has cleaner ingredients — the stronger pick.';
+  if (winner.sustainability_level === 'high' && loser.sustainability_level !== 'high') return wName + ' leads on sustainability vs ' + lName + '.';
+  return wName + ' edges ahead on ingredients and sustainability vs ' + lName + '.';
+}
+
 function saveScan() { showToast('Saved to this session'); }
 
 // ─── MY SCANS ─────────────────────────────────────────────────────────────────
 async function loadMyScans() {
   const grid = document.getElementById('scans-grid');
-  if (!session_id) { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light);font-size:13px">No scans yet. Tap the camera to start.</div>'; return; }
+  if (!session_id) { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light);font-size:13px">Your scans will appear here.</div>'; return; }
   try {
     const res = await fetch(API + '/api/session/' + session_id + '/scans');
     const data = await res.json();
     const scans = data.scans || [];
-    if (!scans.length) { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light);font-size:13px">No scans yet. Tap the camera to start.</div>'; return; }
+    if (!scans.length) { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light);font-size:13px">Your scans will appear here.</div>'; return; }
     grid.innerHTML = scans.map(s => {
       const sc = Number(s.score) || 0;
       const grade = letterGrade(sc);
@@ -1956,7 +2043,7 @@ async function loadMyScans() {
         + '<div class="sg-grade" style="background:' + gColor + ';color:white">' + grade.replace('+','').replace('-','') + '</div></div>'
         + '<div class="sg-name">' + escH(s.product_name) + '</div></div>';
     }).join('');
-  } catch { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light)">Could not load scans.</div>'; }
+  } catch { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light)">Scans are on their way.</div>'; }
 }
 
 async function loadAndShowScan(id) {
@@ -2021,7 +2108,6 @@ async function loadHomeData() {
   } catch {}
 }
 function showMyScans() { show('s-myscans'); setActiveNav('s-myscans'); loadMyScans(); }
-function showCompare() { show('s-compare'); setActiveNav('s-compare'); renderCompare(); }
 function showMethod() { show('s-method'); setActiveNav(''); }
 function showLearn() {
   show('s-learn');
@@ -2579,6 +2665,70 @@ app.get('/api/feed', async (c) => {
   }
 
   return c.json({ feed: rows.results.map(formatScan) });
+});
+
+// ─── POST /api/compare-snap ──────────────────────────────────────────────────
+
+const COMPARE_SNAP_SYSTEM = `You are analyzing a product photo for a quick side-by-side comparison. Assess what is visible in this image.
+
+INGREDIENTS GUIDE:
+clean = short list, all recognizable whole-food or plant-based, no synthetic additives
+mostly clean = mostly good, 1-2 questionable additives
+mixed = mix of good and synthetic or processed ingredients
+avoid = many synthetic additives, preservatives, artificial colors or flavors
+
+SUSTAINABILITY GUIDE:
+high = certified organic, B Corp, Fair Trade, or regenerative with strong transparency
+medium = some certs, partial sustainability story, decent effort
+low = conventional, minimal claims, typical supply chain
+minimal = no claims, likely high environmental impact`;
+
+app.post('/api/compare-snap', async (c) => {
+  const body = await c.req.json() as { image_base64: string; media_type?: string; session_id?: string };
+  if (!body.image_base64) return c.json({ error: 'image_base64 required' }, 400);
+  const t0 = Date.now();
+  try {
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${c.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: COMPARE_SNAP_SYSTEM }] },
+          contents: [{ parts: [
+            { text: 'Analyze this product. Return ONLY valid JSON, no markdown:\n{"product_name":"Full brand + product name","brand":"Brand only","price_detected":"Price shown or null","price_per_unit":"Price per oz/unit or null","price_per_unit_num":0.00,"ingredients_quality":"clean|mostly clean|mixed|avoid","ingredients_notes":"5-8 words why","sustainability_level":"high|medium|low|minimal","sustainability_notes":"5-8 words on key factor"}' },
+            { inline_data: { mime_type: body.media_type || 'image/jpeg', data: body.image_base64 } }
+          ]}],
+          generationConfig: { temperature: 0.1, response_mime_type: 'application/json', maxOutputTokens: 350, thinkingConfig: { thinkingBudget: 0 } }
+        })
+      }
+    );
+    if (!geminiRes.ok) throw new Error('Gemini: ' + await geminiRes.text());
+    const gData = await geminiRes.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
+    const raw = gData.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
+    const cleaned = raw.replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
+    const result = JSON.parse(cleaned);
+    // D1 cache enrichment
+    if (result.product_name) {
+      const words = result.product_name.split(' ').slice(0, 2).join(' ');
+      const cached = await c.env.DB.prepare(
+        'SELECT research_data, score FROM scans WHERE product_name LIKE ? ORDER BY created_at DESC LIMIT 1'
+      ).bind('%' + words + '%').first<{ research_data: string | null; score: number }>();
+      if (cached?.research_data) {
+        try {
+          const rd = JSON.parse(cached.research_data);
+          if (rd.ingredients) result.ingredients_cached = rd.ingredients;
+          if (rd.packaging) result.packaging_cached = rd.packaging;
+          result.cached_score = cached.score;
+        } catch {}
+      }
+    }
+    console.log('compare-snap resolved in', Date.now() - t0, 'ms');
+    return c.json({ result });
+  } catch (err) {
+    console.error('compare-snap error:', err);
+    return c.json({ error: String(err) }, 500);
+  }
 });
 
 // ─── POST /api/compare ────────────────────────────────────────────────────────
