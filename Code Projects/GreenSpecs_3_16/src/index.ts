@@ -1,0 +1,2701 @@
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Env {
+  DB: D1Database;
+  GEMINI_API_KEY: string;
+}
+
+interface UserRow {
+  id: string;
+  email: string;
+  name: string | null;
+  google_id: string | null;
+  password_hash: string | null;
+  salt: string | null;
+  avatar: string | null;
+  created_at: number;
+}
+
+interface ScanRow {
+  id: string;
+  product_name: string;
+  brand: string | null;
+  category: string | null;
+  primary_claim: string | null;
+  score: number;
+  confidence: string;
+  specificity_score: number;
+  transparency_score: number;
+  third_party_score: number;
+  bigimpact_score: number;
+  marketing_score: number;
+  what_covers: string;
+  what_missing: string;
+  red_flags: string;
+  tips: string;
+  better_alternatives: string;
+  sources: string;
+  scope1_text: string | null;
+  scope2_text: string | null;
+  scope3_text: string | null;
+  verdict: string | null;
+  letter_grade: string | null;
+  research_data: string | null;
+  location_name: string | null;
+  price: string | null;
+  lat: number | null;
+  lng: number | null;
+  served_from_cache: number;
+  created_at: number;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function nanoid(size = 12): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const bytes = crypto.getRandomValues(new Uint8Array(size));
+  for (const b of bytes) result += chars[b % chars.length];
+  return result;
+}
+
+async function cacheKey(productName: string, claim: string): Promise<string> {
+  const text = `${productName.toLowerCase().trim()}|${claim.toLowerCase().trim()}`;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function safeJSON<T>(str: string | null, fallback: T): T {
+  try { return JSON.parse(str ?? ''); } catch { return fallback; }
+}
+
+function letterGradeFromScore(s: number): string {
+  if (s >= 93) return 'A+'; if (s >= 87) return 'A'; if (s >= 80) return 'A-';
+  if (s >= 77) return 'B+'; if (s >= 73) return 'B'; if (s >= 70) return 'B-';
+  if (s >= 67) return 'C+'; if (s >= 63) return 'C'; if (s >= 60) return 'C-';
+  if (s >= 57) return 'D+'; if (s >= 53) return 'D'; if (s >= 50) return 'D-';
+  return 'F';
+}
+
+function formatScan(row: ScanRow) {
+  const score = row.score;
+  const lg = row.letter_grade || letterGradeFromScore(score);
+  return {
+    id: row.id,
+    product_name: row.product_name,
+    brand: row.brand,
+    category: row.category,
+    primary_claim: row.primary_claim,
+    score,
+    letter_grade: lg,
+    verdict: row.verdict || null,
+    confidence: row.confidence,
+    rubric: {
+      specificity: row.specificity_score,
+      transparency: row.transparency_score,
+      third_party: row.third_party_score,
+      biggest_impact: row.bigimpact_score,
+      marketing_vs_action: row.marketing_score,
+    },
+    // New field names (from new Gemini response)
+    whats_good: safeJSON<string[]>(row.what_covers, []),
+    whats_not_on_label: safeJSON<string[]>(row.what_missing, []),
+    worth_knowing: safeJSON<string[]>(row.red_flags, []),
+    // Legacy aliases (backwards compat)
+    what_covers: safeJSON<string[]>(row.what_covers, []),
+    what_missing: safeJSON<string[]>(row.what_missing, []),
+    red_flags: safeJSON<string[]>(row.red_flags, []),
+    tips: safeJSON<string[]>(row.tips, []),
+    better_alternatives: safeJSON<string[]>(row.better_alternatives, []),
+    sources: safeJSON<string[]>(row.sources, []),
+    scope: {
+      scope1: row.scope1_text,
+      scope2: row.scope2_text,
+      scope3: row.scope3_text,
+    },
+    research: safeJSON<Record<string, unknown> | null>(row.research_data, null),
+    // New structured fields (stored in research_data)
+    headline: row.verdict || null,
+    real_story: (safeJSON<Record<string,string>>(row.research_data, {})).real_story || null,
+    why_it_matters: (safeJSON<Record<string,string>>(row.research_data, {})).why_it_matters || null,
+    compare_hook: (safeJSON<Record<string,string>>(row.research_data, {})).compare_hook || null,
+    win: (safeJSON<Record<string,string>>(row.research_data, {})).win || null,
+    tradeoff: (safeJSON<Record<string,string>>(row.research_data, {})).tradeoff || null,
+    packaging: (safeJSON<Record<string,string>>(row.research_data, {})).packaging || null,
+    ingredients: (safeJSON<Record<string,string>>(row.research_data, {})).ingredients || null,
+    transport: (safeJSON<Record<string,string>>(row.research_data, {})).transport || null,
+    transparency_label: (safeJSON<Record<string,string>>(row.research_data, {})).transparency || null,
+    verdict_tag: (safeJSON<Record<string,string>>(row.research_data, {})).verdict_tag || null,
+    sustainability_url: (safeJSON<Record<string,string>>(row.research_data, {})).sustainability_url || null,
+    better_path: (safeJSON<Record<string,string>>(row.research_data, {})).better_path || null,
+    location_name: row.location_name,
+    price: row.price,
+    lat: row.lat,
+    lng: row.lng,
+    served_from_cache: row.served_from_cache === 1,
+    created_at: row.created_at,
+  };
+}
+
+// ─── Gemini Prompts ───────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `You are GreenSpecs — the knowledgeable friend in the grocery aisle who actually read the sustainability report so nobody else has to. You help a busy parent make a smarter choice in 10 seconds.
+
+VOICE: Warm but sharp. Informed, not preachy. Always comparative — tell people where this sits relative to the field, not just whether it's "good" or "bad." Constructive: even low-scoring products get useful context about what to look for next time. Give just enough why to feel smart sharing it later.
+
+TONE RULES — always:
+- Lead with what the product actually does, then note what's still missing
+- Compare to real alternatives rather than judging in isolation
+- Frame gaps as "still developing" or "not yet there" rather than dismissive
+- Encourage better choices without shaming current ones
+- Keep it honest without being harsh — "conventional for its category" not "zero effort"
+
+NO EMOJIS. EVER. Not in any field. Not in tips, headlines, verdicts, or anywhere. Plain text only.
+
+BANNED WORDS (never write these): "robust" · "backs its claims" · "commitment to" · "shines" · "fantastic" · "ensures" · "supports" · "journey" · "holistic" · "high standards" · "well-managed" · "setting a high bar" · "no green here" · "zero attempt" · "doesn't care"
+
+THE STRUCTURE — match these examples exactly:
+
+headline: "A real step forward. Supply chain is the next frontier."
+headline: "Seventh Gen has receipts. The supply chain is still the blind spot."
+headline: "Honest ingredients, conventional packaging — a good start."
+headline: "This is the one you grab and move on."
+headline: "Better than most. Not yet leading the category."
+
+real_story: "Concentrated formula cuts plastic per load — ingredients aren't disclosed yet and third-party certs are still missing, but the format itself is a genuine improvement."
+real_story: "97% plant-based with USDA proof — B Corp means the whole company is on the hook, not just this bottle."
+
+why_it_matters: "The format reduces plastic per use, though the full ingredient footprint is still the bigger story."
+why_it_matters: "Less plastic is real. The ingredient supply chain is still 80% of the footprint — that's the next piece."
+
+compare_hook: "A step ahead of regular Tide. Seventh Generation goes further on ingredients and transparency."
+compare_hook: "Best in this category. Method is close but doesn't have the B Corp depth."
+
+win: "10x concentration — real packaging reduction, not a rebrand."
+tradeoff: "Ingredient transparency still catching up to the packaging story."
+
+verdict_tag: "Solid choice. Room to grow."
+verdict_tag: "This is the one."
+verdict_tag: "Conventional for now — worth watching."
+
+packaging/ingredients/transparency: 3-4 words, plain judgment:
+"Recycled · real reduction"
+"Mid-tier · still developing"
+"Self-reported · light on detail"
+"Strong · published annually"
+
+tips: one sentence, 12 words max, like a text from a friend:
+"EPA Safer Choice is the cert that actually means something for cleaning products."
+"Refillable tablets cut plastic entirely — Blueland or Branch Basics are worth a look."
+
+SCORING (0-100) — score relative to what's actually achievable, not against a perfect ideal:
+- Vague claim + no certs + no data = 15-35
+- Some certs OR some data, partial story = 36-55
+- Real certs + some data + addresses main footprint = 56-75
+- B Corp + third-party certs + published data + main footprint covered = 76-90
+- All above + Scope 3 disclosed + verified carbon = 91+
+
+PACKAGING & TRANSPORT — always factor these in:
+- Lightweight flexible bags beat glass every time: less material, ships smaller, uses less fuel per unit — even #4 LDPE film bags that require store drop-off are better than glass jars or heavy rigid packaging because total lifecycle impact is lower
+- Bulk/large-format packaging (Costco-style) gets a bonus: fewer packages per unit of product = dramatically less packaging waste per serving or use — reward this
+- Concentrated formats (pods, tablets, refills, powder) beat diluted liquid in a heavy bottle — same goes for bar soap vs. liquid soap in a pump
+- Traditional cardboard boxes and single-use plastic bags are middle of the pack — not bad, not good
+- Glass is heavy, expensive to ship, and energy-intensive to make — not automatically "eco" just because it feels premium
+- Packaging that's conventional with no effort = -5 to -10 pts; genuinely reduced or efficient = +5 to +10 pts
+- Transport: local/regional sourcing or manufacturing = small boost; global shipping with no offset = mild penalty
+- Products that score well on ingredients but ship across the world shouldn't break 70
+
+FOOD SCORING — extra signals for food and beverage:
+- Fewer ingredients is better. Under 10 real ingredients = positive signal; 20+ synthetic additives = negative
+- Minimal processing is better: whole foods > minimally processed > ultra-processed
+- Recognizable, pronounceable ingredients = transparency signal (reward it)
+- Organic certification on high-pesticide crops (strawberries, spinach) matters more than on low-pesticide ones
+- A heavily processed product with one organic ingredient should not score above 50
+
+CALIBRATION — be honest about "better than what":
+- Only mildly better than conventional = max 50-55
+- Genuinely better across main footprint = 56-75
+- Leaders in their category = 76-90
+- Don't inflate: most products score 35-65. A 90+ is genuinely rare.
+
+BETTER PATH — always anchor the score to what's genuinely achievable:
+- Describe what the best realistic version of this product looks like in this category
+- Be specific: name cert types, sourcing models, packaging formats, or real brands
+- Don't just say "get certified" — say what the best version actually does differently
+- Keep it grounded: "a local farm, reusable carton, short supply chain" not "a perfect zero-carbon company"
+- This keeps a 72/B- from feeling like a win when the real ceiling is much higher nearby
+
+LETTER GRADES: A+(93-100) A(87-92) A-(80-86) B+(77-79) B(73-76) B-(70-72) C+(67-69) C(63-66) C-(60-62) D+(57-59) D(53-56) D-(50-52) F(0-49)`;
+
+const ANALYSIS_PROMPT = (productName: string, claim: string, hasImage: boolean, researchContext?: string) => `${hasImage ? 'Study this product image carefully. Read every claim, cert logo, and ingredient visible.' : ''}
+Product: ${productName}
+Claim: "${claim}"
+${researchContext ? `Context: ${researchContext}\n` : ''}
+Return ONLY valid JSON, no markdown:
+{
+  "product_name": "Full brand + product name",
+  "brand": "Brand name only",
+  "category": "food|dairy|beverages|cleaning|personal_care|paper_products|clothing|electronics|other",
+  "primary_claim": "Main green claim as written",
+  "score": 0-100,
+  "letter_grade": "A+|A|A-|B+|B|B-|C+|C|C-|D+|D|D-|F",
+  "confidence": "high|medium|low",
+  "rubric": {
+    "specificity_score": 0-20,
+    "transparency_score": 0-20,
+    "third_party_score": 0-20,
+    "bigimpact_score": 0-20,
+    "marketing_score": 0-20
+  },
+  "headline": "Under 10 words. Comparative and constructive — where it stands, not a verdict of failure.",
+  "real_story": "1-2 sentences. What the product actually does right, then what's still missing. Always frame gaps as 'not yet' not 'never'.",
+  "why_it_matters": "1 sentence. Human translation — why this difference matters in real life.",
+  "compare_hook": "1 sentence. Name real brands. 'Better than X, not as far as Y' — always comparative, never just negative.",
+  "win": "The single best thing about this product. Under 12 words.",
+  "tradeoff": "What's still developing or missing. Constructive, not dismissive. Under 12 words.",
+  "packaging": "3-5 words. e.g. Recycled · real reduction",
+  "ingredients": "3-5 words. e.g. Mid-tier · undisclosed",
+  "transport": "3-5 words. e.g. Local · short chain OR Global · no offset",
+  "transparency": "3-5 words. e.g. Self-reported · thin",
+  "verdict_tag": "5-8 words. The take. e.g. Safe default. Not leading.",
+  "scope3_text": "1 sentence. Everything upstream — where the real footprint hides.",
+  "sustainability_url": "URL to brand's official sustainability page, or null if unknown",
+  "tips": ["1 sentence, 12 words max. Real, useful. Max 2 items."],
+  "better_path": "1-2 sentences. What genuinely better looks like in this category. Specific and real — name formats, certs, sourcing models, or actual brands. Sets the ceiling so this score stays honest."
+}`;
+
+// ─── Comparison System Prompt ─────────────────────────────────────────────────
+
+const COMPARE_SYSTEM_PROMPT = `You are the GreenSpecs product comparison voice. Your job is to help a busy shopper compare up to 3 products side by side in seconds. Write like a sharp, trustworthy friend in the aisle who knows the real story and says it fast. The user should feel more confident, not more overwhelmed.
+
+CORE GOAL: Give the real information in a quick, clear, urban-pragmatic voice that works especially well for busy moms, everyday shoppers, and people making fast decisions. Be plainspoken, useful, and honest. Never sound academic, corporate, preachy, or self-important.
+
+VOICE RULES:
+- Short, punchy sentences.
+- No fluff. No ESG jargon.
+- If technical concepts matter, translate them into normal human language.
+- Never make the shopper feel dumb. Never overclaim certainty.
+- Sound smart, grounded, fast, and real.
+- Slight edge is okay. Snark is okay in tiny amounts. Mean is not okay.
+- Avoid breathless hype.
+- NO EMOJIS. Ever. Not a single one. Plain text only in every field.
+
+GOOD TONE EXAMPLES:
+"Good, not great." | "Looks clean, but the story is thin." | "Better packaging. Murky sourcing."
+"This is the one you grab and move on." | "Paying extra for branding here." | "Trying, but not leading."
+
+BAD TONE EXAMPLES:
+"This product demonstrates moderate sustainability performance."
+"This company is committed to a better future."
+
+SCORING LENS (hidden — translate into plain language):
+1. Packaging  2. Ingredients / materials  3. Transport / footprint signals
+4. Transparency  5. Certifications / third-party credibility  6. Greenwashing risk
+
+RELATIVE LABELS: Best in class · Above average · Middle of the pack · Weak for the category · Mostly marketing
+
+WHEN INFORMATION IS LIMITED: say so, downgrade confidence, reward transparency, penalize vagueness. Do not invent facts.
+
+BEGINNER-FIRST TRANSLATION: "Packaging" not "packaging lifecycle emissions". "They actually show proof" not "disclosure quality is high".`;
+
+// ─── Auth Helpers ─────────────────────────────────────────────────────────────
+
+async function hashPassword(password: string, salt: string): Promise<string> {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: 100000, hash: 'SHA-256' },
+    key, 256
+  );
+  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ─── Gemini Flash Analysis ────────────────────────────────────────────────────
+
+// Phase 1: Web research with Google Search grounding
+async function researchWithGemini(
+  apiKey: string,
+  brand: string,
+  productName: string,
+  category: string,
+  claim: string,
+): Promise<{ researchText: string; cost: number }> {
+  const query = `Quick sustainability facts for "${productName}" by ${brand}:
+1. Any published ESG metrics (carbon, certifications, recycled content)?
+2. Does "${claim}" have a verified standard behind it, or is it self-declared?
+3. Who leads ${category} sustainability and what sets them apart?
+Be brief and factual. Numbers with sources only.`;
+
+  const controller = new AbortController();
+  const abort = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: query }] }],
+          tools: [{ google_search: {} }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 800 },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Research phase failed:', response.status, await response.text());
+      return { researchText: '', cost: 0 };
+    }
+
+    const data = await response.json() as {
+      candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+      usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number };
+    };
+
+    const researchText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const inputTokens = data.usageMetadata?.promptTokenCount ?? 400;
+    const outputTokens = data.usageMetadata?.candidatesTokenCount ?? 600;
+    const cost = (inputTokens / 1_000_000) * 0.10 + (outputTokens / 1_000_000) * 0.40;
+
+    return { researchText, cost };
+  } catch (err) {
+    // AbortError = timed out, any other error — skip research, don't block scoring
+    return { researchText: '', cost: 0 };
+  } finally {
+    clearTimeout(abort);
+  }
+}
+
+// Phase 2: Structured JSON analysis (with research context injected)
+async function analyzeWithGemini(
+  apiKey: string,
+  productName: string,
+  claim: string,
+  imageBase64?: string,
+  mediaType?: string,
+  researchContext?: string,
+): Promise<{ result: Record<string, unknown>; cost: number }> {
+
+  const parts: unknown[] = [];
+
+  if (imageBase64 && mediaType) {
+    parts.push({ inline_data: { mime_type: mediaType, data: imageBase64 } });
+  }
+  parts.push({ text: ANALYSIS_PROMPT(productName, claim, !!imageBase64, researchContext) });
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts }],
+        generationConfig: { temperature: 0.3, response_mime_type: 'application/json', maxOutputTokens: 1200, thinkingConfig: { thinkingBudget: 0 } },
+      }),
+    }
+  );
+
+  if (!response.ok) throw new Error(`Gemini API error: ${await response.text()}`);
+
+  const data = await response.json() as {
+    candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+    usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number };
+  };
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const result = JSON.parse(clean);
+
+  const inputTokens = data.usageMetadata?.promptTokenCount ?? 500;
+  const outputTokens = data.usageMetadata?.candidatesTokenCount ?? 400;
+  const cost = (inputTokens / 1_000_000) * 0.10 + (outputTokens / 1_000_000) * 0.40;
+
+  return { result, cost };
+}
+
+// Comparison agent — single Gemini Flash call
+async function compareWithGemini(
+  apiKey: string,
+  products: Array<{ id: string; name: string; brand: string; score: number; letter_grade: string; claim: string; headline: string | null; win: string | null; tradeoff: string | null; packaging: string | null; ingredients: string | null; transparency: string | null; verdict_tag: string | null }>,
+): Promise<{ result: Record<string, unknown>; cost: number }> {
+
+  const productLines = products.map((p, i) =>
+    `Product ${i + 1}:
+  id: "${p.id}"
+  name: "${p.name}"
+  brand: "${p.brand}"
+  score: ${p.score}/100 (${p.letter_grade})
+  claim: "${p.claim}"
+  ${p.headline ? `headline: "${p.headline}"` : ''}
+  ${p.win ? `win: "${p.win}"` : ''}
+  ${p.tradeoff ? `tradeoff: "${p.tradeoff}"` : ''}
+  ${p.packaging ? `packaging: "${p.packaging}"` : ''}
+  ${p.ingredients ? `ingredients: "${p.ingredients}"` : ''}
+  ${p.transparency ? `transparency: "${p.transparency}"` : ''}
+  ${p.verdict_tag ? `verdict_tag: "${p.verdict_tag}"` : ''}`
+  ).join('\n\n');
+
+  const prompt = `Compare these ${products.length} products for a shopper who needs the fast truth right now.
+
+${productLines}
+
+Return ONLY valid JSON, no markdown:
+{
+  "overall_verdict": "One punchy line. The fast truth about this whole comparison.",
+  "products": [
+    {
+      "id": "exact product id from input",
+      "headline": "2-5 words. Punchy label.",
+      "packaging": "very short verdict",
+      "ingredients": "very short verdict",
+      "transparency": "very short verdict",
+      "takeaway": "One sentence. Fast and useful."
+    }
+  ],
+  "winner_id": "id of best product",
+  "why_it_wins": "1-2 sentences. Why this one.",
+  "watch_out": "One sentence. The key compromise even for the winner.",
+  "good_enough": "product name or null — the decent fallback",
+  "looks_greener": "product name or null — the one that talks bigger than it acts",
+  "confidence": "One sentence. Honest note if proof was thin."
+}`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: COMPARE_SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.3, response_mime_type: 'application/json' },
+      }),
+    }
+  );
+
+  if (!response.ok) throw new Error(`Gemini compare error: ${await response.text()}`);
+
+  const data = await response.json() as {
+    candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+    usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number };
+  };
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const result = JSON.parse(clean);
+
+  const inputTokens = data.usageMetadata?.promptTokenCount ?? 600;
+  const outputTokens = data.usageMetadata?.candidatesTokenCount ?? 400;
+  const cost = (inputTokens / 1_000_000) * 0.10 + (outputTokens / 1_000_000) * 0.40;
+
+  return { result, cost };
+}
+
+// Learn: two-phase Gemini Q&A with Google Search grounding
+async function learnWithGemini(
+  apiKey: string,
+  question: string,
+): Promise<{ answer: Record<string, unknown>; cost: number }> {
+
+  const searchQuery = `Research this sustainability question with facts and sources: "${question}"
+
+Please find:
+1. The scientific or factual answer with specific numbers and studies
+2. Key factors that determine the environmental impact
+3. Common misconceptions people have about this topic
+4. The most credible sources and certifications relevant to this
+5. Context-dependent factors — geography, use case, scale
+
+Be specific. Include real data and numbers where available.`;
+
+  let researchText = '';
+  let totalCost = 0;
+
+  // Phase 1: Google Search grounding
+  try {
+    const r1 = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: searchQuery }] }],
+          tools: [{ google_search: {} }],
+          generationConfig: { temperature: 0.1 },
+        }),
+      }
+    );
+    if (r1.ok) {
+      const d1 = await r1.json() as {
+        candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+        usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number };
+      };
+      researchText = d1.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const t1 = d1.usageMetadata;
+      totalCost += ((t1?.promptTokenCount ?? 400) / 1_000_000) * 0.10 + ((t1?.candidatesTokenCount ?? 600) / 1_000_000) * 0.40;
+    }
+  } catch (err) {
+    console.error('Learn search phase error:', err);
+  }
+
+  // Phase 2: Structure into JSON
+  const structurePrompt = `You are a warm sustainability educator. Based on this web research:
+${researchText || 'Use your general knowledge about: ' + question}
+
+Question: "${question}"
+
+Return ONLY valid JSON (no markdown):
+{
+  "question": "the question restated clearly",
+  "summary": "2-3 warm plain-language sentences giving the honest answer. Start with the direct answer, not hedging.",
+  "bottom_line": "One clear practical sentence. What should someone actually do or know?",
+  "dimensions": [
+    {
+      "label": "e.g. Carbon footprint",
+      "detail": "e.g. Glass requires 6x more energy to manufacture per unit compared to plastic — but it is reusable indefinitely",
+      "verdict": "better|worse|depends"
+    }
+  ],
+  "nuance": "1-2 sentences about what makes this complicated — context, scale, geography, end-of-life.",
+  "best_choice_guide": "Practical paragraph: when is each option actually the better choice? Give concrete scenarios.",
+  "related_questions": ["3-4 related sustainability questions to explore next"],
+  "sources": ["URLs from the research above, if any"]
+}`;
+
+  const r2 = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: structurePrompt }] }],
+        generationConfig: { temperature: 0.2, response_mime_type: 'application/json' },
+      }),
+    }
+  );
+
+  if (!r2.ok) throw new Error(`Learn structure error: ${await r2.text()}`);
+
+  const d2 = await r2.json() as {
+    candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+    usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number };
+  };
+
+  const text = d2.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
+  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const answer = JSON.parse(clean);
+
+  const t2 = d2.usageMetadata;
+  totalCost += ((t2?.promptTokenCount ?? 500) / 1_000_000) * 0.10 + ((t2?.candidatesTokenCount ?? 400) / 1_000_000) * 0.40;
+
+  return { answer, cost: totalCost };
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
+const app = new Hono<{ Bindings: Env }>();
+
+app.use('*', cors({
+  origin: ['https://greenspecs.app', 'http://localhost:3000', 'http://localhost:8787'],
+}));
+
+
+// ─── PWA ─────────────────────────────────────────────────────────────────────
+
+const PWA_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1B4332">
+<title>GreenSpecs</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
+<style>
+:root{
+  --forest:#1B4332;--moss:#2D6A4F;--sage:#52B788;--mint:#95D5B2;--pale:#D8F3DC;
+  --cream:#F8F6F2;--warm:#EDE8DF;--card:#fff;
+  --amber:#F59E0B;--amber-bg:#FFFBEB;
+  --red:#DC2626;--red-bg:#FEF2F2;
+  --text:#1C2B22;--text-mid:#5A6B62;--text-light:#9DB0A0;
+  --shadow:0 2px 14px rgba(27,67,50,0.08);
+  --shadow-md:0 6px 28px rgba(27,67,50,0.13);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#000}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:var(--text)}
+.app{position:fixed;inset:0;max-width:430px;margin:0 auto;background:var(--cream)}
+
+/* ── SCREENS ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--cream)}
+.screen.hidden{display:none}
+.scrollable{flex:1;overflow-y:auto;scrollbar-width:none;
+  padding-bottom:calc(90px + var(--safe-bottom))}
+.scrollable::-webkit-scrollbar{display:none}
+
+/* ── HOME SCREEN ── */
+#s-home{background:var(--cream);overflow:hidden}
+.home-topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-top) + 14px) 18px 14px;background:var(--cream);
+  border-bottom:1px solid var(--warm);flex-shrink:0;position:relative;z-index:10}
+.home-hamburger{width:40px;height:40px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:5px;cursor:pointer;border:none;background:none;padding:4px;flex-shrink:0}
+.home-hamburger span{display:block;width:22px;height:2px;background:var(--forest);border-radius:2px;transition:all 0.2s}
+.home-logo{font-family:system-ui,-apple-system,sans-serif;font-size:20px;font-weight:700;color:var(--forest);letter-spacing:-0.3px}
+.home-logo em{color:var(--sage);font-style:normal}
+.home-user-btn{width:34px;height:34px;border-radius:50%;background:var(--warm);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;overflow:hidden}
+.home-user-btn svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:1.8}
+.home-user-btn img{width:34px;height:34px;object-fit:cover}
+
+/* hero */
+.home-hero{padding:40px 28px 32px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.home-tagline{font-family:system-ui,-apple-system,sans-serif;font-size:32px;font-weight:700;color:var(--forest);
+  line-height:1.18;letter-spacing:-0.5px;margin-bottom:10px}
+.home-tagline em{color:var(--sage);font-style:italic}
+.home-sub{font-size:16px;color:var(--text);line-height:1.6;max-width:290px;margin-bottom:8px;font-weight:500}
+.home-sub2{font-size:15px;color:var(--text-mid);line-height:1.65;max-width:290px;margin-bottom:32px}
+
+/* scan button */
+.scan-btn{width:100%;max-width:300px;padding:20px 24px;border-radius:24px;
+  background:linear-gradient(135deg,var(--forest),var(--moss));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:14px;
+  box-shadow:0 8px 32px rgba(27,67,50,0.28);transition:transform 0.14s,box-shadow 0.14s;
+  -webkit-tap-highlight-color:transparent}
+.scan-btn:active{transform:scale(0.96);box-shadow:0 4px 16px rgba(27,67,50,0.22)}
+.scan-btn-icon{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.15);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.scan-btn-icon svg{width:26px;height:26px;stroke:white;fill:none;stroke-width:1.8}
+.scan-btn-text{text-align:left}
+.scan-btn-label{font-family:system-ui,-apple-system,sans-serif;font-size:18px;font-weight:600;color:white;line-height:1.2}
+.scan-btn-hint{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px}
+.type-link{margin-top:14px;font-size:13px;color:var(--text-light);cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px;padding:8px}
+
+/* recent strip */
+.home-section{padding:0 18px 16px}
+.home-section-title{font-size:13px;text-transform:uppercase;letter-spacing:0.5px;
+  color:var(--text-light);font-weight:600;margin-bottom:12px}
+.recent-strip{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.recent-strip::-webkit-scrollbar{display:none}
+.recent-chip{flex-shrink:0;background:white;border-radius:14px;padding:10px 14px;
+  box-shadow:var(--shadow);cursor:pointer;min-width:140px;border:1px solid var(--warm)}
+.recent-chip-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.recent-chip-grade{display:inline-block;font-size:12px;font-weight:700;margin-top:4px;padding:2px 8px;border-radius:20px;background:var(--pale);color:var(--forest)}
+.home-empty{text-align:center;padding:20px;color:var(--text-light);font-size:13px}
+
+/* stats bar */
+.home-stats-bar{margin:0 18px 20px;background:white;border-radius:16px;padding:14px 18px;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.home-stats-icon{width:36px;height:36px;border-radius:50%;background:var(--pale);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.home-stats-icon svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:1.8}
+.home-stats-text{font-size:14px;color:var(--text-mid);line-height:1.5}
+.home-stats-text strong{color:var(--forest)}
+
+/* ── ANALYZING OVERLAY ── */
+.analyzing{position:fixed;inset:0;background:linear-gradient(160deg,var(--forest),var(--moss));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+.analyzing.hidden{display:none}
+.spin{width:52px;height:52px;border-radius:50%;border:3px solid rgba(255,255,255,0.15);
+  border-top-color:var(--mint);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.an-title{font-family:system-ui,-apple-system,sans-serif;font-size:24px;color:white;font-weight:600}
+.an-sub{font-size:15px;color:rgba(255,255,255,0.55);letter-spacing:0.3px;text-align:center;max-width:240px}
+.an-phases{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.an-phase{font-size:14px;color:rgba(255,255,255,0.35);letter-spacing:0.3px;display:flex;align-items:center;gap:6px;transition:all 0.4s}
+.an-phase.active{color:rgba(255,255,255,0.9)}.an-phase.done{color:var(--mint)}
+.an-phase-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.dots{display:flex;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.2);animation:pulse 1.4s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.3);background:var(--mint)}}
+
+/* ── RESEARCH CARD ── */
+.research-card{background:linear-gradient(135deg,#F0F9F4,#EDF7F1);border:1px solid rgba(82,183,136,0.2)}
+.research-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.research-icon{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--moss),var(--sage));
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.research-title{font-family:system-ui,-apple-system,sans-serif;font-size:15px;font-weight:600;color:var(--forest)}
+.web-badge{margin-left:auto;font-size:12px;color:var(--moss);background:rgba(82,183,136,0.12);
+  padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
+.metric-row{display:flex;align-items:baseline;gap:8px;padding:8px 0;
+  border-bottom:1px solid rgba(82,183,136,0.12)}
+.metric-row:last-child{border-bottom:none}
+.metric-label{font-size:13px;color:var(--text-light);text-transform:uppercase;letter-spacing:0.3px;flex:0 0 auto;width:110px}
+.metric-value{font-size:17px;color:var(--forest);font-weight:500;flex:1}
+.metric-source{font-size:13px;color:var(--text-light);font-style:italic}
+.claim-reality{font-size:17px;color:var(--text-mid);line-height:1.6;padding:10px 0}
+.industry-best-block{background:rgba(27,67,50,0.05);border-radius:10px;padding:12px;margin:8px 0}
+.industry-best-label{font-size:12px;text-transform:uppercase;letter-spacing:0.4px;color:var(--moss);font-weight:600;margin-bottom:6px}
+.industry-best-text{font-size:17px;color:var(--text);line-height:1.6}
+.level-up-list{margin-top:4px}
+.level-up-item{display:flex;gap:8px;font-size:17px;color:var(--text-mid);padding:8px 0;
+  border-bottom:1px solid rgba(82,183,136,0.1);line-height:1.55}
+.level-up-item:last-child{border-bottom:none}
+.level-up-arrow{color:var(--sage);flex-shrink:0;font-weight:bold}
+.sources-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.source-link{font-size:10px;color:var(--moss);background:rgba(82,183,136,0.1);
+  padding:2px 8px;border-radius:20px;text-decoration:none;white-space:nowrap;overflow:hidden;
+  max-width:150px;text-overflow:ellipsis}
+
+/* ── BOTTOM NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
+  background:rgba(248,246,242,0.95);backdrop-filter:blur(20px);
+  display:flex;justify-content:space-around;align-items:center;
+  padding:8px 0 calc(10px + var(--safe-bottom));
+  border-top:1px solid rgba(82,183,136,0.12);z-index:200}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:4px 14px;font-size:12px;font-weight:500;
+  color:var(--text-light);transition:color 0.2s;letter-spacing:0.2px;text-transform:uppercase}
+.nav-item.active{color:var(--moss)}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;transition:stroke 0.2s}
+.nav-scan{width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,var(--moss),var(--sage));
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;margin-top:-22px;box-shadow:0 4px 20px rgba(45,106,79,0.45);
+  border:4px solid var(--cream);transition:transform 0.15s}
+.nav-scan:active{transform:scale(0.93)}
+.nav-scan svg{width:24px;height:24px;stroke:white;fill:none;stroke-width:2.5}
+
+/* ── DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:400;
+  pointer-events:none;transition:background 0.25s}
+.drawer-overlay.open{background:rgba(0,0,0,0.5);pointer-events:all}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:310px;
+  background:var(--forest);z-index:401;transform:translateX(-100%);
+  transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;padding-top:var(--safe-top)}
+.drawer.open{transform:translateX(0)}
+.drawer-head{padding:28px 24px 22px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.drawer-brand{font-family:system-ui,-apple-system,sans-serif;font-size:24px;font-weight:700;color:white;line-height:1}
+.drawer-brand em{color:var(--mint);font-style:normal}
+.drawer-tagline{font-size:13px;color:rgba(255,255,255,0.45);margin-top:5px;font-style:italic}
+.drawer-nav{flex:1;padding:8px 0;overflow-y:auto}
+.d-item{display:flex;align-items:center;gap:14px;padding:15px 24px;cursor:pointer;
+  border:none;background:none;width:100%;text-align:left;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  transition:background 0.15s}
+.d-item:active{background:rgba(255,255,255,0.06)}
+.d-item svg{width:20px;height:20px;stroke:rgba(255,255,255,0.5);fill:none;stroke-width:2;flex-shrink:0}
+.d-item span{font-size:16px;font-weight:500;color:rgba(255,255,255,0.78);letter-spacing:0.2px}
+.d-item.active svg{stroke:var(--mint)}
+.d-item.active span{color:white}
+.d-divider{height:1px;background:rgba(255,255,255,0.07);margin:5px 0}
+.drawer-foot{padding:18px 24px calc(18px + var(--safe-bottom));border-top:1px solid rgba(255,255,255,0.08)}
+.drawer-foot-text{font-size:12px;color:rgba(255,255,255,0.28);line-height:1.7}
+
+/* ── TOPBAR (for non-camera screens) ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(var(--safe-top) + 10px) 16px 10px;flex-shrink:0;background:var(--cream)}
+.topbar-menu{width:40px;height:40px;border-radius:12px;background:var(--card);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;cursor:pointer;box-shadow:var(--shadow)}
+.topbar-menu span{display:block;width:18px;height:2px;background:var(--text);border-radius:2px}
+.topbar-title{font-family:system-ui,-apple-system,sans-serif;font-size:19px;font-weight:700;color:var(--forest)}
+.topbar-title em{color:var(--sage);font-style:normal}
+.topbar-right{width:40px;height:40px;border-radius:50%;background:var(--pale);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.topbar-right svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:2}
+
+/* ── RESULT SCREEN ── */
+.result-hero{background:linear-gradient(155deg,var(--forest) 0%,var(--moss) 100%);
+  padding:calc(var(--safe-top) + 48px) 20px 28px;position:relative;flex-shrink:0;text-align:center}
+.r-back{position:absolute;top:calc(var(--safe-top) + 12px);left:14px;
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.r-back svg{width:18px;height:18px;stroke:white;fill:none;stroke-width:2.5}
+.r-compare-btn{position:absolute;top:calc(var(--safe-top) + 12px);right:14px;
+  background:rgba(255,255,255,0.12);padding:7px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;color:white;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.15);letter-spacing:0.3px}
+.grade-circle{width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.12);
+  border:3px solid rgba(255,255,255,0.25);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;margin:0 auto 14px}
+.grade-letter{font-family:system-ui,-apple-system,sans-serif;font-size:42px;font-weight:700;color:white;line-height:1}
+.grade-num{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:0.5px}
+.r-name{font-family:system-ui,-apple-system,sans-serif;font-size:21px;font-weight:700;color:white;line-height:1.25;margin-bottom:4px}
+.r-brand-cat{font-size:15px;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:0.2px}
+.r-yko-link{display:block;font-size:12px;color:var(--mint);opacity:0.8;text-decoration:none;
+  margin-bottom:12px;letter-spacing:0.3px}
+.r-yko-link:hover{opacity:1}
+.r-pills{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.rpill{background:rgba(255,255,255,0.1);padding:5px 12px;border-radius:20px;
+  font-size:13px;color:rgba(255,255,255,0.75);font-weight:500;border:1px solid rgba(255,255,255,0.1)}
+.r-body{flex:1;overflow-y:auto;scrollbar-width:none;
+  padding-bottom:calc(90px + var(--safe-bottom))}
+.r-body::-webkit-scrollbar{display:none}
+
+/* ── CARDS ── */
+.card{background:var(--card);margin:10px 14px;border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+.card-label{font-size:13px;font-weight:600;color:var(--text-light);text-transform:uppercase;
+  letter-spacing:1.2px;margin-bottom:12px}
+.verdict-text{font-size:17px;color:var(--text-mid);line-height:1.75}
+
+/* rubric bars */
+.rbar{margin-bottom:12px}
+.rbar:last-child{margin-bottom:0}
+.rbar-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.rbar-label{font-size:17px;font-weight:600;color:var(--text)}
+.rbar-sub{font-size:13px;color:var(--text-light);font-weight:400;margin-left:4px}
+.rbar-val{font-size:17px;font-weight:700}
+.rbar-track{height:6px;background:var(--warm);border-radius:6px;overflow:hidden}
+.rbar-fill{height:100%;border-radius:6px;transition:width 1s cubic-bezier(0.4,0,0.2,1)}
+
+/* voice card */
+.voice-card{background:var(--forest);margin:0 14px 10px;border-radius:22px;padding:18px}
+.voice-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.voice-label{font-size:12px;font-weight:600;letter-spacing:1.2px;color:var(--mint);
+  text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.voice-play{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.15)}
+.voice-play svg{width:12px;height:12px;fill:white}
+.voice-play.playing{background:rgba(149,213,178,0.25);border-color:var(--mint)}
+.voice-body{font-size:17px;color:rgba(255,255,255,0.85);line-height:1.75}
+
+/* scope */
+.scope-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:13px}
+.scope-row:last-child{margin-bottom:0}
+.scope-bub{min-width:32px;height:32px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:800;font-family:system-ui,-apple-system,sans-serif;flex-shrink:0}
+.s1{background:#e8f5e9;color:#1b5e20}.s2{background:#fff8e1;color:#e65100}.s3{background:#fce4ec;color:#b71c1c}
+.scope-name{font-size:17px;font-weight:600;color:var(--text);margin-bottom:2px}
+.scope-desc{font-size:15px;color:var(--text-mid);line-height:1.65}
+
+/* chips */
+.chips-wrap{padding:0 14px;margin-bottom:10px}
+.chips-title{font-size:13px;font-weight:600;color:var(--text-light);text-transform:uppercase;
+  letter-spacing:1.0px;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 15px;border-radius:22px;font-size:15px;font-weight:500;line-height:1.35}
+.chip.g{background:var(--pale);color:var(--moss)}
+.chip.a{background:var(--amber-bg);color:#92400e}
+.chip.r{background:var(--red-bg);color:var(--red)}
+
+/* action row */
+.action-row{display:flex;gap:10px;padding:8px 14px 16px}
+.action-btn{flex:1;padding:13px 10px;border-radius:16px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;border:none;
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity 0.2s}
+.action-btn:active{opacity:0.8}
+.action-btn.primary{background:var(--forest);color:white}
+.action-btn.secondary{background:var(--card);color:var(--text);border:1.5px solid var(--warm)}
+
+/* ── NEW RESULT CARDS ── */
+.gs-headline{font-family:system-ui,-apple-system,sans-serif;font-size:26px;font-weight:700;color:var(--forest);
+  line-height:1.2;padding:20px 18px 4px;letter-spacing:-0.3px}
+.quick-view{padding:14px 18px}
+.qv-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--warm)}
+.qv-row:last-of-type{border-bottom:none}
+.qv-label{font-size:13px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.8px}
+.qv-val{font-size:16px;color:var(--forest);font-weight:500;text-align:right;max-width:60%}
+.qv-verdict{margin-top:14px;font-size:17px;font-weight:700;color:var(--moss);
+  padding-top:12px;border-top:2px solid var(--sage)}
+.why-text{font-size:17px;color:var(--text-mid);line-height:1.65;margin-bottom:14px}
+.win-trade{display:flex;gap:10px;margin-top:4px}
+.wt-block{flex:1;border-radius:14px;padding:12px 14px}
+.wt-win{background:var(--pale)}
+.wt-trade{background:var(--amber-bg)}
+.wt-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:6px;color:var(--text-light)}
+.wt-win .wt-label{color:var(--moss)}
+.wt-trade .wt-label{color:#92400e}
+.wt-text{font-size:15px;line-height:1.55;color:var(--text)}
+.compare-hook{margin:0 14px 10px;padding:14px 16px;background:var(--forest);
+  border-radius:16px;font-size:16px;color:rgba(255,255,255,0.9);line-height:1.5;
+  font-style:italic}
+.better-path-card{border-left:3px solid var(--amber);background:var(--amber-bg)}
+.better-path-text{font-size:17px;color:var(--text);line-height:1.7}
+
+/* ── MY SCANS ── */
+.scans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px}
+.sg-item{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
+.sg-circ{width:78px;height:78px;border-radius:50%;position:relative}
+.sg-bg{width:78px;height:78px;border-radius:50%;background:var(--pale);
+  display:flex;align-items:center;justify-content:center;
+  border:3px solid var(--card);box-shadow:var(--shadow)}
+.sg-bg svg{width:32px;height:32px;stroke:var(--sage);fill:none;stroke-width:1.5}
+.sg-grade{position:absolute;bottom:-3px;right:-3px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;font-family:system-ui,-apple-system,sans-serif;
+  border:2.5px solid var(--cream)}
+.sg-name{font-size:10px;font-weight:600;color:var(--text);text-align:center;
+  line-height:1.3;width:88px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── COMPARE ── */
+.compare-summary{background:var(--forest);margin:12px 14px;border-radius:22px;padding:16px 18px}
+.cs-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--mint);text-transform:uppercase;margin-bottom:6px}
+.cs-text{font-size:15px;color:rgba(255,255,255,0.92);line-height:1.65;font-weight:500}
+.cmp-item{background:var(--card);margin:0 14px 10px;border-radius:22px;padding:14px 16px;
+  cursor:pointer;box-shadow:var(--shadow);position:relative}
+.cmp-item.winner{border:2px solid var(--sage)}
+.winner-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  background:var(--sage);color:white;font-size:9px;font-weight:700;
+  padding:2px 10px;border-radius:0 0 8px 8px;letter-spacing:0.5px;text-transform:uppercase}
+.cmp-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.cmp-grade{width:48px;height:48px;border-radius:14px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;flex-shrink:0}
+.cmp-grade-letter{font-family:system-ui,-apple-system,sans-serif;font-size:20px;font-weight:700;line-height:1}
+.cmp-grade-num{font-size:9px;opacity:0.7}
+.cmp-info{flex:1;min-width:0}
+.cmp-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp-ai-headline{font-size:13px;color:var(--moss);font-weight:600;margin-top:2px}
+.cmp-brand{font-size:10px;color:var(--text-light);margin-bottom:3px}
+.cmp-rows{border-top:1px solid var(--warm);padding-top:8px;display:flex;flex-direction:column;gap:4px}
+.cmp-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.cmp-row-label{font-size:11px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.7px;flex-shrink:0}
+.cmp-row-val{font-size:13px;color:var(--text);text-align:right}
+.cmp-takeaway{margin-top:8px;font-size:14px;color:var(--text-mid);line-height:1.55;font-style:italic}
+.cmp-winner-box{background:var(--pale);margin:0 14px 10px;border-radius:18px;padding:14px 16px}
+.cwb-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--moss);text-transform:uppercase;margin-bottom:4px}
+.cwb-name{font-family:system-ui,-apple-system,sans-serif;font-size:17px;font-weight:700;color:var(--forest);margin-bottom:4px}
+.cwb-why{font-size:14px;color:var(--text-mid);line-height:1.55}
+.cmp-watchout{background:var(--amber-bg);margin:0 14px 10px;border-radius:18px;padding:12px 16px}
+.cwo-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:#92400e;text-transform:uppercase;margin-bottom:4px}
+.cwo-text{font-size:14px;color:var(--text);line-height:1.5}
+.cmp-confidence{margin:0 14px 6px;padding:10px 14px;background:var(--warm);border-radius:14px;
+  font-size:12px;color:var(--text-light);line-height:1.55;font-style:italic}
+.cmp-loading{padding:60px 20px;text-align:center}
+.cmp-loading-spin{width:32px;height:32px;border:3px solid var(--warm);border-top-color:var(--forest);
+  border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px}
+.cmp-loading-text{font-size:14px;color:var(--text-light)}
+
+/* ── HOW WE SCORE ── */
+.method-hero{background:linear-gradient(155deg,var(--forest),var(--moss));
+  padding:calc(var(--safe-top) + 52px) 20px 28px;position:relative;flex-shrink:0}
+.method-back{position:absolute;top:calc(var(--safe-top) + 12px);left:14px;
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.method-back svg{width:18px;height:18px;stroke:white;fill:none;stroke-width:2.5}
+.method-title{font-family:system-ui,-apple-system,sans-serif;font-size:26px;font-weight:700;color:white;margin-bottom:6px}
+.method-sub{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6}
+.signal-card{background:var(--card);margin:10px 14px;border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+.sig-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.sig-num{width:34px;height:34px;border-radius:10px;background:var(--pale);
+  display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;
+  font-size:15px;font-weight:700;color:var(--forest);flex-shrink:0}
+.sig-title{font-family:system-ui,-apple-system,sans-serif;font-size:15px;font-weight:600;color:var(--forest)}
+.sig-worth{font-size:10px;color:var(--text-light);margin-top:1px}
+.sig-desc{font-size:12px;color:var(--text-mid);line-height:1.7}
+
+/* ── LEARN SCREEN ── */
+.learn-hero{background:linear-gradient(155deg,var(--forest),var(--moss));
+  padding:calc(var(--safe-top) + 52px) 20px 24px;position:relative;flex-shrink:0}
+.learn-back{position:absolute;top:calc(var(--safe-top) + 12px);left:14px;
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.learn-back svg{width:18px;height:18px;stroke:white;fill:none;stroke-width:2.5}
+.learn-search-wrap{margin:12px 14px 4px;position:relative}
+.learn-input{width:100%;padding:14px 56px 14px 16px;border-radius:16px;
+  border:1.5px solid var(--warm);font-size:15px;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  background:white;color:var(--text);outline:none;transition:border-color 0.2s;
+  box-shadow:var(--shadow)}
+.learn-input:focus{border-color:var(--sage)}
+.learn-send{position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:38px;height:38px;border-radius:12px;background:var(--moss);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.learn-send svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2.2}
+.learn-suggestions{padding:12px 14px 4px}
+.learn-sugg-label{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;
+  color:var(--text-light);font-weight:600;margin-bottom:10px}
+.learn-sugg-chips{display:flex;flex-wrap:wrap;gap:7px}
+.learn-sugg-chip{padding:8px 14px;border-radius:22px;font-size:12px;font-weight:500;
+  background:white;color:var(--moss);border:1.5px solid rgba(82,183,136,0.3);cursor:pointer;
+  box-shadow:var(--shadow);transition:all 0.15s;line-height:1.3}
+.learn-sugg-chip:active{background:var(--pale);transform:scale(0.97)}
+.la-summary{background:var(--forest);border-radius:22px;padding:18px;margin-bottom:10px}
+.la-question{font-size:11px;color:var(--mint);font-weight:600;text-transform:uppercase;
+  letter-spacing:0.5px;margin-bottom:8px}
+.la-summary-text{font-size:14px;color:rgba(255,255,255,0.88);line-height:1.75}
+.la-bottom-line{background:var(--pale);border-radius:16px;padding:14px;margin-bottom:10px;
+  border:1.5px solid rgba(82,183,136,0.25)}
+.la-bl-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--moss);
+  font-weight:600;margin-bottom:5px}
+.la-bl-text{font-size:14px;color:var(--forest);font-weight:600;line-height:1.55}
+.la-dim-card{background:white;border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:10px}
+.la-dim-label{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;
+  color:var(--text-light);font-weight:600;margin-bottom:12px}
+.la-dim-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--warm);line-height:1.55}
+.la-dim-row:last-child{border-bottom:none;padding-bottom:0}
+.la-dim-name{font-size:12px;font-weight:600;color:var(--text);flex:0 0 100px}
+.la-dim-detail{font-size:12px;color:var(--text-mid);flex:1}
+.la-dim-verdict{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;
+  flex-shrink:0;align-self:flex-start;margin-top:2px}
+.vd-better{background:var(--pale);color:var(--moss)}
+.vd-worse{background:var(--red-bg);color:var(--red)}
+.vd-depends{background:var(--amber-bg);color:#92400e}
+.la-nuance{background:var(--amber-bg);border-radius:16px;padding:14px;margin-bottom:10px;
+  border:1px solid rgba(245,158,11,0.2)}
+.la-nuance-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;
+  color:#92400e;font-weight:600;margin-bottom:5px}
+.la-nuance-text{font-size:13px;color:var(--text-mid);line-height:1.65}
+.la-related{margin-bottom:16px}
+.la-rel-label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;
+  color:var(--text-light);font-weight:600;margin-bottom:8px}
+
+/* ── YKO CARD (in result screen) ── */
+.yko-card{background:linear-gradient(135deg,#0f3820,#1a5c35);border-radius:22px;
+  padding:16px 18px;margin:0 14px 10px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;text-decoration:none}
+.yko-icon{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.yko-text{flex:1}
+.yko-label{font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;
+  letter-spacing:0.5px;font-weight:600;margin-bottom:3px}
+.yko-name{font-size:14px;color:white;font-weight:600}
+.yko-score-badge{font-size:20px;font-weight:700;color:white;font-family:monospace;margin-right:4px}
+.yko-tier-label{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:3px;display:inline-block}
+.yko-arrow{color:rgba(255,255,255,0.4);display:flex;align-items:center}
+
+/* ── MANUAL MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;
+  display:flex;align-items:flex-end;transition:opacity 0.2s}
+.modal-overlay.hidden{opacity:0;pointer-events:none}
+.modal-sheet{background:var(--cream);border-radius:26px 26px 0 0;
+  padding:20px 20px calc(20px + var(--safe-bottom));width:100%;
+  transform:translateY(0);transition:transform 0.3s}
+.modal-overlay.hidden .modal-sheet{transform:translateY(100%)}
+.modal-handle{width:38px;height:4px;border-radius:2px;background:var(--warm);margin:0 auto 18px}
+.modal-title{font-family:system-ui,-apple-system,sans-serif;font-size:19px;font-weight:700;color:var(--forest);margin-bottom:16px}
+.input-group{margin-bottom:13px}
+.input-group label{display:block;font-size:11px;font-weight:600;color:var(--text-light);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.input-group input,.input-group textarea{width:100%;padding:12px 14px;border-radius:12px;
+  border:1.5px solid var(--warm);font-size:14px;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  color:var(--text);background:white;outline:none;transition:border-color 0.2s;resize:none}
+.input-group input:focus,.input-group textarea:focus{border-color:var(--sage)}
+.input-row{display:flex;gap:10px}
+.input-row .input-group{flex:1}
+.modal-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--moss),var(--sage));
+  color:white;border:none;border-radius:14px;font-size:15px;font-weight:600;
+  cursor:pointer;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;margin-top:4px}
+.modal-cancel{width:100%;padding:10px;background:none;border:none;
+  color:var(--text-light);font-size:14px;cursor:pointer;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;margin-top:2px}
+
+/* ── AUTH MODAL ── */
+.auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;
+  display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.auth-overlay.open{opacity:1;pointer-events:all}
+.auth-sheet{background:var(--cream);border-radius:26px 26px 0 0;width:100%;
+  padding:22px 22px calc(22px + var(--safe-bottom));
+  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
+.auth-overlay.open .auth-sheet{transform:translateY(0)}
+.auth-handle{width:38px;height:4px;border-radius:2px;background:var(--warm);margin:0 auto 22px}
+.auth-title{font-family:system-ui,-apple-system,sans-serif;font-size:22px;font-weight:700;color:var(--forest);margin-bottom:5px}
+.auth-sub{font-size:13px;color:var(--text-mid);margin-bottom:20px;line-height:1.6}
+.auth-tabs{display:flex;background:var(--warm);border-radius:12px;padding:3px;margin-bottom:18px}
+.auth-tab{flex:1;padding:8px;border-radius:10px;font-size:13px;font-weight:600;
+  text-align:center;cursor:pointer;color:var(--text-mid);transition:all 0.2s}
+.auth-tab.active{background:var(--card);color:var(--forest);box-shadow:var(--shadow)}
+.auth-field{margin-bottom:13px}
+.auth-field label{display:block;font-size:11px;font-weight:600;color:var(--text-light);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.auth-field input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--warm);
+  font-size:15px;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:var(--text);background:white;
+  outline:none;transition:border-color 0.2s}
+.auth-field input:focus{border-color:var(--sage)}
+.auth-submit{width:100%;padding:14px;background:var(--forest);color:white;border:none;
+  border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;margin-top:4px}
+.auth-err{font-size:12px;color:var(--red);margin-bottom:10px;display:none}
+.auth-err.show{display:block}
+.auth-later{text-align:center;margin-top:14px;font-size:13px;color:var(--text-light)}
+.auth-later a{color:var(--sage);font-weight:600;cursor:pointer}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:calc(var(--safe-top) + 54px);left:50%;transform:translateX(-50%) translateY(-4px);
+  background:var(--forest);color:white;padding:10px 18px;border-radius:30px;
+  font-size:13px;font-weight:500;z-index:600;opacity:0;transition:opacity 0.25s,transform 0.25s;
+  pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-md)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── INSTALL ── */
+.install-prompt{position:fixed;bottom:calc(80px + var(--safe-bottom) + 10px);
+  left:14px;right:14px;background:var(--forest);border-radius:20px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  z-index:300;box-shadow:var(--shadow-md)}
+.install-prompt.hidden{display:none}
+.install-text{flex:1;font-size:12px;color:rgba(255,255,255,0.8);line-height:1.5}
+.install-text strong{color:white}
+.install-btn-el{background:var(--sage);color:white;border:none;border-radius:10px;
+  padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ HOME / CAMERA SCREEN ══ -->
+<div class="screen" id="s-home">
+  <!-- Native camera input — the iOS-safe way to open the camera -->
+  <input type="file" id="cam-native" accept="image/*" capture="environment" style="display:none" onchange="handleCameraCapture(this)">
+
+  <!-- Top bar -->
+  <div class="home-topbar">
+    <button class="home-hamburger" onclick="openDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="home-logo">Green<em>Specs</em></div>
+    <button class="home-user-btn" id="home-user-btn" onclick="openAuth()" aria-label="Account">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="scrollable" id="home-scroll">
+    <!-- Hero -->
+    <div class="home-hero">
+      <div class="home-tagline">Seeing through labels<br>is a <em>superpower.</em></div>
+      <div class="home-sub">That "eco-friendly" label? Usually marketing, not fact.</div>
+      <div class="home-sub2">Scan anything and get an honest score — what's real, what's not, and why it matters.</div>
+      <button class="scan-btn" onclick="openNativeCamera()">
+        <div class="scan-btn-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+        </div>
+        <div class="scan-btn-text">
+          <div class="scan-btn-label">Scan a Product</div>
+          <div class="scan-btn-hint">Point camera at the label</div>
+        </div>
+      </button>
+      <div class="type-link" onclick="showManualInput()">or type the product name</div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="home-stats-bar" id="home-stats-bar" style="display:none">
+      <div class="home-stats-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="home-stats-text" id="home-stats-text">Loading community stats…</div>
+    </div>
+
+    <!-- Recent scans -->
+    <div class="home-section" id="home-recent-section" style="display:none">
+      <div class="home-section-title">Your recent scans</div>
+      <div class="recent-strip" id="recent-strip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ANALYZING OVERLAY (fixed, global) ══ -->
+<div class="analyzing hidden" id="analyzing">
+  <div class="spin"></div>
+  <div class="an-title" id="an-title">Reading the label…</div>
+  <div class="an-sub" id="an-sub">Checking 5 sustainability signals</div>
+  <div class="an-phases">
+    <div class="an-phase active" id="an-p1"><div class="an-phase-dot"></div>Reading the label</div>
+    <div class="an-phase" id="an-p2"><div class="an-phase-dot"></div>Scoring the claims</div>
+  </div>
+  <div class="dots" style="margin-top:8px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+</div>
+
+<!-- ══ RESULT SCREEN ══ -->
+<div class="screen hidden" id="s-result">
+  <div class="result-hero">
+    <div class="r-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="r-compare-btn" onclick="addToCompare()">Compare</div>
+    <div class="grade-circle" id="r-grade-circle">
+      <div class="grade-letter" id="r-grade-letter">—</div>
+      <div class="grade-num" id="r-grade-num">—/100</div>
+    </div>
+    <div class="r-name" id="r-name">Product</div>
+    <div class="r-brand-cat" id="r-brand-cat"></div>
+    <a class="r-yko-link" id="r-yko-link" href="https://yko.earth" target="_blank" rel="noopener">See brand profile on YKO.earth</a>
+    <div class="r-pills">
+      <div class="rpill" id="r-loc"></div>
+      <div class="rpill" id="r-price" style="display:none"></div>
+    </div>
+  </div>
+  <div class="r-body" id="r-body"></div>
+</div>
+
+<!-- ══ MY SCANS ══ -->
+<div class="screen hidden" id="s-myscans">
+  <div class="topbar">
+    <div class="topbar-menu" onclick="openDrawer()"><span></span><span></span><span></span></div>
+    <div class="topbar-title">My <em>Scans</em></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="scrollable">
+    <div class="scans-grid" id="scans-grid"></div>
+  </div>
+</div>
+
+<!-- ══ COMPARE ══ -->
+<div class="screen hidden" id="s-compare">
+  <div class="topbar">
+    <div class="topbar-menu" onclick="openDrawer()"><span></span><span></span><span></span></div>
+    <div class="topbar-title"><em>Compare</em></div>
+    <div style="width:40px"></div>
+  </div>
+  <div style="padding:4px 18px 0;font-size:12px;color:var(--text-light)" id="compare-sub"></div>
+  <div class="scrollable" id="compare-body"></div>
+</div>
+
+<!-- ══ HOW WE SCORE ══ -->
+<div class="screen hidden" id="s-method">
+  <div class="method-hero">
+    <div class="method-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="method-title">How we score</div>
+    <div class="method-sub">5 signals · each worth 20 points · total out of 100.<br>We score relative to what's actually possible — eco is hard.</div>
+  </div>
+  <div class="scrollable">
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">1</div><div><div class="sig-title">Specificity</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Do they use real numbers, or just adjectives? "80% recycled content" beats "eco-friendly" every time. Vague language is cheap. Data is valuable.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">2</div><div><div class="sig-title">Transparency</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Can you actually find their data somewhere? Published reports, third-party audits, open supplier lists — these score high. "We care" with nothing to show = low.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">3</div><div><div class="sig-title">Third-party validation</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">B Corp. FSC. Rainforest Alliance. USDA Organic. These have actual standards and independent audits. A leaf logo the company designed themselves does not.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">4</div><div><div class="sig-title">Biggest impact covered</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Every product has one thing that drives most of its footprint. Dairy? It's the cows. Clothing? Usually dyeing and fiber. Does the claim address THAT, or something easier?</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">5</div><div><div class="sig-title">Action over marketing</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Does the company's actual practice match the pitch? Brands investing in real programs score higher than those who just updated their packaging.</div></div>
+    <div class="card" style="background:var(--forest);margin-bottom:16px">
+      <div class="card-label" style="color:var(--mint)">The scope breakdown</div>
+      <div class="scope-row"><div class="scope-bub s1">S1</div><div><div class="scope-name" style="color:white">Scope 1 — Direct ops</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">Their factories, their trucks, their direct burn.</div></div></div>
+      <div class="scope-row"><div class="scope-bub s2">S2</div><div><div class="scope-name" style="color:white">Scope 2 — Purchased energy</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">The electricity and heat they buy to run operations.</div></div></div>
+      <div class="scope-row" style="margin-bottom:0"><div class="scope-bub s3">S3</div><div><div class="scope-name" style="color:white">Scope 3 — Everything upstream</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">The farms, ingredients, suppliers, shipping. Usually 70-90% of the real footprint — and almost never on the label. This is where the story lives.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LEARN / ASK SUSTAINABILITY ══ -->
+<div class="screen hidden" id="s-learn">
+  <div class="learn-hero">
+    <div class="learn-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="method-title">Ask Sustainability</div>
+    <div class="method-sub">AI searches the web to answer your questions — real facts, no greenwashing.</div>
+  </div>
+  <div class="scrollable" id="learn-scroll">
+    <div class="learn-search-wrap">
+      <input type="text" class="learn-input" id="learn-input"
+             placeholder="Is glass better than plastic?"
+             onkeydown="if(event.key==='Enter')submitLearnQuestion()">
+      <button class="learn-send" onclick="submitLearnQuestion()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="learn-suggestions" id="learn-suggestions">
+      <div class="learn-sugg-label">Popular questions</div>
+      <div class="learn-sugg-chips">
+        <div class="learn-sugg-chip" onclick="askLearn('Is glass better than plastic?')">Glass vs plastic?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('Is organic food more sustainable?')">Organic food?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('Are paper bags better than plastic bags?')">Paper vs plastic bags?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('What does carbon neutral actually mean?')">Carbon neutral?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('Is an electric car better for the environment?')">Electric cars?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('Is bamboo really sustainable?')">Bamboo?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('What is greenwashing?')">Greenwashing?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('Which eco certifications actually matter?')">Real certifications?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('What is a carbon footprint and how is it measured?')">Carbon footprint?</div>
+        <div class="learn-sugg-chip" onclick="askLearn('Is local food always more sustainable?')">Local food?</div>
+      </div>
+    </div>
+    <div id="learn-answer-area" style="padding:0 14px 8px"></div>
+  </div>
+</div>
+
+<!-- ══ DRAWER ══ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-brand">Green<em>Specs</em></div>
+    <div class="drawer-tagline">Seeing through labels is a superpower.</div>
+  </div>
+  <div class="drawer-nav">
+    <button class="d-item active" id="d-home" onclick="goHome();closeDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+      <span>Scan</span>
+    </button>
+    <button class="d-item" id="d-scans" onclick="showMyScans();closeDrawer()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <span>My Scans</span>
+    </button>
+    <button class="d-item" id="d-compare" onclick="showCompare();closeDrawer()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Compare</span>
+    </button>
+    <div class="d-divider"></div>
+    <button class="d-item" onclick="showMethod();closeDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <span>How We Score</span>
+    </button>
+    <button class="d-item" id="d-learn" onclick="showLearn();closeDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Ask Sustainability</span>
+    </button>
+    <div class="d-divider"></div>
+    <button class="d-item" onclick="openAuth();closeDrawer()">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="d-auth-label">Sign in / Sign up</span>
+    </button>
+  </div>
+  <div class="drawer-foot">
+    <div class="drawer-foot-text">AI-powered analysis · Web research included<br>Data stored at the edge · greenspecs.app</div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<div class="nav" id="main-nav">
+  <div class="nav-item active" id="nav-home" onclick="goHome()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+    Scan
+  </div>
+  <div class="nav-item" id="nav-scans" onclick="showMyScans()">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    My Scans
+  </div>
+  <div class="nav-scan" onclick="openNativeCamera()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+  </div>
+  <div class="nav-item" id="nav-compare" onclick="showCompare()">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Compare
+  </div>
+  <div class="nav-item" id="nav-learn" onclick="showLearn()">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Learn
+  </div>
+</div>
+
+<!-- ══ MANUAL MODAL ══ -->
+<div class="modal-overlay hidden" id="manual-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">What are you looking at?</div>
+    <div class="input-group">
+      <label>Product name & brand *</label>
+      <input type="text" id="input-product" placeholder="e.g. Method All-Purpose Cleaner">
+    </div>
+    <div class="input-group">
+      <label>Green claim on the label</label>
+      <textarea id="input-claim" rows="2" placeholder='e.g. "Plant-based, biodegradable"'></textarea>
+    </div>
+    <div class="input-row">
+      <div class="input-group"><label>Price (optional)</label><input type="text" id="input-price" placeholder="$4.99"></div>
+      <div class="input-group"><label>Store (optional)</label><input type="text" id="input-store" placeholder="Whole Foods"></div>
+    </div>
+    <button class="modal-btn" onclick="submitManualScan()">Analyze this product →</button>
+    <button class="modal-cancel" onclick="closeManualInput()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ AUTH MODAL ══ -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-sheet">
+    <div class="auth-handle"></div>
+    <div class="auth-title">Save your scans</div>
+    <div class="auth-sub">Sign in free to keep your history across devices.</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-in" onclick="switchAuthTab('in')">Sign in</div>
+      <div class="auth-tab" id="tab-up" onclick="switchAuthTab('up')">Create account</div>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+    <div id="form-in">
+      <div class="auth-field"><label>Email</label><input type="email" id="si-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="auth-submit" onclick="doSignIn()">Sign in</button>
+    </div>
+    <div id="form-up" style="display:none">
+      <div class="auth-field"><label>Name</label><input type="text" id="su-name" placeholder="Your name" autocomplete="name"></div>
+      <div class="auth-field"><label>Email</label><input type="email" id="su-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="su-pass" placeholder="8+ characters" autocomplete="new-password"></div>
+      <button class="auth-submit" onclick="doSignUp()">Create account</button>
+    </div>
+    <div class="auth-later"><a onclick="closeAuth()">Maybe later</a></div>
+  </div>
+</div>
+
+<!-- ══ INSTALL PROMPT ══ -->
+<div class="install-prompt hidden" id="install-prompt">
+  <div class="install-text"><strong>Add to Home Screen</strong><br>Scan anything in-store, one tap.</div>
+  <button class="install-btn-el" id="install-btn-el">Install</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
+const APP_VERSION = '20260320-v7';
+(function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const API = '';
+let session_id = localStorage.getItem('gs_session') || (function(){ const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',s=Array.from({length:16},()=>c[Math.random()*62|0]).join(''); localStorage.setItem('gs_session',s); return s; })();
+let auth_token = localStorage.getItem('gs_auth') || null;
+let currentUser = null;
+let currentScan = null;
+let lastScreen = 's-home';
+let compareList = JSON.parse(localStorage.getItem('gs_compare') || '[]');
+let isSpeaking = false;
+let userLat = null, userLng = null, userCity = null;
+let deferredInstall = null;
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  getLocation();
+  if (auth_token) verifyAuth();
+  checkInstallPrompt();
+  loadHomeData();
+});
+
+// ─── CAMERA — native file input approach (works on all iOS/Android) ──────────
+function openNativeCamera() {
+  // Reset file input so same file can be selected again
+  const input = document.getElementById('cam-native');
+  input.value = '';
+  input.click();
+}
+
+async function handleCameraCapture(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  showAnalyzing();
+  try {
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+    const mediaType = file.type || 'image/jpeg';
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 45000);
+    const apiRes = await fetch(API + '/api/scan', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      signal: ctrl.signal,
+      body: JSON.stringify({
+        product_name: 'Product in image', claim: 'visible sustainability claims',
+        image_base64: base64, media_type: mediaType,
+        session_id, lat: userLat, lng: userLng, location_name: userCity
+      })
+    });
+    clearTimeout(t);
+    const d = await apiRes.json();
+    if (d.error) throw new Error(d.error);
+    handleScanResult(d);
+  } catch (e) {
+    hideAnalyzing();
+    showToast('Analysis failed — try typing it in');
+  }
+}
+
+// ─── MANUAL INPUT ─────────────────────────────────────────────────────────────
+function showManualInput() {
+  document.getElementById('manual-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('input-product').focus(), 150);
+}
+function closeManualInput() { document.getElementById('manual-modal').classList.add('hidden'); }
+
+async function submitManualScan() {
+  const product = document.getElementById('input-product').value.trim();
+  const claim = document.getElementById('input-claim').value.trim();
+  const price = document.getElementById('input-price').value.trim();
+  const store = document.getElementById('input-store').value.trim();
+  if (!product) { showToast('Enter a product name'); return; }
+  closeManualInput();
+  showAnalyzing();
+  try {
+    const ctrl2 = new AbortController();
+    const t2 = setTimeout(() => ctrl2.abort(), 45000);
+    const res = await fetch(API + '/api/scan', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      signal: ctrl2.signal,
+      body: JSON.stringify({
+        product_name: product, claim: claim || 'sustainability claim',
+        session_id, lat: userLat, lng: userLng,
+        location_name: store || userCity || null, price: price || null
+      })
+    });
+    clearTimeout(t2);
+    const d = await res.json();
+    if (d.error) throw new Error(d.error);
+    handleScanResult(d);
+  } catch (e) { hideAnalyzing(); showToast('Analysis failed: ' + e.message); }
+}
+
+let _analyzeTimer = null;
+function showAnalyzing() {
+  document.getElementById('analyzing').classList.remove('hidden');
+  // Reset phases
+  document.getElementById('an-p1').className = 'an-phase active';
+  document.getElementById('an-p2').className = 'an-phase';
+  document.getElementById('an-title').textContent = 'Reading the label\u2026';
+  document.getElementById('an-sub').textContent = 'Checking 5 sustainability signals';
+  if (_analyzeTimer) clearTimeout(_analyzeTimer);
+  _analyzeTimer = setTimeout(() => {
+    document.getElementById('an-p1').className = 'an-phase done';
+    document.getElementById('an-p2').className = 'an-phase active';
+    document.getElementById('an-title').textContent = 'Scoring the claims\u2026';
+    document.getElementById('an-sub').textContent = 'Almost there';
+  }, 3000);
+}
+function hideAnalyzing() {
+  document.getElementById('analyzing').classList.add('hidden');
+  if (_analyzeTimer) { clearTimeout(_analyzeTimer); _analyzeTimer = null; }
+}
+
+function handleScanResult(d) {
+  // API wraps in {session_id, scan} or returns scan directly
+  const scan = d.scan || d;
+  if (!session_id) { session_id = d.session_id || nanoid(); localStorage.setItem('gs_session', session_id); }
+  hideAnalyzing();
+  showResult(scan);
+}
+
+// ─── RESULT ───────────────────────────────────────────────────────────────────
+function showResult(scan) {
+  currentScan = scan;
+  if (isSpeaking) { speechSynthesis.cancel(); isSpeaking = false; }
+  const sc = Number(scan.score) || 0;
+  const grade = letterGrade(sc);
+  const gColor = gradeColor(sc);
+
+  document.getElementById('r-grade-letter').textContent = sc;
+  document.getElementById('r-grade-letter').style.color = 'white';
+  document.getElementById('r-grade-num').textContent = '/100';
+  document.getElementById('r-grade-circle').style.borderColor = 'rgba(255,255,255,0.35)';
+  document.getElementById('r-name').textContent = noEmoji(scan.product_name || 'Unknown product');
+  document.getElementById('r-brand-cat').textContent =
+    [scan.brand, scan.category ? scan.category.replace(/_/g,' ') : ''].filter(Boolean).join(' · ');
+  const ykoLink = document.getElementById('r-yko-link');
+  if (scan.brand) {
+    const slug = scan.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    ykoLink.href = 'https://yko.earth/brand/' + slug + '/';
+    ykoLink.style.display = '';
+  } else {
+    ykoLink.style.display = 'none';
+  }
+  document.getElementById('r-loc').textContent = scan.location_name || userCity || '';
+  const priceEl = document.getElementById('r-price');
+  if (scan.price) { priceEl.textContent = scan.price; priceEl.style.display = ''; }
+  else priceEl.style.display = 'none';
+
+  const rb = scan.rubric || {};
+  const rubricRows = [
+    ['Specificity', 'Numbers vs adjectives', rb.specificity || rb.specificity_score || 0],
+    ['Transparency', 'They show their work', rb.transparency || rb.transparency_score || 0],
+    ['3rd-Party Valid.', 'Real certs, not logos', rb.third_party || rb.third_party_score || 0],
+    ['Biggest Impact', 'Covers what matters', rb.biggest_impact || rb.bigimpact_score || 0],
+    ['Action > Marketing', 'Practice matches pitch', rb.marketing_vs_action || rb.marketing_score || 0],
+  ];
+
+  const verdict = scan.verdict || buildVerdict(scan);
+  const whatsGood = scan.whats_good || scan.what_covers || [];
+  const notOnLabel = scan.whats_not_on_label || scan.what_missing || [];
+  const worthKnowing = scan.worth_knowing || scan.red_flags || [];
+  const tips = scan.tips || [];
+
+  const rd = {};  // structured data already in scan fields
+
+  document.getElementById('r-body').innerHTML =
+    // Headline — the 1-liner
+    (scan.headline
+      ? '<div class="gs-headline">' + escH(noEmoji(scan.headline)) + '</div>'
+      : '')
+
+    // Quick view: packaging / ingredients / transport / transparency
+    + ((scan.packaging || scan.ingredients || scan.transport || scan.transparency_label)
+      ? '<div class="card quick-view">'
+        + (scan.packaging ? '<div class="qv-row"><span class="qv-label">Packaging</span><span class="qv-val">' + escH(noEmoji(scan.packaging)) + '</span></div>' : '')
+        + (scan.ingredients ? '<div class="qv-row"><span class="qv-label">Ingredients</span><span class="qv-val">' + escH(noEmoji(scan.ingredients)) + '</span></div>' : '')
+        + (scan.transport ? '<div class="qv-row"><span class="qv-label">Transport</span><span class="qv-val">' + escH(noEmoji(scan.transport)) + '</span></div>' : '')
+        + (scan.transparency_label ? '<div class="qv-row"><span class="qv-label">Transparency</span><span class="qv-val">' + escH(noEmoji(scan.transparency_label)) + '</span></div>' : '')
+        + (scan.verdict_tag ? '<div class="qv-verdict">' + escH(noEmoji(scan.verdict_tag)) + '</div>' : '')
+        + '</div>'
+      : '')
+
+    // Real story
+    + (scan.real_story
+      ? '<div class="card"><div class="card-label">The real story</div><div class="verdict-text">' + escH(noEmoji(scan.real_story)) + '</div></div>'
+      : (!scan.headline && verdict ? '<div class="card"><div class="card-label">The Verdict</div><div class="verdict-text">' + escH(verdict) + '</div></div>' : ''))
+
+    // Why it matters + Win/Tradeoff
+    + ((scan.why_it_matters || scan.win || scan.tradeoff)
+      ? '<div class="card">'
+        + (scan.why_it_matters ? '<div class="card-label">Why it matters</div><div class="why-text">' + escH(noEmoji(scan.why_it_matters)) + '</div>' : '')
+        + ((scan.win || scan.tradeoff)
+          ? '<div class="win-trade">'
+            + (scan.win ? '<div class="wt-block wt-win"><div class="wt-label">Win</div><div class="wt-text">' + escH(noEmoji(scan.win)) + '</div></div>' : '')
+            + (scan.tradeoff ? '<div class="wt-block wt-trade"><div class="wt-label">Trade-off</div><div class="wt-text">' + escH(noEmoji(scan.tradeoff)) + '</div></div>' : '')
+            + '</div>'
+          : '')
+        + '</div>'
+      : '')
+
+    // Compare hook
+    + (scan.compare_hook
+      ? '<div class="compare-hook">' + escH(noEmoji(scan.compare_hook)) + '</div>'
+      : '')
+
+    // What better looks like
+    + (scan.better_path
+      ? '<div class="card better-path-card"><div class="card-label">What better looks like</div>'
+        + '<div class="better-path-text">' + escH(noEmoji(scan.better_path)) + '</div>'
+        + '</div>'
+      : '')
+
+    // 5 signals
+    + '<div class="card"><div class="card-label">The 5 Signals</div>'
+    + rubricRows.map(([label, sub, val]) => {
+        const pct = Math.round((Number(val) / 20) * 100);
+        const color = Number(val) >= 15 ? 'var(--sage)' : Number(val) >= 10 ? 'var(--amber)' : '#EF4444';
+        return '<div class="rbar">'
+          + '<div class="rbar-row"><span class="rbar-label">' + label + '<span class="rbar-sub"> — ' + sub + '</span></span>'
+          + '<span class="rbar-val" style="color:' + color + '">' + val + '/20</span></div>'
+          + '<div class="rbar-track"><div class="rbar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
+      }).join('')
+    + '</div>'
+
+    // Scope 3 only (most important)
+    + ((scan.scope?.scope3 || scan.scope3_text)
+      ? '<div class="card"><div class="card-label">Where the footprint actually hides</div>'
+        + '<div class="scope-row"><div class="scope-bub s3">S3</div><div>'
+        + '<div class="scope-desc">' + escH(scan.scope?.scope3 || scan.scope3_text || '') + '</div>'
+        + '</div></div></div>'
+      : '')
+
+    // Tips
+    + (tips.length
+      ? '<div class="card"><div class="card-label">Worth knowing</div>'
+        + tips.map(t => '<div style="font-size:17px;color:var(--text-mid);padding:9px 0;border-bottom:1px solid var(--warm);line-height:1.65;display:flex;gap:8px"><span style="color:var(--sage);flex-shrink:0">→</span><span>' + escH(noEmoji(t)) + '</span></div>').join('')
+        + '</div>'
+      : '')
+
+    // Sustainability URL — async-loaded after quick score (shown lower on page)
+    + '<div id="sustain-url-slot"></div>'
+
+    // YKO card
+    + (scan.brand ? '<div id="yko-card-slot" style="min-height:72px"></div>' : '')
+
+    // Actions
+    + '<div class="action-row">'
+    + '<button class="action-btn primary" onclick="addToCompare()">Compare</button>'
+    + '<button class="action-btn secondary" onclick="shareScore()">Share</button>'
+    + '</div>';
+
+  setActiveNav('');
+  show('s-result');
+  document.getElementById('r-body').scrollTop = 0;
+
+  // Fire async extras — non-blocking, fill in after quick score shows
+  if (scan.brand) loadYkoCard(scan.brand, scan.product_name || '');
+  loadSustainUrl(scan);
+}
+
+function loadSustainUrl(scan) {
+  const slot = document.getElementById('sustain-url-slot');
+  if (!slot) return;
+  const url = scan.sustainability_url;
+  if (!url || url === 'null' || !url.startsWith('http')) return;
+  // Small delay so main content renders first
+  setTimeout(() => {
+    if (!document.getElementById('sustain-url-slot')) return;
+    slot.innerHTML = '<div style="margin:0 14px 10px;padding:12px 16px;background:var(--pale);border-radius:16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<div><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--moss);text-transform:uppercase;margin-bottom:3px">Sustainability page</div>'
+      + '<div style="font-size:13px;color:var(--forest)">' + escH(url.split('//').pop().replace('www.','').split('/')[0]) + '</div></div>'
+      + '<a href="' + escH(url) + '" target="_blank" rel="noopener" style="background:var(--forest);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;text-decoration:none;white-space:nowrap">View →</a>'
+      + '</div>';
+  }, 400);
+}
+
+function shareScore() {
+  if (!currentScan) return;
+  const sc = Number(currentScan.score) || 0;
+  const text = (currentScan.product_name || 'This product') + ' scored ' + sc + '/100 on GreenSpecs.'
+    + (currentScan.headline ? ' ' + currentScan.headline : '');
+  const url = 'https://greenspecs.app';
+  if (navigator.share) {
+    navigator.share({ title: 'GreenSpecs Score', text, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text + ' ' + url).then(() => showToast('Copied to clipboard')).catch(() => showToast('Score: ' + sc + '/100'));
+  }
+}
+
+// Carbon SVG arrow — no emoji
+const YKO_ARROW_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="14" height="14" fill="currentColor"><path d="M18 6l-1.414 1.414L24.172 15H4v2h20.172l-7.586 7.586L18 26l10-10z"/></svg>';
+// Carbon SVG analytics icon for YKO card
+const YKO_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="rgba(255,255,255,0.8)"><path d="M11 2H2v9h9V2zm-2 7H4V4h5v5zM20 2h-5v2h5v2h-5v2h5v2h-7V2h-2v10h11V2h-2zM2 20v10h10V20H2zm8 8H4v-6h6v6zM22 20h-2v4h-4v2h4v4h2v-4h4v-2h-4z"/></svg>';
+
+async function loadYkoCard(brandName, productName) {
+  const slot = document.getElementById('yko-card-slot');
+  if (!slot) return;
+
+  // Show loading state
+  slot.innerHTML = '<div style="padding:16px 18px;margin:0 14px 10px;background:rgba(15,56,32,0.4);border-radius:22px;font-size:12px;color:rgba(255,255,255,0.4);font-family:monospace;letter-spacing:0.05em">Checking YKO score…</div>';
+
+  try {
+    const res = await fetch('https://yko-api.phill-carter.workers.dev/api/scan-signal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brand_name: brandName, product_name: productName }),
+    });
+    if (!res.ok) throw new Error('signal failed');
+    const d = await res.json();
+
+    if (d.scored) {
+      // Full YKO score available — show it
+      var tierColors = {
+        'Benchmark Leader': '#1D9E75', 'Committed': '#5DCAA5',
+        'Progressing': '#BA7517', 'Early Stage': '#E24B4A', 'Needs Work': '#A32D2D',
+      };
+      var tc = tierColors[d.tier] || '#5DCAA5';
+      slot.innerHTML = '<a class="yko-card" href="' + d.brand_url + '" target="_blank" rel="noopener">'
+        + '<div class="yko-icon">' + YKO_ICON_SVG + '</div>'
+        + '<div class="yko-text">'
+        + '<div class="yko-label">Independent sustainability score</div>'
+        + '<div class="yko-name">' + escH(d.brand_name) + '</div>'
+        + '<span class="yko-tier-label" style="background:' + tc + '22;color:' + tc + '">' + d.tier + '</span>'
+        + '</div>'
+        + '<div style="text-align:right">'
+        + '<div class="yko-score-badge" style="color:' + tc + '">' + d.yko_total + '</div>'
+        + '<div class="yko-arrow">' + YKO_ARROW_SVG + '</div>'
+        + '</div>'
+        + '</a>';
+    } else {
+      // Not yet scored — show request link
+      slot.innerHTML = '<a class="yko-card" href="' + d.brand_url + '" target="_blank" rel="noopener">'
+        + '<div class="yko-icon">' + YKO_ICON_SVG + '</div>'
+        + '<div class="yko-text">'
+        + '<div class="yko-label">YKO.earth — not yet scored</div>'
+        + '<div class="yko-name">Request a score for ' + escH(d.brand_name) + '</div>'
+        + '</div>'
+        + '<div class="yko-arrow">' + YKO_ARROW_SVG + '</div>'
+        + '</a>';
+    }
+  } catch {
+    // Fail silently — the card just won't show
+    slot.innerHTML = '';
+  }
+}
+
+function buildVerdict(scan) {
+  const sc = Number(scan.score) || 0;
+  if (sc >= 80) return "This one genuinely delivers. The claims are backed by real data, and the effort shows. It's not perfect — nothing is — but this brand is doing the work.";
+  if (sc >= 65) return "Solid in the areas that matter. There are genuine commitments here, and the gaps are mostly the industry-wide kind — hard to solve alone. Worth knowing what's not on the label.";
+  if (sc >= 50) return "A mixed picture. Some real effort, some marketing convenience. The claim covers something real, but the bigger part of the footprint isn't mentioned. That's common — and worth knowing.";
+  return "The claim is technically true but strategically selected. It points at something small while the bigger footprint stays off the label. You deserve the full picture, and this label isn't giving it to you.";
+}
+
+// ─── VOICE TTS ────────────────────────────────────────────────────────────────
+function toggleSpeak() {
+  if (isSpeaking) { speechSynthesis.cancel(); isSpeaking = false; updatePlayBtn(false); return; }
+  if (!('speechSynthesis' in window)) { showToast('Voice not supported here'); return; }
+  if (!currentScan) return;
+  const sc = Number(currentScan.score) || 0;
+  const grade = letterGrade(sc);
+  const verdict = currentScan.verdict || buildVerdict(currentScan);
+  const notOnLabel = (currentScan.whats_not_on_label || currentScan.what_missing || []).slice(0,2);
+  const text = currentScan.product_name + ' scores ' + sc + ' out of 100, a ' + grade + '. '
+    + verdict
+    + (notOnLabel.length ? " What's not on the label: " + notOnLabel.join('. ') + '.' : '');
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.93; utt.pitch = 1.0;
+  const voices = speechSynthesis.getVoices();
+  const v = voices.find(v => v.lang === 'en-US' && (v.name.includes('Samantha') || v.name.includes('Karen')))
+         || voices.find(v => v.lang.startsWith('en'));
+  if (v) utt.voice = v;
+  utt.onstart = () => { isSpeaking = true; updatePlayBtn(true); };
+  utt.onend = utt.onerror = () => { isSpeaking = false; updatePlayBtn(false); };
+  speechSynthesis.speak(utt);
+}
+function updatePlayBtn(playing) {
+  const btn = document.getElementById('voice-play-btn');
+  if (!btn) return;
+  btn.classList.toggle('playing', playing);
+  btn.innerHTML = playing
+    ? '<svg viewBox="0 0 16 16" fill="white"><rect x="3" y="2" width="3" height="12"/><rect x="10" y="2" width="3" height="12"/></svg>'
+    : '<svg viewBox="0 0 16 16" fill="white"><polygon points="4,2 14,8 4,14"/></svg>';
+}
+
+// ─── COMPARE ──────────────────────────────────────────────────────────────────
+function addToCompare() {
+  if (!currentScan) return;
+  if (compareList.find(s => s.id === currentScan.id)) { showToast('Already in comparison'); return; }
+  if (compareList.length >= 4) { showToast('Max 4 — remove one first'); return; }
+  compareList.push(currentScan);
+  localStorage.setItem('gs_compare', JSON.stringify(compareList));
+  showToast('Added to compare (' + compareList.length + '/4)');
+}
+
+async function renderCompare() {
+  const sub = document.getElementById('compare-sub');
+  const body = document.getElementById('compare-body');
+  if (compareList.length < 2) {
+    sub.textContent = compareList.length === 1 ? '1 item — need at least 2' : 'Scan 2–4 products to compare';
+    body.innerHTML = '<div style="padding:50px 20px;text-align:center;color:var(--text-light)">'
+      + '<div style="font-size:14px;font-family:system-ui,-apple-system,sans-serif;color:var(--text);margin-bottom:8px">Nothing to compare yet</div>'
+      + '<div style="font-size:12px;line-height:1.6">' + (compareList.length === 1 ? 'Add one more scan to compare.' : 'Scan products and tap Compare from any result.') + '</div></div>';
+    return;
+  }
+  const sorted = [...compareList].sort((a, b) => Number(b.score) - Number(a.score));
+  sub.textContent = sorted.length + ' products';
+  // Show loading state
+  body.innerHTML = '<div class="cmp-loading"><div class="cmp-loading-spin"></div><div class="cmp-loading-text">Getting the real story...</div></div>';
+  try {
+    const res = await fetch(API + '/api/compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scan_ids: sorted.map(s => s.id) })
+    });
+    const data = await res.json();
+    const ai = data.ai;
+    const ranked = data.ranked || sorted;
+    // Build AI product map by id
+    const aiMap = {};
+    if (ai && ai.products) ai.products.forEach(p => { aiMap[p.id] = p; });
+    let html = '';
+    // Overall verdict banner
+    if (ai && ai.overall_verdict) {
+      html += '<div class="compare-summary"><div class="cs-label">The honest take</div><div class="cs-text">' + escH(ai.overall_verdict) + '</div></div>';
+    }
+    // Product cards
+    ranked.forEach((s, i) => {
+      const sc = Number(s.score) || 0;
+      const grade = letterGrade(sc);
+      const gColor = gradeColor(sc);
+      const ap = aiMap[s.id] || {};
+      const isWinner = ai ? s.id === ai.winner_id : i === 0;
+      html += '<div class="cmp-item' + (isWinner ? ' winner' : '') + '" onclick="loadAndShowScan(&apos;' + s.id + '&apos;)">'
+        + (isWinner ? '<div class="winner-badge">Best overall</div>' : '')
+        + '<div class="cmp-top">'
+        + '<div class="cmp-grade" style="background:' + gColor + '22">'
+        + '<div class="cmp-grade-letter" style="color:' + gColor + '">' + sc + '</div>'
+        + '<div class="cmp-grade-num" style="color:' + gColor + '">/100</div></div>'
+        + '<div class="cmp-info"><div class="cmp-name">' + escH(s.product_name) + '</div>'
+        + (ap.headline ? '<div class="cmp-ai-headline">' + escH(ap.headline) + '</div>' : '<div class="cmp-brand">' + escH(s.brand || '') + '</div>')
+        + '</div></div>';
+      if (ap.packaging || ap.ingredients || ap.transparency) {
+        html += '<div class="cmp-rows">'
+          + (ap.packaging ? '<div class="cmp-row"><span class="cmp-row-label">Packaging</span><span class="cmp-row-val">' + escH(ap.packaging) + '</span></div>' : '')
+          + (ap.ingredients ? '<div class="cmp-row"><span class="cmp-row-label">Ingredients</span><span class="cmp-row-val">' + escH(ap.ingredients) + '</span></div>' : '')
+          + (ap.transparency ? '<div class="cmp-row"><span class="cmp-row-label">Transparency</span><span class="cmp-row-val">' + escH(ap.transparency) + '</span></div>' : '')
+          + '</div>';
+      }
+      if (ap.takeaway) {
+        html += '<div class="cmp-takeaway">' + escH(ap.takeaway) + '</div>';
+      }
+      html += '</div>';
+    });
+    // Winner explanation
+    if (ai && ai.why_it_wins) {
+      const winnerScan = ranked.find(s => s.id === ai.winner_id) || ranked[0];
+      html += '<div class="cmp-winner-box">'
+        + '<div class="cwb-label">Why it wins</div>'
+        + '<div class="cwb-name">' + escH(winnerScan.product_name) + '</div>'
+        + '<div class="cwb-why">' + escH(ai.why_it_wins) + '</div>'
+        + '</div>';
+    }
+    // Watch-out / tradeoffs
+    if (ai && ai.watch_out) {
+      let watchHtml = '<div class="cmp-watchout"><div class="cwo-label">Watch out</div><div class="cwo-text">' + escH(ai.watch_out) + '</div>';
+      if (ai.looks_greener) watchHtml += '<div style="margin-top:6px;font-size:12px;color:#92400e"><strong>Looks greener than it is:</strong> ' + escH(ai.looks_greener) + '</div>';
+      watchHtml += '</div>';
+      html += watchHtml;
+    }
+    // Confidence note
+    if (ai && ai.confidence) {
+      html += '<div class="cmp-confidence">' + escH(ai.confidence) + '</div>';
+    }
+    html += '<div style="margin:8px 14px 16px"><button class="action-btn secondary" style="width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" onclick="clearCompare()">Clear all</button></div>';
+    body.innerHTML = html;
+  } catch(e) {
+    // Fallback: simple score-ranked list
+    const gap = Number(sorted[0].score) - Number(sorted[sorted.length - 1].score);
+    const summary = gap >= 20
+      ? escH(sorted[0].product_name) + ' comes out clearly ahead.'
+      : gap >= 10 ? 'Close call — ' + escH(sorted[0].product_name) + ' edges ahead.'
+      : 'Very similar. Look at what none of them disclose.';
+    let html = '<div class="compare-summary"><div class="cs-label">Quick take</div><div class="cs-text">' + summary + '</div></div>';
+    sorted.forEach((s, i) => {
+      const sc = Number(s.score) || 0;
+      const grade = letterGrade(sc);
+      const gColor = gradeColor(sc);
+      html += '<div class="cmp-item' + (i === 0 ? ' winner' : '') + '" onclick="loadAndShowScan(&apos;' + s.id + '&apos;)">'
+        + (i === 0 ? '<div class="winner-badge">Best in scan</div>' : '')
+        + '<div class="cmp-top"><div class="cmp-grade" style="background:' + gColor + '22">'
+        + '<div class="cmp-grade-letter" style="color:' + gColor + '">' + sc + '</div>'
+        + '<div class="cmp-grade-num" style="color:' + gColor + '">/100</div></div>'
+        + '<div class="cmp-info"><div class="cmp-name">' + escH(s.product_name) + '</div>'
+        + '<div class="cmp-brand">' + escH(s.brand || '') + '</div></div></div></div>';
+    });
+    html += '<div style="margin:0 14px 16px"><button class="action-btn secondary" style="width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" onclick="clearCompare()">Clear all</button></div>';
+    body.innerHTML = html;
+  }
+}
+function clearCompare() { compareList = []; localStorage.removeItem('gs_compare'); renderCompare(); showToast('Comparison cleared'); }
+function saveScan() { showToast('Saved to this session'); }
+
+// ─── MY SCANS ─────────────────────────────────────────────────────────────────
+async function loadMyScans() {
+  const grid = document.getElementById('scans-grid');
+  if (!session_id) { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light);font-size:13px">No scans yet. Tap the camera to start.</div>'; return; }
+  try {
+    const res = await fetch(API + '/api/session/' + session_id + '/scans');
+    const data = await res.json();
+    const scans = data.scans || [];
+    if (!scans.length) { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light);font-size:13px">No scans yet. Tap the camera to start.</div>'; return; }
+    grid.innerHTML = scans.map(s => {
+      const sc = Number(s.score) || 0;
+      const grade = letterGrade(sc);
+      const gColor = gradeColor(sc);
+      return '<div class="sg-item" onclick="loadAndShowScan(&apos;' + s.id + '&apos;)">'
+        + '<div class="sg-circ"><div class="sg-bg">' + catIcon(s.category) + '</div>'
+        + '<div class="sg-grade" style="background:' + gColor + ';color:white">' + grade.replace('+','').replace('-','') + '</div></div>'
+        + '<div class="sg-name">' + escH(s.product_name) + '</div></div>';
+    }).join('');
+  } catch { grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text-light)">Could not load scans.</div>'; }
+}
+
+async function loadAndShowScan(id) {
+  try {
+    const res = await fetch(API + '/api/scan/' + id);
+    const d = await res.json();
+    showResult(d.scan || d);
+  } catch { showToast('Could not load scan'); }
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function show(id) {
+  lastScreen = document.querySelector('.screen:not(.hidden)')?.id || 's-home';
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function setActiveNav(id) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.d-item').forEach(el => el.classList.remove('active'));
+  const navMap = {'s-home':'nav-home','s-myscans':'nav-scans','s-compare':'nav-compare','s-learn':'nav-learn'};
+  const drawMap = {'s-home':'d-home','s-myscans':'d-scans','s-compare':'d-compare','s-learn':'d-learn'};
+  if (navMap[id]) document.getElementById(navMap[id])?.classList.add('active');
+  if (drawMap[id]) document.getElementById(drawMap[id])?.classList.add('active');
+}
+function goHome() {
+  show('s-home');
+  setActiveNav('s-home');
+  loadHomeData();
+}
+
+// ─── HOME DATA ────────────────────────────────────────────────────────────────
+async function loadHomeData() {
+  // Load stats
+  try {
+    const r = await fetch(API + '/api/stats');
+    const d = await r.json();
+    if (d.total_scans > 0) {
+      document.getElementById('home-stats-bar').style.display = 'flex';
+      document.getElementById('home-stats-text').innerHTML =
+        '<strong>' + d.total_scans + ' products</strong> scanned by the community · avg score <strong>' + Math.round(d.avg_score) + '/100</strong>';
+    }
+  } catch {}
+
+  // Load recent scans for this session
+  if (!session_id) return;
+  try {
+    const r = await fetch(API + '/api/session/' + session_id + '/scans');
+    const d = await r.json();
+    const scans = (d.scans || []).slice(0, 6);
+    if (scans.length) {
+      document.getElementById('home-recent-section').style.display = '';
+      window._recentScans = {};
+      document.getElementById('recent-strip').innerHTML = scans.map(s => {
+        window._recentScans[s.id] = s;
+        const grade = letterGrade(Number(s.score));
+        return '<div class="recent-chip" onclick="showResult(window._recentScans[' + JSON.stringify(s.id) + '])">'
+          + '<div class="recent-chip-name">' + escH(s.product_name) + '</div>'
+          + '<span class="recent-chip-grade" style="color:' + gradeColor(s.score) + '">' + s.score + '/100</span>'
+          + '</div>';
+      }).join('');
+    }
+  } catch {}
+}
+function showMyScans() { show('s-myscans'); setActiveNav('s-myscans'); loadMyScans(); }
+function showCompare() { show('s-compare'); setActiveNav('s-compare'); renderCompare(); }
+function showMethod() { show('s-method'); setActiveNav(''); }
+function showLearn() {
+  show('s-learn');
+  setActiveNav('s-learn');
+  setTimeout(function() { var el = document.getElementById('learn-input'); if (el) el.focus(); }, 200);
+}
+function askLearn(q) {
+  document.getElementById('learn-input').value = q;
+  submitLearnQuestion();
+}
+async function submitLearnQuestion() {
+  var q = document.getElementById('learn-input').value.trim();
+  if (!q) { showToast('Type a question first'); return; }
+  var area = document.getElementById('learn-answer-area');
+  area.innerHTML = '<div style="padding:40px 20px;text-align:center"><div class="spin" style="margin:0 auto 16px"></div><div style="font-size:13px;color:var(--text-light)">Searching the web + thinking...</div></div>';
+  document.getElementById('learn-suggestions').style.display = 'none';
+  try {
+    var res = await fetch(API + '/api/learn', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ question: q })
+    });
+    var d = await res.json();
+    if (d.error) throw new Error(d.error);
+    renderLearnAnswer(d.answer);
+  } catch (e) {
+    area.innerHTML = '<div style="padding:24px;text-align:center;color:var(--red);font-size:13px">Could not get an answer — try again.</div>';
+    document.getElementById('learn-suggestions').style.display = '';
+  }
+}
+function renderLearnAnswer(a) {
+  if (!a) return;
+  window._learnRelated = a.related_questions || [];
+  var area = document.getElementById('learn-answer-area');
+  var html = '';
+  if (a.summary) {
+    html += '<div class="la-summary">'
+      + '<div class="la-question">' + escH(a.question || '') + '</div>'
+      + '<div class="la-summary-text">' + escH(a.summary) + '</div>'
+      + '</div>';
+  }
+  if (a.bottom_line) {
+    html += '<div class="la-bottom-line">'
+      + '<div class="la-bl-label">Bottom line</div>'
+      + '<div class="la-bl-text">' + escH(a.bottom_line) + '</div>'
+      + '</div>';
+  }
+  if (a.dimensions && a.dimensions.length) {
+    html += '<div class="la-dim-card"><div class="la-dim-label">The breakdown</div>';
+    for (var i = 0; i < a.dimensions.length; i++) {
+      var dim = a.dimensions[i];
+      var vClass = dim.verdict === 'better' ? 'vd-better' : dim.verdict === 'worse' ? 'vd-worse' : 'vd-depends';
+      var vText = dim.verdict === 'better' ? 'Better' : dim.verdict === 'worse' ? 'Watch out' : 'Depends';
+      html += '<div class="la-dim-row">'
+        + '<div class="la-dim-name">' + escH(dim.label || '') + '</div>'
+        + '<div class="la-dim-detail">' + escH(dim.detail || '') + '</div>'
+        + '<div class="la-dim-verdict ' + vClass + '">' + vText + '</div>'
+        + '</div>';
+    }
+    html += '</div>';
+  }
+  if (a.nuance) {
+    html += '<div class="la-nuance">'
+      + '<div class="la-nuance-label">The nuance</div>'
+      + '<div class="la-nuance-text">' + escH(a.nuance) + '</div>'
+      + '</div>';
+  }
+  if (a.best_choice_guide) {
+    html += '<div class="card"><div class="card-label">Practical guide</div>'
+      + '<div style="font-size:13px;color:var(--text-mid);line-height:1.7">' + escH(a.best_choice_guide) + '</div>'
+      + '</div>';
+  }
+  if (a.sources && a.sources.length) {
+    html += '<div class="sources-row" style="margin:0 0 12px">'
+      + a.sources.filter(Boolean).map(function(url) {
+          var display = String(url).replace('https://','').replace('http://','').replace('www.','').split('/')[0];
+          return '<a class="source-link" href="' + escH(url) + '" target="_blank" rel="noopener">' + escH(display) + '</a>';
+        }).join('')
+      + '</div>';
+  }
+  if (window._learnRelated && window._learnRelated.length) {
+    html += '<div class="la-related"><div class="la-rel-label">More to explore</div><div class="learn-sugg-chips">'
+      + window._learnRelated.slice(0, 4).map(function(q, idx) {
+          return '<div class="learn-sugg-chip" onclick="askLearn(window._learnRelated[' + idx + '])">' + escH(q) + '</div>';
+        }).join('')
+      + '</div></div>';
+  }
+  html += '<button class="action-btn secondary" style="width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;margin-bottom:8px" onclick="newLearnQuestion()">Ask another question</button>';
+  area.innerHTML = html;
+  document.getElementById('learn-scroll').scrollTop = 0;
+}
+function newLearnQuestion() {
+  document.getElementById('learn-input').value = '';
+  document.getElementById('learn-answer-area').innerHTML = '';
+  document.getElementById('learn-suggestions').style.display = '';
+  document.getElementById('learn-input').focus();
+}
+
+// ─── DRAWER ───────────────────────────────────────────────────────────────────
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+function openAuth() { document.getElementById('auth-overlay').classList.add('open'); }
+function closeAuth() { document.getElementById('auth-overlay').classList.remove('open'); }
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('auth-overlay').addEventListener('click', e => { if (e.target === document.getElementById('auth-overlay')) closeAuth(); });
+});
+function switchAuthTab(t) {
+  document.getElementById('tab-in').classList.toggle('active', t === 'in');
+  document.getElementById('tab-up').classList.toggle('active', t === 'up');
+  document.getElementById('form-in').style.display = t === 'in' ? '' : 'none';
+  document.getElementById('form-up').style.display = t === 'up' ? '' : 'none';
+  document.getElementById('auth-err').classList.remove('show');
+}
+async function doSignIn() {
+  const email = document.getElementById('si-email').value.trim();
+  const pass = document.getElementById('si-pass').value;
+  if (!email || !pass) { showAuthErr('Please fill in both fields'); return; }
+  try {
+    const r = await fetch(API + '/api/auth/signin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
+    const d = await r.json();
+    if (!r.ok) { showAuthErr(d.error || 'Sign in failed'); return; }
+    setAuth(d.token, d.user); closeAuth(); showToast('Welcome back, ' + (d.user.name || d.user.email.split('@')[0]) + '!');
+  } catch { showAuthErr('Network error — try again'); }
+}
+async function doSignUp() {
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  if (!email || !pass) { showAuthErr('Email and password required'); return; }
+  if (pass.length < 8) { showAuthErr('Password must be 8+ characters'); return; }
+  try {
+    const r = await fetch(API + '/api/auth/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass, name: name || undefined }) });
+    const d = await r.json();
+    if (!r.ok) { showAuthErr(d.error || 'Sign up failed'); return; }
+    setAuth(d.token, d.user); closeAuth(); showToast('Welcome to GreenSpecs!');
+  } catch { showAuthErr('Network error — try again'); }
+}
+function showAuthErr(msg) { const el = document.getElementById('auth-err'); el.textContent = msg; el.classList.add('show'); }
+function setAuth(token, user) {
+  auth_token = token; currentUser = user;
+  localStorage.setItem('gs_auth', token);
+  const label = document.getElementById('d-auth-label');
+  if (label) label.textContent = user.name || user.email.split('@')[0];
+  const navYou = document.getElementById('nav-you');
+  if (navYou) navYou.querySelector('svg').setAttribute('stroke','var(--sage)');
+}
+async function verifyAuth() {
+  try {
+    const r = await fetch(API + '/api/auth/me', { headers: { 'Authorization': 'Bearer ' + auth_token } });
+    if (r.ok) { const d = await r.json(); setAuth(auth_token, d.user); }
+    else { auth_token = null; localStorage.removeItem('gs_auth'); }
+  } catch {}
+}
+
+// ─── LOCATION ─────────────────────────────────────────────────────────────────
+function getLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude; userLng = pos.coords.longitude;
+    reverseGeocode(userLat, userLng);
+  }, () => {}, { timeout: 8000 });
+}
+async function reverseGeocode(lat, lng) {
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json');
+    const d = await r.json();
+    const city = d.address?.city || d.address?.town || d.address?.village || '';
+    const state = d.address?.state_code || '';
+    userCity = [city, state].filter(Boolean).join(', ') || null;
+  } catch {}
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function noEmoji(str) {
+  if (!str) return str;
+  return String(str);
+}
+function letterGrade(s) {
+  s = Number(s);
+  if (s >= 93) return 'A+'; if (s >= 87) return 'A'; if (s >= 80) return 'A-';
+  if (s >= 77) return 'B+'; if (s >= 73) return 'B'; if (s >= 70) return 'B-';
+  if (s >= 67) return 'C+'; if (s >= 63) return 'C'; if (s >= 60) return 'C-';
+  if (s >= 57) return 'D+'; if (s >= 53) return 'D'; if (s >= 50) return 'D-';
+  return 'F';
+}
+function gradeColor(s) {
+  s = Number(s);
+  if (s >= 80) return '#2D6A4F'; if (s >= 70) return '#52B788';
+  if (s >= 60) return '#F59E0B'; if (s >= 50) return '#F97316';
+  return '#DC2626';
+}
+function renderResearchCard(research) {
+  if (!research) return '';
+  const metrics = research.metrics || [];
+  const levelUp = research.level_up || [];
+  const sources = research.sources || [];
+
+  let html = '<div class="card research-card">';
+  html += '<div class="research-header"><div class="research-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="white" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>'
+    + '<div class="research-title">What we found</div>'
+    + '<div class="web-badge">Searched the web</div></div>';
+
+  // Company metrics table
+  if (metrics.length) {
+    html += '<div class="card-label" style="margin-bottom:6px">Real numbers from published data</div>';
+    html += '<div>';
+    for (const m of metrics) {
+      html += '<div class="metric-row">'
+        + '<div class="metric-label">' + escH(m.label || '') + '</div>'
+        + '<div><div class="metric-value">' + escH(m.value || '') + '</div>'
+        + (m.source ? '<div class="metric-source">' + escH(m.source) + '</div>' : '')
+        + '</div></div>';
+    }
+    html += '</div>';
+  }
+
+  // What the claim actually means
+  if (research.claim_reality) {
+    html += '<div class="card-label" style="margin-top:12px;margin-bottom:4px">What this claim actually means</div>'
+      + '<div class="claim-reality">' + escH(research.claim_reality) + '</div>';
+  }
+
+  // Industry best-in-class
+  if (research.industry_best) {
+    html += '<div class="industry-best-block">'
+      + '<div class="industry-best-label">Best in class</div>'
+      + '<div class="industry-best-text">' + escH(research.industry_best) + '</div>'
+      + '</div>';
+  }
+
+  // How to level up
+  if (levelUp.length) {
+    html += '<div class="card-label" style="margin-top:12px;margin-bottom:6px">How they could level up</div>'
+      + '<div class="level-up-list">'
+      + levelUp.map(item => '<div class="level-up-item"><span class="level-up-arrow">→</span><span>' + escH(item) + '</span></div>').join('')
+      + '</div>';
+  }
+
+  // Source links
+  if (sources.length) {
+    html += '<div class="sources-row">'
+      + sources.map(url => {
+          const display = String(url).replace('https://','').replace('http://','').replace('www.','').split('/')[0];
+          return '<a class="source-link" href="' + escH(url) + '" target="_blank" rel="noopener">' + escH(display) + '</a>';
+        }).join('')
+      + '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderChips(title, items, cls) {
+  if (!items || !items.length) return '';
+  return '<div class="chips-wrap"><div class="chips-title">' + title + '</div><div class="chips">'
+    + items.map(i => '<div class="chip ' + cls + '">' + escH(i) + '</div>').join('')
+    + '</div></div>';
+}
+function catIcon(cat) {
+  const icons = {
+    food: '<svg viewBox="0 0 24 24"><path d="M18 8V2M12 8V2M6 8V2M18 8c0 4-6 8-6 8S6 12 6 8h12z"/></svg>',
+    dairy: '<svg viewBox="0 0 24 24"><path d="M8 2h8l2 6H6L8 2zM6 8v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>',
+    beverages: '<svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>',
+    cleaning: '<svg viewBox="0 0 24 24"><path d="M9.5 2A1.5 1.5 0 0 1 11 3.5v1A1.5 1.5 0 0 1 9.5 6h-2A1.5 1.5 0 0 0 6 7.5V19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5A1.5 1.5 0 0 0 16.5 6h-2A1.5 1.5 0 0 1 13 4.5v-1A1.5 1.5 0 0 1 14.5 2z"/></svg>',
+    clothing: '<svg viewBox="0 0 24 24"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>',
+    electronics: '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  };
+  const icon = icons[cat] || '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>';
+  return icon;
+}
+function nanoid(n=10){const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';let r='';for(let i=0;i<n;i++)r+=c[Math.floor(Math.random()*62)];return r;}
+const stripEmoji = s => String(s||'');
+const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const showToast = msg => { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800); };
+
+// ─── INSTALL ──────────────────────────────────────────────────────────────────
+function checkInstallPrompt() {
+  if (window.navigator.standalone) return;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredInstall = e;
+    setTimeout(() => document.getElementById('install-prompt').classList.remove('hidden'), 20000);
+  });
+  document.getElementById('install-btn-el').addEventListener('click', async () => {
+    if (deferredInstall) { deferredInstall.prompt(); const r = await deferredInstall.userChoice; if (r.outcome === 'accepted') document.getElementById('install-prompt').classList.add('hidden'); deferredInstall = null; }
+  });
+}
+</script>
+</body>
+</html>
+`;
+
+
+// ─── Auth Routes ──────────────────────────────────────────────────────────────
+
+app.post('/api/auth/signup', async (c) => {
+  const { email, password, name } = await c.req.json<{ email: string; password: string; name?: string }>();
+  if (!email || !password) return c.json({ error: 'Email and password required' }, 400);
+  const existing = await c.env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email.toLowerCase()).first();
+  if (existing) return c.json({ error: 'Email already registered — sign in instead' }, 409);
+  const salt = nanoid(16);
+  const hash = await hashPassword(password, salt);
+  const userId = nanoid();
+  await c.env.DB.prepare('INSERT INTO users (id,email,name,password_hash,salt) VALUES (?,?,?,?,?)')
+    .bind(userId, email.toLowerCase(), name || null, hash, salt).run();
+  const token = nanoid(32);
+  const expires = Math.floor(Date.now() / 1000) + 30 * 24 * 3600;
+  await c.env.DB.prepare('INSERT INTO auth_tokens (token,user_id,expires_at) VALUES (?,?,?)').bind(token, userId, expires).run();
+  return c.json({ token, user: { id: userId, email: email.toLowerCase(), name: name || null } });
+});
+
+app.post('/api/auth/signin', async (c) => {
+  const { email, password } = await c.req.json<{ email: string; password: string }>();
+  if (!email || !password) return c.json({ error: 'Email and password required' }, 400);
+  const user = await c.env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email.toLowerCase()).first<UserRow>();
+  if (!user || !user.password_hash || !user.salt) return c.json({ error: 'Invalid email or password' }, 401);
+  const hash = await hashPassword(password, user.salt);
+  if (hash !== user.password_hash) return c.json({ error: 'Invalid email or password' }, 401);
+  const token = nanoid(32);
+  const expires = Math.floor(Date.now() / 1000) + 30 * 24 * 3600;
+  await c.env.DB.prepare('INSERT INTO auth_tokens (token,user_id,expires_at) VALUES (?,?,?)').bind(token, user.id, expires).run();
+  return c.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+});
+
+app.post('/api/auth/google', async (c) => {
+  const { id_token } = await c.req.json<{ id_token: string }>();
+  if (!id_token) return c.json({ error: 'id_token required' }, 400);
+  const r = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${id_token}`);
+  if (!r.ok) return c.json({ error: 'Invalid Google token' }, 401);
+  const payload = await r.json() as { sub: string; email: string; name?: string; picture?: string };
+  let user = await c.env.DB.prepare('SELECT * FROM users WHERE google_id = ?').bind(payload.sub).first<UserRow>();
+  if (!user) {
+    const byEmail = await c.env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(payload.email.toLowerCase()).first<UserRow>();
+    if (byEmail) {
+      await c.env.DB.prepare('UPDATE users SET google_id=?,avatar=? WHERE id=?').bind(payload.sub, payload.picture||null, byEmail.id).run();
+      user = byEmail;
+    } else {
+      const userId = nanoid();
+      await c.env.DB.prepare('INSERT INTO users (id,email,name,google_id,avatar) VALUES (?,?,?,?,?)').bind(userId, payload.email.toLowerCase(), payload.name||null, payload.sub, payload.picture||null).run();
+      user = await c.env.DB.prepare('SELECT * FROM users WHERE id=?').bind(userId).first<UserRow>();
+    }
+  }
+  const token = nanoid(32);
+  const expires = Math.floor(Date.now() / 1000) + 30 * 24 * 3600;
+  await c.env.DB.prepare('INSERT INTO auth_tokens (token,user_id,expires_at) VALUES (?,?,?)').bind(token, user!.id, expires).run();
+  return c.json({ token, user: { id: user!.id, email: user!.email, name: user!.name, avatar: user!.avatar } });
+});
+
+app.get('/api/auth/me', async (c) => {
+  const token = (c.req.header('Authorization') || '').replace('Bearer ', '');
+  if (!token) return c.json({ error: 'No token' }, 401);
+  const now = Math.floor(Date.now() / 1000);
+  const row = await c.env.DB.prepare(
+    'SELECT u.id,u.email,u.name,u.avatar FROM auth_tokens t JOIN users u ON t.user_id=u.id WHERE t.token=? AND t.expires_at>?'
+  ).bind(token, now).first<{ id: string; email: string; name: string|null; avatar: string|null }>();
+  if (!row) return c.json({ error: 'Invalid or expired token' }, 401);
+  return c.json({ user: row });
+});
+
+// ─── PWA ──────────────────────────────────────────────────────────────────────
+
+app.get('/', (c) => {
+  return c.html(PWA_HTML);
+});
+
+// ─── POST /api/scan ───────────────────────────────────────────────────────────
+
+app.post('/api/scan', async (c) => {
+  const body = await c.req.json() as {
+    product_name: string;
+    claim?: string;
+    image_base64?: string;
+    media_type?: string;
+    lat?: number;
+    lng?: number;
+    location_name?: string;
+    price?: string;
+    session_id?: string;
+  };
+
+  const { product_name, claim = '', lat, lng, location_name, price, session_id } = body;
+
+  if (!product_name) return c.json({ error: 'product_name required' }, 400);
+
+  // Ensure session exists
+  const sid = session_id ?? nanoid(16);
+  await c.env.DB.prepare(`INSERT OR IGNORE INTO sessions (id) VALUES (?)`).bind(sid).run();
+
+  // Check cache (skip if image provided)
+  const ck = await cacheKey(product_name, claim);
+  if (!body.image_base64) {
+    const cached = await c.env.DB.prepare(
+      `SELECT * FROM scans WHERE cache_key = ? ORDER BY created_at DESC LIMIT 1`
+    ).bind(ck).first<ScanRow>();
+
+    if (cached) {
+      if (lat && lng) {
+        await c.env.DB.prepare(
+          `INSERT INTO scans (id, session_id, cache_key, product_name, brand, category,
+            primary_claim, score, confidence, specificity_score, transparency_score,
+            third_party_score, bigimpact_score, marketing_score, what_covers, what_missing,
+            red_flags, tips, better_alternatives, sources, scope1_text, scope2_text,
+            scope3_text, verdict, letter_grade, research_data, lat, lng, location_name, price, served_from_cache)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)`
+        ).bind(
+          nanoid(), sid, ck, cached.product_name, cached.brand, cached.category,
+          cached.primary_claim, cached.score, cached.confidence,
+          cached.specificity_score, cached.transparency_score, cached.third_party_score,
+          cached.bigimpact_score, cached.marketing_score,
+          cached.what_covers, cached.what_missing, cached.red_flags,
+          cached.tips, cached.better_alternatives, cached.sources,
+          cached.scope1_text, cached.scope2_text, cached.scope3_text,
+          cached.verdict ?? null, cached.letter_grade ?? null,
+          cached.research_data ?? null,
+          lat, lng, location_name ?? null, price ?? null
+        ).run();
+      }
+      return c.json({ session_id: sid, scan: formatScan(cached), cached: true });
+    }
+  }
+
+  // Analysis — single phase for speed (model has strong brand knowledge from training)
+  try {
+    const researchText = '';
+    const researchCost = 0;
+
+    // Phase 2: Structured analysis with research context
+    const { result, cost: analyzeCost } = await analyzeWithGemini(
+      c.env.GEMINI_API_KEY,
+      product_name,
+      claim,
+      body.image_base64,
+      body.media_type,
+      researchText || undefined,
+    );
+
+    const totalCost = researchCost + analyzeCost;
+    const r = result as Record<string, Record<string, number> | string[] | string | number | Record<string, unknown>>;
+    const rubric = (r.rubric ?? {}) as Record<string, number>;
+    const researchObj = (r.research ?? null) as Record<string, unknown> | null;
+    const id = nanoid();
+
+    // Map new field names to stored columns (whats_good→what_covers, etc.)
+    const whatsGood = (r.whats_good ?? r.what_covers ?? []) as string[];
+    const whatsNotOnLabel = (r.whats_not_on_label ?? r.what_missing ?? []) as string[];
+    const worthKnowing = (r.worth_knowing ?? r.red_flags ?? []) as string[];
+
+    // Store new structured fields in research_data column
+    const structuredData = {
+      real_story: String(r.real_story ?? ''),
+      why_it_matters: String(r.why_it_matters ?? ''),
+      compare_hook: String(r.compare_hook ?? ''),
+      win: String(r.win ?? ''),
+      tradeoff: String(r.tradeoff ?? ''),
+      packaging: String(r.packaging ?? ''),
+      ingredients: String(r.ingredients ?? ''),
+      transport: String(r.transport ?? ''),
+      transparency: String(r.transparency ?? ''),
+      verdict_tag: String(r.verdict_tag ?? ''),
+      sustainability_url: String(r.sustainability_url ?? ''),
+      better_path: String(r.better_path ?? ''),
+    };
+
+    await c.env.DB.prepare(
+      `INSERT INTO scans (id, session_id, cache_key, product_name, brand, category,
+        primary_claim, score, confidence, specificity_score, transparency_score,
+        third_party_score, bigimpact_score, marketing_score, what_covers, what_missing,
+        red_flags, tips, better_alternatives, sources, scope1_text, scope2_text,
+        scope3_text, verdict, letter_grade, research_data, lat, lng, location_name, price, api_cost_usd, served_from_cache)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)`
+    ).bind(
+      id, sid, ck,
+      String(r.product_name ?? product_name),
+      String(r.brand ?? ''),
+      String(r.category ?? 'other'),
+      String(r.primary_claim ?? claim),
+      Number(r.score ?? 50),
+      String(r.confidence ?? 'medium'),
+      Number(rubric.specificity_score ?? 0),
+      Number(rubric.transparency_score ?? 0),
+      Number(rubric.third_party_score ?? 0),
+      Number(rubric.bigimpact_score ?? 0),
+      Number(rubric.marketing_score ?? 0),
+      JSON.stringify((r.tips ?? []) as string[]),
+      JSON.stringify([]),
+      JSON.stringify([]),
+      JSON.stringify((r.tips ?? []) as string[]),
+      JSON.stringify([]),
+      JSON.stringify([]),
+      '',
+      '',
+      String(r.scope3_text ?? ''),
+      String(r.headline ?? ''),
+      String(r.letter_grade ?? letterGradeFromScore(Number(r.score ?? 50))),
+      JSON.stringify(structuredData),
+      lat ?? null, lng ?? null,
+      location_name ?? null,
+      price ?? null,
+      totalCost
+    ).run();
+
+    await c.env.DB.prepare(`UPDATE sessions SET scan_count = scan_count + 1 WHERE id = ?`).bind(sid).run();
+
+    const saved = await c.env.DB.prepare(`SELECT * FROM scans WHERE id = ?`).bind(id).first<ScanRow>();
+    return c.json({ session_id: sid, scan: formatScan(saved!), cached: false });
+
+  } catch (err) {
+    console.error('Gemini error:', err);
+    return c.json({ error: 'Analysis failed — try again', detail: String(err) }, 500);
+  }
+});
+
+// ─── GET /api/scan/:id ────────────────────────────────────────────────────────
+
+app.get('/api/scan/:id', async (c) => {
+  const row = await c.env.DB.prepare(`SELECT * FROM scans WHERE id = ?`).bind(c.req.param('id')).first<ScanRow>();
+  if (!row) return c.json({ error: 'not found' }, 404);
+  return c.json(formatScan(row));
+});
+
+// ─── GET /api/session/:id/scans ───────────────────────────────────────────────
+
+app.get('/api/session/:id/scans', async (c) => {
+  const rows = await c.env.DB.prepare(
+    `SELECT * FROM scans WHERE session_id = ? ORDER BY created_at DESC LIMIT 20`
+  ).bind(c.req.param('id')).all<ScanRow>();
+  return c.json({ scans: rows.results.map(formatScan) });
+});
+
+// ─── GET /api/feed ────────────────────────────────────────────────────────────
+
+app.get('/api/feed', async (c) => {
+  const lat = parseFloat(c.req.query('lat') ?? '0');
+  const lng = parseFloat(c.req.query('lng') ?? '0');
+  const radius = parseFloat(c.req.query('radius') ?? '50');
+  const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 50);
+  const latDelta = radius / 111;
+  const lngDelta = radius / (111 * Math.cos(lat * Math.PI / 180));
+
+  let rows;
+  if (lat && lng) {
+    rows = await c.env.DB.prepare(`
+      SELECT * FROM scans
+      WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?
+      ORDER BY created_at DESC LIMIT ?
+    `).bind(lat - latDelta, lat + latDelta, lng - lngDelta, lng + lngDelta, limit).all<ScanRow>();
+  } else {
+    rows = await c.env.DB.prepare(`SELECT * FROM scans ORDER BY created_at DESC LIMIT ?`).bind(limit).all<ScanRow>();
+  }
+
+  return c.json({ feed: rows.results.map(formatScan) });
+});
+
+// ─── POST /api/compare ────────────────────────────────────────────────────────
+
+app.post('/api/compare', async (c) => {
+  const { scan_ids } = await c.req.json() as { scan_ids: string[] };
+  if (!Array.isArray(scan_ids) || scan_ids.length < 2 || scan_ids.length > 4) {
+    return c.json({ error: 'Provide 2–4 scan_ids' }, 400);
+  }
+  const placeholders = scan_ids.map(() => '?').join(',');
+  const rows = await c.env.DB.prepare(
+    `SELECT * FROM scans WHERE id IN (${placeholders})`
+  ).bind(...scan_ids).all<ScanRow>();
+  const scans = rows.results.map(formatScan);
+  const ranked = [...scans].sort((a, b) => b.score - a.score);
+
+  // Build product input for Gemini
+  const products = ranked.map(s => ({
+    id: s.id,
+    name: s.product_name,
+    brand: s.brand || '',
+    score: s.score,
+    letter_grade: s.letter_grade,
+    claim: s.primary_claim || '',
+    headline: s.headline,
+    win: s.win,
+    tradeoff: s.tradeoff,
+    packaging: s.packaging,
+    ingredients: s.ingredients,
+    transparency: s.transparency_label,
+    verdict_tag: s.verdict_tag,
+  }));
+
+  try {
+    const { result } = await compareWithGemini(c.env.GEMINI_API_KEY, products);
+    return c.json({ scans, ranked, ai: result });
+  } catch (err) {
+    console.error('Compare AI error:', err);
+    // Fallback to simple comparison if AI fails
+    const winner = ranked[0];
+    return c.json({ scans, ranked, ai: null, fallback: true });
+  }
+});
+
+// ─── GET /api/stats ───────────────────────────────────────────────────────────
+
+app.get('/api/stats', async (c) => {
+  const total = await c.env.DB.prepare(`SELECT COUNT(*) as count FROM scans`).first<{ count: number }>();
+  const avgScore = await c.env.DB.prepare(`SELECT AVG(score) as avg FROM scans`).first<{ avg: number }>();
+  return c.json({
+    total_scans: total?.count ?? 0,
+    avg_score: Math.round((avgScore?.avg ?? 50) * 10) / 10,
+  });
+});
+
+// ─── POST /api/learn ──────────────────────────────────────────────────────────
+
+app.post('/api/learn', async (c) => {
+  const { question } = await c.req.json<{ question: string }>();
+  if (!question?.trim()) return c.json({ error: 'question required' }, 400);
+  try {
+    const { answer, cost } = await learnWithGemini(c.env.GEMINI_API_KEY, question.trim());
+    return c.json({ answer, cost });
+  } catch (err) {
+    console.error('Learn error:', err);
+    return c.json({ error: 'Could not answer — try again', detail: String(err) }, 500);
+  }
+});
+
+// ─── GET /manifest.json ───────────────────────────────────────────────────────
+
+app.get('/manifest.json', (c) => {
+  return c.json({
+    name: 'GreenSpecs',
+    short_name: 'GreenSpecs',
+    description: 'See through green marketing. Scan any product label for real sustainability facts.',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#1B4332',
+    theme_color: '#1B4332',
+    orientation: 'portrait-primary',
+    icons: [
+      { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
+    ],
+  });
+});
+
+// ─── GET /icon.svg ────────────────────────────────────────────────────────────
+
+app.get('/icon.svg', (c) => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B4332"/>
+      <stop offset="100%" stop-color="#2D6A4F"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <!-- Scan frame corners -->
+  <path d="M30 58 L30 40 L48 40" stroke="#D8F3DC" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 58 L150 40 L132 40" stroke="#D8F3DC" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30 122 L30 140 L48 140" stroke="#D8F3DC" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 122 L150 140 L132 140" stroke="#D8F3DC" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Leaf shape -->
+  <path d="M90 52 C112 52 132 68 132 90 C132 112 112 132 90 132 C68 132 48 112 48 90 C48 68 68 52 90 52 Z" fill="#52B788"/>
+  <!-- Leaf center vein -->
+  <line x1="90" y1="56" x2="90" y2="128" stroke="#2D6A4F" stroke-width="4" stroke-linecap="round"/>
+  <!-- Leaf side veins -->
+  <path d="M90 78 C80 70 68 68 60 70" stroke="#2D6A4F" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M90 90 C80 82 66 80 57 83" stroke="#2D6A4F" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M90 103 C100 95 112 94 120 97" stroke="#2D6A4F" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Highlight dot -->
+  <circle cx="90" cy="90" r="10" fill="rgba(255,255,255,0.15)"/>
+</svg>`;
+  return new Response(svg, {
+    headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' },
+  });
+});
+
+export default app;

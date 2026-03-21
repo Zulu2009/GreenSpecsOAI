@@ -1,0 +1,26 @@
+{
+  "name": "GreenSpecs",
+  "short_name": "GreenSpecs",
+  "description": "Scan products. Get the real sustainability specs — not just the green marketing.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a3a2a",
+  "theme_color": "#1a3a2a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sustainability", "shopping", "education"],
+  "screenshots": []
+}

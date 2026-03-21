@@ -1,0 +1,14 @@
+name = "greenspecs"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+routes = [
+  { pattern = "greenspecs.app", custom_domain = true },
+  { pattern = "www.greenspecs.app", custom_domain = true }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "greenspecs-db"
+database_id = "796b2db0-8bb8-4aa0-90b0-fcc43d4223ef"
