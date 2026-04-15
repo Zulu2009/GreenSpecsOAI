@@ -132,6 +132,7 @@ function formatScan(row: ScanRow) {
     transport: (safeJSON<Record<string,string>>(row.research_data, {})).transport || null,
     transparency_label: (safeJSON<Record<string,string>>(row.research_data, {})).transparency || null,
     verdict_tag: (safeJSON<Record<string,string>>(row.research_data, {})).verdict_tag || null,
+    real_talk: (safeJSON<Record<string,string>>(row.research_data, {})).real_talk || null,
     sustainability_url: (safeJSON<Record<string,string>>(row.research_data, {})).sustainability_url || null,
     better_path: (safeJSON<Record<string,string>>(row.research_data, {})).better_path || null,
     certifications_found: (safeJSON<Record<string,unknown>>(row.research_data, {})).certifications_found || [],
@@ -327,6 +328,7 @@ Return ONLY valid JSON, no markdown:
   "transport": "3-5 words. e.g. Local · short chain OR Global · no offset",
   "transparency": "3-5 words. e.g. Self-reported · thin",
   "verdict_tag": "5-8 words. The take. e.g. Safe default. Not leading.",
+  "real_talk": "1 sentence. The single most important thing to know about this product. No hedging — name the biggest strength OR the most critical gap. e.g. 'The USDA Organic cert is real, but the plastic wrap mostly cancels it out.' or 'This scores high because the farm is actually audited every year — not just self-reported.'",
   "scope3_text": "1 sentence. Everything upstream — where the real footprint hides.",
   "sustainability_url": "URL to brand's official sustainability page, or null if unknown",
   "tips": ["1 sentence, 12 words max. Real, useful. Max 2 items."],
@@ -1489,6 +1491,11 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   border-radius:12px;font-size:12px;color:var(--forest);line-height:1.6;
   font-style:italic}
 /* ── RATE & IMPROVE CARD ── */
+.rt-card{background:var(--forest);margin:8px 14px 0;border-radius:18px;padding:14px 16px 12px;display:flex;flex-direction:column;gap:8px}
+.rt-label{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.55)}
+.rt-text{font-size:15px;font-weight:500;color:#fff;line-height:1.5}
+.rt-more{align-self:flex-end;background:rgba(255,255,255,0.12);border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.9);cursor:pointer;display:flex;align-items:center;gap:5px}
+.rt-more svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5}
 .ri-card{background:var(--card);margin:10px 14px 0;border-radius:22px;
   box-shadow:var(--shadow);overflow:hidden}
 .ri-summary{padding:15px 18px 12px;display:flex;align-items:flex-start;gap:12px}
@@ -2033,7 +2040,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260415-v10';
+const APP_VERSION = '20260415-v11';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -2203,6 +2210,9 @@ function showResult(scan) {
     // Cert strip — certifications found on this product
     + buildCertStrip(scan.certifications_found || [])
 
+    // Real Talk — single most important sentence
+    + buildRealTalkCard(scan)
+
     // Win / Tradeoff — fast context
     + ((scan.win || scan.tradeoff)
       ? '<div class="card" style="margin-top:0">'
@@ -2293,6 +2303,36 @@ function animateScoreRing(score) {
     if (p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
+}
+
+// ─── REAL TALK CARD ───────────────────────────────────────────────────────────
+function buildRealTalkCard(scan) {
+  var text = scan.real_talk || scan.real_story || '';
+  // If real_story is 2 sentences, use only the first
+  if (text && !scan.real_talk) {
+    var firstDot = text.indexOf('. ');
+    if (firstDot > 0) text = text.slice(0, firstDot + 1);
+  }
+  if (!text) return '';
+  var arrowSVG = '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  return '<div class="rt-card">'
+    + '<div class="rt-label">Real Talk</div>'
+    + '<div class="rt-text">' + escH(noEmoji(text)) + '</div>'
+    + '<button class="rt-more" onclick="expandBreakdown()">More detail ' + arrowSVG + '</button>'
+    + '</div>';
+}
+
+function expandBreakdown() {
+  var body = document.getElementById('breakdown-body');
+  var chev = document.getElementById('bt-chev');
+  if (!body) return;
+  body.style.maxHeight = body.scrollHeight + 'px';
+  body.style.opacity = '1';
+  if (chev) chev.classList.add('open');
+  setTimeout(function() {
+    var rb = document.getElementById('r-body');
+    if (rb) rb.scrollTo({ top: rb.scrollHeight, behavior: 'smooth' });
+  }, 120);
 }
 
 // ─── INSTANT CARD — rate & improve ───────────────────────────────────────────
