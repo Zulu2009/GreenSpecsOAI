@@ -97,11 +97,11 @@ function formatScan(row: ScanRow) {
     verdict: row.verdict || null,
     confidence: row.confidence,
     rubric: {
-      specificity: row.specificity_score,
-      transparency: row.transparency_score,
-      third_party: row.third_party_score,
-      biggest_impact: row.bigimpact_score,
-      marketing_vs_action: row.marketing_score,
+      claims: row.specificity_score,
+      certifications: row.transparency_score,
+      packaging_lifecycle: row.third_party_score,
+      ingredient_impact: row.bigimpact_score,
+      supply_chain: row.marketing_score,
     },
     // New field names (from new Gemini response)
     whats_good: safeJSON<string[]>(row.what_covers, []),
@@ -194,42 +194,69 @@ tips: one sentence, 12 words max, like a text from a friend:
 "EPA Safer Choice is the cert that actually means something for cleaning products."
 "Refillable tablets cut plastic entirely — Blueland or Branch Basics are worth a look."
 
-SCORING (0-100) — score relative to what's actually achievable, not against a perfect ideal:
-- Vague claim + no certs + no data = 15-35
-- Some certs OR some data, partial story = 36-55
-- Real certs + some data + addresses main footprint = 56-75
-- B Corp + third-party certs + published data + main footprint covered = 76-90
-- All above + Scope 3 disclosed + verified carbon = 91+
+SCORING RUBRIC — 5 signals, 0-20 each. Total = overall score out of 100.
+Score actual impact, not how well the brand communicates. Small farm, ugly bag, clean product beats big brand with beautiful sustainability PDF.
 
-PACKAGING & TRANSPORT — always factor these in:
-- Lightweight flexible bags beat glass every time: less material, ships smaller, uses less fuel per unit — even #4 LDPE film bags that require store drop-off are better than glass jars or heavy rigid packaging because total lifecycle impact is lower
-- Bulk/large-format packaging (Costco-style) gets a bonus: fewer packages per unit of product = dramatically less packaging waste per serving or use — reward this
-- Concentrated formats (pods, tablets, refills, powder) beat diluted liquid in a heavy bottle — same goes for bar soap vs. liquid soap in a pump
-- Traditional cardboard boxes and single-use plastic bags are middle of the pack — not bad, not good
-- Glass is heavy, expensive to ship, and energy-intensive to make — not automatically "eco" just because it feels premium
-- Packaging that's conventional with no effort = -5 to -10 pts; genuinely reduced or efficient = +5 to +10 pts
-- Transport: local/regional sourcing or manufacturing = small boost; global shipping with no offset = mild penalty
-- Products that score well on ingredients but ship across the world shouldn't break 70
+SIGNAL 1 — Claims & Disclosure (0-20)
+Are claims specific and verifiable — not just whether they sound good?
+- 0-4: Vague ("natural", "eco-friendly", "better for the planet") with nothing behind it
+- 5-9: Some specificity ("plant-based", "recycled bottle") but self-certified only
+- 10-14: Specific data points, partial third-party backing
+- 15-20: Full public disclosure, independently verified, published and findable
 
-FOOD SCORING — extra signals for food and beverage:
-- Fewer ingredients is better. Under 10 real ingredients = positive signal; 20+ synthetic additives = negative
-- Minimal processing is better: whole foods > minimally processed > ultra-processed
-- Recognizable, pronounceable ingredients = transparency signal (reward it)
-- Organic certification on high-pesticide crops (strawberries, spinach) matters more than on low-pesticide ones
-- A heavily processed product with one organic ingredient should not score above 50
+SIGNAL 2 — Certifications (0-20)
+Third-party verification weight — not logo count, but what the certs actually require.
+- 0-4: No certs, or only proprietary/paid-for/self-designed logos
+- 5-9: One relevant cert (USDA Organic, Fair Trade, NSF, EPA Safer Choice)
+- 10-14: Multiple complementary meaningful certs with real audit requirements
+- 15-20: B Corp + supply chain cert (Fair Trade, Rainforest Alliance) + verified carbon or Scope 3
 
-CALIBRATION — be honest about "better than what":
-- Only mildly better than conventional = max 50-55
-- Genuinely better across main footprint = 56-75
-- Leaders in their category = 76-90
-- Don't inflate: most products score 35-65. A 90+ is genuinely rare.
+SIGNAL 3 — Packaging Lifecycle (0-20)
+Full lifecycle of the package: material, weight, format efficiency, real-world end-of-life.
+Apply these benchmarks precisely:
+- Conventional non-recyclable single-use plastic = 0-5
+- Standard recyclable plastic, no recycled content = 5-8
+- Glass single-use: recyclable but heavy and energy-intensive to produce — score 7-10 (not a green premium just because it feels upscale)
+- Recycled content plastic, standard format = 10-13
+- #4 LDPE flexible bag (store drop-off required): lighter than glass, ships smaller, lower fuel per unit — score 11-14 even with collection friction
+- Large/bulk format (Costco-style): packaging per serving is dramatically lower — score 13-16
+- Certified compostable (home-compostable only): 13-15; industrial-only compostable: 8-11
+- Concentrate, tablet, powder, refill format: removes the bottle almost entirely — score 15-18
+- Refillable with deposit/return system: 17-20
 
-BETTER PATH — always anchor the score to what's genuinely achievable:
-- Describe what the best realistic version of this product looks like in this category
-- Be specific: name cert types, sourcing models, packaging formats, or real brands
-- Don't just say "get certified" — say what the best version actually does differently
+SIGNAL 4 — Ingredient or Product Impact (0-20)
+What is actually in it and how was it made. Scored by category:
+FOOD & BEVERAGES:
+- Ultra-processed (additives, isolates, artificial flavors, 20+ ingredients, unrecognizable names) = 0-5
+- Processed (canned, preserved, added sugar/salt, recognizable ingredients but transformed) = 6-10
+- Minimally processed (whole ingredients, under 10 items, simple transformation) = 11-15
+- Single-origin, certified organic on high-risk crops, traceable, under 6 kitchen-recognizable ingredients = 16-20
+- One organic ingredient + 15 synthetic additives = never above 7 here
+CLEANING PRODUCTS:
+- Conventional synthetic, no biodegradability data = 0-5; some plant-derived = 6-10; EPA Safer Choice, fully biodegradable = 11-15; certified fully plant-derived with ingredient transparency = 16-20
+PERSONAL CARE / CLOTHING / OTHER:
+- Same logic applies: fewer ingredients, better provenance, more transparency = higher score
+
+SIGNAL 5 — Supply Chain & Real Footprint (0-20)
+Where was it made, how did it get here, and is the main carbon source actually addressed?
+- 0-4: No supply chain info, assumed global, no Scope 3 mention
+- 5-9: Some origin info, regional manufacturing mentioned
+- 10-14: Published supply chain data, meaningful reduction effort underway
+- 15-20: Full Scope 3 disclosed and verified, supplier standards enforced, short or offset chain
+- Good ingredients + global shipping with no offset = caps at 10 on this signal
+
+CALIBRATION — most products should land 35-65:
+- Heavily marketed "green" brand, nice packaging, vague claims = 30-48
+- Better than conventional on 1-2 signals = 49-62
+- Genuinely better across most signals, real certs, main footprint addressed = 63-78
+- Best-in-class: B Corp + multiple certs + Scope 3 + efficient packaging = 79-90
+- 91+ requires all of the above plus verified carbon, full supply chain transparency, truly minimal packaging
+- Beautiful branding does not move a score. A small farm in an unsexy recycled bag with clean ingredients honestly scores 62.
+
+BETTER PATH — always name what's genuinely achievable one step up:
+- Specific: name cert types, sourcing models, packaging formats, or real brands
+- Not "get certified" — name what the best version in this category actually does
 - Keep it grounded: "a local farm, reusable carton, short supply chain" not "a perfect zero-carbon company"
-- This keeps a 72/B- from feeling like a win when the real ceiling is much higher nearby
 
 LETTER GRADES: A+(93-100) A(87-92) A-(80-86) B+(77-79) B(73-76) B-(70-72) C+(67-69) C(63-66) C-(60-62) D+(57-59) D(53-56) D-(50-52) F(0-49)`;
 
@@ -247,11 +274,11 @@ Return ONLY valid JSON, no markdown:
   "letter_grade": "A+|A|A-|B+|B|B-|C+|C|C-|D+|D|D-|F",
   "confidence": "high|medium|low",
   "rubric": {
-    "specificity_score": 0-20,
-    "transparency_score": 0-20,
-    "third_party_score": 0-20,
-    "bigimpact_score": 0-20,
-    "marketing_score": 0-20
+    "claims_score": 0-20,
+    "certifications_score": 0-20,
+    "packaging_score": 0-20,
+    "ingredient_score": 0-20,
+    "supply_chain_score": 0-20
   },
   "headline": "Under 10 words. Comparative and constructive — where it stands, not a verdict of failure.",
   "real_story": "1-2 sentences. What the product actually does right, then what's still missing. Always frame gaps as 'not yet' not 'never'.",
@@ -1318,11 +1345,11 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
     <div class="method-sub">5 signals · each worth 20 points · total out of 100.<br>We score relative to what's actually possible — eco is hard.</div>
   </div>
   <div class="scrollable">
-    <div class="signal-card"><div class="sig-top"><div class="sig-num">1</div><div><div class="sig-title">Specificity</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Do they use real numbers, or just adjectives? "80% recycled content" beats "eco-friendly" every time. Vague language is cheap. Data is valuable.</div></div>
-    <div class="signal-card"><div class="sig-top"><div class="sig-num">2</div><div><div class="sig-title">Transparency</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Can you actually find their data somewhere? Published reports, third-party audits, open supplier lists — these score high. "We care" with nothing to show = low.</div></div>
-    <div class="signal-card"><div class="sig-top"><div class="sig-num">3</div><div><div class="sig-title">Third-party validation</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">B Corp. FSC. Rainforest Alliance. USDA Organic. These have actual standards and independent audits. A leaf logo the company designed themselves does not.</div></div>
-    <div class="signal-card"><div class="sig-top"><div class="sig-num">4</div><div><div class="sig-title">Biggest impact covered</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Every product has one thing that drives most of its footprint. Dairy? It's the cows. Clothing? Usually dyeing and fiber. Does the claim address THAT, or something easier?</div></div>
-    <div class="signal-card"><div class="sig-top"><div class="sig-num">5</div><div><div class="sig-title">Action over marketing</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Does the company's actual practice match the pitch? Brands investing in real programs score higher than those who just updated their packaging.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">1</div><div><div class="sig-title">Claims and Disclosure</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Are claims specific and verifiable? "80% recycled content, third-party verified" beats "eco-friendly" every time. Vague language is cheap. Published data is valuable.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">2</div><div><div class="sig-title">Certifications</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">B Corp. USDA Organic. Fair Trade. EPA Safer Choice. These have real audit requirements. A leaf logo the company designed themselves does not count.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">3</div><div><div class="sig-title">Packaging Lifecycle</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Not just "is it recyclable" — the full picture. A lightweight flexible bag beats a glass jar on total impact. Bulk format, concentrate, and refillable score highest. Glass feels premium but ships heavy.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">4</div><div><div class="sig-title">Ingredient Impact</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">What is actually in it, and how was it made? For food: fewer recognizable ingredients, less processing, organic on high-risk crops. One organic ingredient plus 15 additives does not score well here.</div></div>
+    <div class="signal-card"><div class="sig-top"><div class="sig-num">5</div><div><div class="sig-title">Supply Chain</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Where was it made and how did it get here? Clean ingredients shipped globally with no offset cap this signal. Short chains, published Scope 3 data, and verified supplier standards score highest.</div></div>
     <div class="card" style="background:var(--forest);margin-bottom:16px">
       <div class="card-label" style="color:var(--mint)">The scope breakdown</div>
       <div class="scope-row"><div class="scope-bub s1">S1</div><div><div class="scope-name" style="color:white">Scope 1 — Direct ops</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">Their factories, their trucks, their direct burn.</div></div></div>
@@ -1649,11 +1676,11 @@ function showResult(scan) {
 
   const rb = scan.rubric || {};
   const rubricRows = [
-    ['Specificity', 'Numbers vs adjectives', rb.specificity || rb.specificity_score || 0],
-    ['Transparency', 'They show their work', rb.transparency || rb.transparency_score || 0],
-    ['3rd-Party Valid.', 'Real certs, not logos', rb.third_party || rb.third_party_score || 0],
-    ['Biggest Impact', 'Covers what matters', rb.biggest_impact || rb.bigimpact_score || 0],
-    ['Action > Marketing', 'Practice matches pitch', rb.marketing_vs_action || rb.marketing_score || 0],
+    ['Claims & Disclosure', 'Specific and verifiable?', rb.claims ?? rb.specificity ?? 0],
+    ['Certifications', 'Real third-party audits', rb.certifications ?? rb.transparency ?? 0],
+    ['Packaging Lifecycle', 'Weight, format, end-of-life', rb.packaging_lifecycle ?? rb.third_party ?? 0],
+    ['Ingredient Impact', 'What is actually in it', rb.ingredient_impact ?? rb.biggest_impact ?? 0],
+    ['Supply Chain', 'Origin, distance, footprint', rb.supply_chain ?? rb.marketing_vs_action ?? 0],
   ];
 
   const verdict = scan.verdict || buildVerdict(scan);
@@ -2595,10 +2622,10 @@ app.post('/api/scan', async (c) => {
       String(r.primary_claim ?? claim),
       Number(r.score ?? 50),
       String(r.confidence ?? 'medium'),
-      Number(rubric.specificity_score ?? 0),
-      Number(rubric.transparency_score ?? 0),
-      Number(rubric.third_party_score ?? 0),
-      Number(rubric.bigimpact_score ?? 0),
+      Number(rubric.claims_score ?? rubric.specificity_score ?? 0),
+      Number(rubric.certifications_score ?? rubric.transparency_score ?? 0),
+      Number(rubric.packaging_score ?? rubric.third_party_score ?? 0),
+      Number(rubric.ingredient_score ?? rubric.bigimpact_score ?? 0),
       Number(rubric.marketing_score ?? 0),
       JSON.stringify((r.tips ?? []) as string[]),
       JSON.stringify([]),
@@ -2917,11 +2944,11 @@ app.get('/api/admin/export/training', async (c) => {
         letter_grade: row.letter_grade,
         confidence: row.confidence,
         rubric: {
-          specificity: row.specificity_score,
-          transparency: row.transparency_score,
-          third_party: row.third_party_score,
-          biggest_impact: row.bigimpact_score,
-          marketing_vs_action: row.marketing_score,
+          claims: row.specificity_score,
+          certifications: row.transparency_score,
+          packaging_lifecycle: row.third_party_score,
+          ingredient_impact: row.bigimpact_score,
+          supply_chain: row.marketing_score,
         },
         headline: row.verdict,
         real_story: rd.real_story || null,
