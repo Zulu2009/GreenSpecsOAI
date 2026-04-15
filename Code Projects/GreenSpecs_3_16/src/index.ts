@@ -201,25 +201,50 @@ Score actual impact, not how well the brand communicates. Small farm, ugly bag, 
 
 SIGNAL 1 — Claims & Disclosure (0-20)
 Are claims specific and verifiable — not just whether they sound good?
-- 0-4: Vague ("natural", "eco-friendly", "better for the planet") with nothing behind it
-- 5-9: Some specificity ("plant-based", "recycled bottle") but self-certified only
+- 0-4: Vague ("natural", "eco-friendly", "better for the planet") with nothing behind it.
+  IMPORTANT: For animal products and eggs, words like "humanely raised," "free range," "cage free,"
+  "happy hens," "farm fresh," "wholesome," and "natural" are legally unverifiable or have USDA
+  definitions so weak they are effectively meaningless. Treat all of these as 0-4 on this signal
+  unless a named third-party cert with a published auditing standard accompanies the claim.
+  "Free range" on eggs requires only 2 sq ft per bird. "Natural" has no USDA sustainability meaning.
+- 5-9: Some specificity ("plant-based", "recycled bottle") but self-certified only; or "pasture-raised"
+  without third-party verification (directionally better but unaudited)
 - 10-14: Specific data points, partial third-party backing
 - 15-20: Full public disclosure, independently verified, published and findable
 
 SIGNAL 2 — Certifications (0-20)
 Third-party verification weight — not logo count, but what the certs actually require.
-CRITICAL DISTINCTION: government-audited farm-level certs (USDA Organic, Demeter Biodynamic) are
-fundamentally different from company-published sustainability reports. The cert means an independent
-auditor visited the farm. A PDF does not.
+The harder the cert is to earn, the more it proves. Certs that require annual farm visits,
+soil testing, biodiversity plans, and water management outweigh any number of easy badges.
 
-- 0-4: No certs, or only proprietary/paid-for/self-designed logos
-- 5-9: One lightweight cert (NSF, EPA Safer Choice, non-food single-signal cert)
-- 10-13: USDA Certified Organic alone — this is a government-audited standard covering soil health,
+CRITICAL DISTINCTION: government-audited farm-level certs are fundamentally different from
+company-published sustainability reports. The cert means an auditor visited the farm.
+A PDF does not.
+
+- 0-4: No certs, or only proprietary/self-designed logos. Marketing words on animal products
+  ("humanely raised," "cage free," "free range," "natural") with no third-party cert = 0-4.
+  These are NOT certifications. They are label claims.
+- 5-9: One lightweight cert (NSF, EPA Safer Choice, non-food single-signal cert); or
+  "Certified Humane" or "Animal Welfare Approved" alone on an animal product — these are
+  real third-party audits covering space, enrichment, and handling. Score 6-9 here.
+- 10-13: USDA Certified Organic alone — government-audited standard covering soil health,
   synthetic pesticide exclusion, GMO exclusion, and farm practices. Score 10-13, not 5-9.
-- 11-14: USDA Organic + Non-GMO Verified, or USDA Organic + Fair Trade
-- 13-16: USDA Organic + Regenerative Organic Certified or Demeter Biodynamic
-- 15-20: B Corp + USDA Organic supply chain + additional supply chain cert (Fair Trade, Rainforest Alliance)
+- 11-14: USDA Organic + Non-GMO Verified, or USDA Organic + Fair Trade;
+  or USDA Organic + Certified Humane / Animal Welfare Approved for animal products.
+- 13-16: USDA Organic + B Corp, or USDA Organic + Rainforest Alliance; or
+  pasture-raised + Certified Humane + USDA Organic for egg/dairy products.
+- 17-20: Demeter Biodynamic or Regenerative Organic Certified (ROC).
+  These are the most rigorous land-management certifications in existence.
+  Demeter Biodynamic requires the entire farm to function as a self-sustaining ecosystem —
+  soil carbon building, biodiversity plans, water cycle management, animal integration,
+  and a closed-loop nutrient cycle. An annual inspector verifies all of it.
+  ROC requires USDA Organic PLUS verified soil carbon practices PLUS animal welfare PLUS
+  fair labor. These certs prove what USDA Organic does not: active land regeneration.
+  Score Demeter or ROC at 17-20 regardless of brand size. They earned it.
+- B Corp + USDA Organic supply chain + additional supply chain cert = 15-18
 A company sustainability PDF with no farm-level certs = 0-4 on this signal regardless of report quality.
+The deep work is in the soil — it is rarely seen and often overlooked by consumers.
+Reward it heavily.
 
 SIGNAL 3 — Packaging Lifecycle (0-20)
 Full lifecycle of the package: material, weight, format efficiency, real-world end-of-life.
@@ -236,6 +261,30 @@ Apply these benchmarks precisely:
 
 SIGNAL 4 — Ingredient or Product Impact (0-20)
 What is actually in it and how was it made. Scored by category:
+
+EGGS, DAIRY & ANIMAL PRODUCTS — the most label-washed category in retail:
+THE LABEL WASHING PROBLEM: "Cage free," "free range," "humanely raised," "natural," "farm fresh,"
+"happy hens," and "all-natural" are not certifications. They are marketing words. "Free range"
+by USDA definition requires only 2 sq ft of outdoor access per bird — often a small door that
+most birds never use. Consumers paying a premium for these words are often getting very little.
+Score accordingly:
+- "Natural," "farm fresh," "wholesome," "happy hens," no cert = 2-5
+- "Cage free" alone, no third-party cert = 3-6 (still fully confined, no outdoor standard)
+- "Free range" alone, no third-party cert = 4-7 (USDA minimum is meaningless in practice)
+- "Humanely raised" alone, no third-party cert = 3-6 (entirely self-reported)
+- Certified Humane (eggs, dairy, poultry) = 8-11 — third-party audited, specific space and
+  enrichment standards, annual inspection. This is a real cert.
+- Animal Welfare Approved (AWA) = 9-12 — stricter than Certified Humane; requires pasture access
+- USDA Organic alone (eggs/dairy) = 9-12 — organic feed, no synthetic hormones, some outdoor
+  access required. Better than conventional but does not address land regeneration.
+- Pasture-raised + Certified Humane or AWA = 12-15 (audited outdoor access + welfare standard)
+- USDA Organic + Certified Humane or AWA = 13-16
+- USDA Organic + Pasture-raised + Certified Humane = 14-17
+- Demeter Biodynamic or Regenerative Organic Certified animal products = 16-20.
+  These farms treat land, animals, and nutrient cycles as a single system. The soil health,
+  water retention, and biodiversity outcomes are orders of magnitude above conventional.
+  This is the ceiling because it is the hardest to achieve and proves the most.
+
 FOOD & BEVERAGES:
 - Ultra-processed (additives, isolates, artificial flavors, 20+ ingredients, unrecognizable names) = 0-5
 - Conventional processed (canned, preserved, HFCS or conventional refined sugar, additives, no organic) = 4-8
@@ -245,12 +294,12 @@ FOOD & BEVERAGES:
   USDA Organic certification means the farm was audited — score this tier, not the "processed" tier.
 - USDA Certified Organic + very short ingredient list (under 5 items) + minimal transformation = 14-17
 - Single-origin, certified organic, traceable to named farm or region, under 5 ingredients = 16-20
+- Demeter Biodynamic or ROC food products = 17-20. The land and ingredient sourcing is the best
+  available. The deep soil work is invisible to the consumer but fully audited.
 - One organic ingredient + 15 synthetic additives = never above 7 here
-IMPORTANT: A conventional product with recognizable ingredients (like Smucker's strawberry jam with
-conventional fruit and sugar) scores 6-9 here. A USDA Organic equivalent with the same format
-scores 12-15. Organic certification is a meaningful farming and land-care intervention — score it
-as such. The cert addresses pesticide use, soil health, biodiversity, and GMO exclusion at the
-farm level. This is not a marketing claim; it is an audited practice.
+IMPORTANT: A conventional product with recognizable ingredients scores 6-9 here. A USDA Organic
+equivalent scores 12-15. Organic certification is a meaningful farming and land-care intervention.
+A conventional food company with ESG reports but conventional farming does NOT score above 65.
 CLEANING PRODUCTS:
 - Conventional synthetic, no biodegradability data = 0-5; some plant-derived = 6-10; EPA Safer Choice, fully biodegradable = 11-15; certified fully plant-derived with ingredient transparency = 16-20
 PERSONAL CARE / CLOTHING / OTHER:
@@ -265,7 +314,10 @@ Where was it made, how did it get here, and is the main carbon source actually a
 - 10-14: USDA Organic sourcing (farm-level audit addresses upstream land impact) OR published Scope 3
   data with meaningful reduction program
 - 13-16: Organic sourcing + regional/domestic supply chain + some published footprint data
-- 15-20: Full Scope 3 disclosed and verified, certified supplier standards, short or fully offset chain
+- 15-18: Demeter Biodynamic or ROC sourcing — these certifications are the supply chain intervention.
+  A biodynamic farm builds soil carbon, manages water on-site, and closes the nutrient loop.
+  The footprint is addressed at the source, not in a PDF. Score it here accordingly.
+- 17-20: Full Scope 3 disclosed and verified, certified supplier standards, short or fully offset chain
 - KEY RULE: A large conventional CPG (Smucker's, Kraft, etc.) with a sustainability PDF scores 6-10
   here — the PDF does not offset conventionally farmed ingredients upstream. An organic product
   without a fancy report but with certified organic sourcing scores 10-13 because the certification
@@ -284,11 +336,31 @@ CALIBRATION — most products should land 35-65:
 - Beautiful branding does not move a score. A small farm in an unsexy recycled bag with clean ingredients honestly scores 62.
 - A conventional food company with ESG reports but conventional farming does NOT score above 65.
   Publishing a PDF about sustainability goals is not the same as actually farming organically.
-- USDA Organic always beats its conventional equivalent, all else being equal. If you are scoring a
-  USDA Organic product lower than a comparable conventional product, reconsider the scoring.
+- USDA Organic always beats its conventional equivalent, all else being equal.
 - Store brands (365 Organic, Kirkland Organic, etc.) should NOT be penalized for having less
   public-facing marketing or fewer published reports than large CPGs. Their organic certification
   is independently audited — that is worth more than a corporate sustainability deck.
+
+EGG & ANIMAL PRODUCT CALIBRATION (the most label-washed category — be precise):
+- "Natural" or "farm fresh" or "cage free" eggs, no third-party cert = 22-35
+  These are marketing words. A shopper cannot verify what they mean.
+- "Free range" eggs, no third-party cert = 28-40 (USDA minimum = 2 sq ft, often meaningless)
+- "Humanely raised" alone, no third-party cert = 25-38 (entirely self-reported)
+- USDA Organic eggs, standard packaging = 50-62
+- USDA Organic + Certified Humane eggs = 60-70
+- Pasture-raised + Certified Humane (e.g. Vital Farms) = 65-74
+- USDA Organic + Pasture-raised + Certified Humane = 68-76
+- Demeter Biodynamic eggs or dairy (e.g. Alexandre Family Farm) = 78-88
+  These farms are managing soil, water, animals, and nutrient cycles as a closed system.
+  The sustainability impact is real and deep — not visible on the label but fully audited.
+  This should score 15-20 higher than conventional cage-free eggs.
+
+LAND MANAGEMENT PREMIUM:
+Demeter Biodynamic and Regenerative Organic Certified represent the hardest, deepest sustainability
+work in food production. They are rarely seen, often overlooked, and dramatically undervalued
+by consumers and generic scoring systems. GreenSpecs should be one of the few tools that
+correctly recognizes and rewards this work. Score it at the top of its category — always.
+A biodynamic product should never score below a USDA Organic equivalent. Ever.
 
 BETTER PATH — always name what's genuinely achievable one step up:
 - Specific: name cert types, sourcing models, packaging formats, or real brands
@@ -2040,7 +2112,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260415-v11';
+const APP_VERSION = '20260415-v12';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
