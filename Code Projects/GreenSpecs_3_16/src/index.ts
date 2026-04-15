@@ -206,10 +206,18 @@ Are claims specific and verifiable — not just whether they sound good?
 
 SIGNAL 2 — Certifications (0-20)
 Third-party verification weight — not logo count, but what the certs actually require.
+CRITICAL DISTINCTION: government-audited farm-level certs (USDA Organic, Demeter Biodynamic) are
+fundamentally different from company-published sustainability reports. The cert means an independent
+auditor visited the farm. A PDF does not.
+
 - 0-4: No certs, or only proprietary/paid-for/self-designed logos
-- 5-9: One relevant cert (USDA Organic, Fair Trade, NSF, EPA Safer Choice)
-- 10-14: Multiple complementary meaningful certs with real audit requirements
-- 15-20: B Corp + supply chain cert (Fair Trade, Rainforest Alliance) + verified carbon or Scope 3
+- 5-9: One lightweight cert (NSF, EPA Safer Choice, non-food single-signal cert)
+- 10-13: USDA Certified Organic alone — this is a government-audited standard covering soil health,
+  synthetic pesticide exclusion, GMO exclusion, and farm practices. Score 10-13, not 5-9.
+- 11-14: USDA Organic + Non-GMO Verified, or USDA Organic + Fair Trade
+- 13-16: USDA Organic + Regenerative Organic Certified or Demeter Biodynamic
+- 15-20: B Corp + USDA Organic supply chain + additional supply chain cert (Fair Trade, Rainforest Alliance)
+A company sustainability PDF with no farm-level certs = 0-4 on this signal regardless of report quality.
 
 SIGNAL 3 — Packaging Lifecycle (0-20)
 Full lifecycle of the package: material, weight, format efficiency, real-world end-of-life.
@@ -228,10 +236,19 @@ SIGNAL 4 — Ingredient or Product Impact (0-20)
 What is actually in it and how was it made. Scored by category:
 FOOD & BEVERAGES:
 - Ultra-processed (additives, isolates, artificial flavors, 20+ ingredients, unrecognizable names) = 0-5
-- Processed (canned, preserved, added sugar/salt, recognizable ingredients but transformed) = 6-10
-- Minimally processed (whole ingredients, under 10 items, simple transformation) = 11-15
-- Single-origin, certified organic on high-risk crops, traceable, under 6 kitchen-recognizable ingredients = 16-20
+- Conventional processed (canned, preserved, HFCS or conventional refined sugar, additives, no organic) = 4-8
+- Conventional, simple recognizable ingredients, no organic certification = 6-9
+- USDA Certified Organic ingredients, simple processing, 5-8 recognizable kitchen ingredients = 12-15
+  Examples: organic jelly (fruit, organic cane sugar, pectin), organic pasta sauce, organic oats.
+  USDA Organic certification means the farm was audited — score this tier, not the "processed" tier.
+- USDA Certified Organic + very short ingredient list (under 5 items) + minimal transformation = 14-17
+- Single-origin, certified organic, traceable to named farm or region, under 5 ingredients = 16-20
 - One organic ingredient + 15 synthetic additives = never above 7 here
+IMPORTANT: A conventional product with recognizable ingredients (like Smucker's strawberry jam with
+conventional fruit and sugar) scores 6-9 here. A USDA Organic equivalent with the same format
+scores 12-15. Organic certification is a meaningful farming and land-care intervention — score it
+as such. The cert addresses pesticide use, soil health, biodiversity, and GMO exclusion at the
+farm level. This is not a marketing claim; it is an audited practice.
 CLEANING PRODUCTS:
 - Conventional synthetic, no biodegradability data = 0-5; some plant-derived = 6-10; EPA Safer Choice, fully biodegradable = 11-15; certified fully plant-derived with ingredient transparency = 16-20
 PERSONAL CARE / CLOTHING / OTHER:
@@ -241,17 +258,35 @@ SIGNAL 5 — Supply Chain & Real Footprint (0-20)
 Where was it made, how did it get here, and is the main carbon source actually addressed?
 - 0-4: No supply chain info, assumed global, no Scope 3 mention
 - 5-9: Some origin info, regional manufacturing mentioned
-- 10-14: Published supply chain data, meaningful reduction effort underway
-- 15-20: Full Scope 3 disclosed and verified, supplier standards enforced, short or offset chain
+- 8-11: Conventional CPG with a published sustainability report — the report is acknowledged but
+  conventional farming upstream is still the dominant footprint. Do not score this above 11.
+- 10-14: USDA Organic sourcing (farm-level audit addresses upstream land impact) OR published Scope 3
+  data with meaningful reduction program
+- 13-16: Organic sourcing + regional/domestic supply chain + some published footprint data
+- 15-20: Full Scope 3 disclosed and verified, certified supplier standards, short or fully offset chain
+- KEY RULE: A large conventional CPG (Smucker's, Kraft, etc.) with a sustainability PDF scores 6-10
+  here — the PDF does not offset conventionally farmed ingredients upstream. An organic product
+  without a fancy report but with certified organic sourcing scores 10-13 because the certification
+  IS the supply chain intervention.
 - Good ingredients + global shipping with no offset = caps at 10 on this signal
 
 CALIBRATION — most products should land 35-65:
 - Heavily marketed "green" brand, nice packaging, vague claims = 30-48
+- Conventional food brand with a sustainability PDF but no farm certs = 35-52
 - Better than conventional on 1-2 signals = 49-62
+- USDA Organic food with simple ingredients and standard packaging = 58-68
+- USDA Organic + Non-GMO + clean simple ingredients = 62-72
 - Genuinely better across most signals, real certs, main footprint addressed = 63-78
 - Best-in-class: B Corp + multiple certs + Scope 3 + efficient packaging = 79-90
 - 91+ requires all of the above plus verified carbon, full supply chain transparency, truly minimal packaging
 - Beautiful branding does not move a score. A small farm in an unsexy recycled bag with clean ingredients honestly scores 62.
+- A conventional food company with ESG reports but conventional farming does NOT score above 65.
+  Publishing a PDF about sustainability goals is not the same as actually farming organically.
+- USDA Organic always beats its conventional equivalent, all else being equal. If you are scoring a
+  USDA Organic product lower than a comparable conventional product, reconsider the scoring.
+- Store brands (365 Organic, Kirkland Organic, etc.) should NOT be penalized for having less
+  public-facing marketing or fewer published reports than large CPGs. Their organic certification
+  is independently audited — that is worth more than a corporate sustainability deck.
 
 BETTER PATH — always name what's genuinely achievable one step up:
 - Specific: name cert types, sourcing models, packaging formats, or real brands
@@ -2107,8 +2142,8 @@ function buildInstantCard(scan, rubricRows) {
           }).join('')
         + '</div>' : '')
     + '<div class="ri-actions">'
-    + '<button class="' + goodCls + '" id="ri-good" onclick="rateScore(\'good\')">' + thumbUpSVG + 'Accurate</button>'
-    + '<button class="' + badCls  + '" id="ri-bad"  onclick="rateScore(\'bad\')">'  + thumbDnSVG + 'Off</button>'
+    + '<button class="' + goodCls + '" id="ri-good" onclick="rateGood()">' + thumbUpSVG + 'Accurate</button>'
+    + '<button class="' + badCls  + '" id="ri-bad"  onclick="rateBad()">'  + thumbDnSVG + 'Off</button>'
     + '<button class="ri-action ri-add" onclick="openInsightSheet()">' + plusSVG + 'Add insight</button>'
     + '</div>'
     + '</div>';
@@ -2189,6 +2224,8 @@ function buildFullBreakdown(scan, rubricRows, tips) {
 }
 
 // ─── RATE & IMPROVE ───────────────────────────────────────────────────────────
+function rateGood() { rateScore('good'); }
+function rateBad()  { rateScore('bad');  }
 function rateScore(rating) {
   if (!currentScan) return;
   var scanId = currentScan.id || '';
