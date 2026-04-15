@@ -136,6 +136,11 @@ function formatScan(row: ScanRow) {
     sustainability_url: (safeJSON<Record<string,string>>(row.research_data, {})).sustainability_url || null,
     better_path: (safeJSON<Record<string,string>>(row.research_data, {})).better_path || null,
     certifications_found: (safeJSON<Record<string,unknown>>(row.research_data, {})).certifications_found || [],
+    fiber_composition: (safeJSON<Record<string,unknown>>(row.research_data, {})).fiber_composition || null,
+    pfc_free: (safeJSON<Record<string,unknown>>(row.research_data, {})).pfc_free ?? null,
+    recycled_content_pct: (safeJSON<Record<string,unknown>>(row.research_data, {})).recycled_content_pct ?? null,
+    has_repair_program: (safeJSON<Record<string,unknown>>(row.research_data, {})).has_repair_program ?? null,
+    dpp_status: (safeJSON<Record<string,unknown>>(row.research_data, {})).dpp_status || null,
     location_name: row.location_name,
     price: row.price,
     lat: row.lat,
@@ -211,6 +216,15 @@ Are claims specific and verifiable — not just whether they sound good?
   without third-party verification (directionally better but unaudited)
 - 10-14: Specific data points, partial third-party backing
 - 15-20: Full public disclosure, independently verified, published and findable
+CLOTHING & GEAR — disclosure has an extra dimension:
+  Traceability depth matters. "Made responsibly" = 0-4. Published factory list = 7-10.
+  Fiber-origin traceability (Tier 4 — know where the raw material came from) = 14-17.
+  Digital Product Passport (DPP) with fiber origin + chemical map + repair manual accessible
+  via QR/NFC = 16-20. A DPP that links only to marketing content = 5-8.
+  PFAS disclosure: a brand that explicitly confirms PFC-free DWR earns points here.
+  A brand using C6 or C8 fluorocarbon DWR in 2026 and not disclosing it scores 0-4.
+  Unsold inventory policy published (no incineration / no landfill evidence) = +2 pts.
+  "We are committed to transparency" with no data behind it = 0-4.
 
 SIGNAL 2 — Certifications (0-20)
 Third-party verification weight — not logo count, but what the certs actually require.
@@ -246,9 +260,31 @@ A company sustainability PDF with no farm-level certs = 0-4 on this signal regar
 The deep work is in the soil — it is rarely seen and often overlooked by consumers.
 Reward it heavily.
 
-SIGNAL 3 — Packaging Lifecycle (0-20)
-Full lifecycle of the package: material, weight, format efficiency, real-world end-of-life.
-Apply these benchmarks precisely:
+CLOTHING & GEAR CERTIFICATIONS — different cert stack than food:
+- 0-4: No certs. "Sustainable collection" / "eco-conscious" / "recycled" with no third-party verification.
+- 5-8: OEKO-TEX Standard 100 — tests the finished product for harmful chemicals only.
+  Real value: confirms no toxic residues. Does NOT cover supply chain, workers, or carbon. Score here, not higher.
+- 7-10: Responsible Wool Standard (RWS) or Responsible Down Standard (RDS) — single-material
+  sourcing certs with animal welfare and land management requirements. Legitimate but narrow.
+- 10-13: Global Recycled Standard (GRS) — third-party verified recycled content claim.
+  Or OEKO-TEX MADE IN GREEN — combines chemical safety + social + environmental at the facility level.
+- 12-15: Bluesign — deep manufacturing cert: chemical inputs, water discharge, energy use, and worker
+  safety across the dyeing and finishing supply chain. This is hard to earn and means real process change.
+  Or GOTS (Global Organic Textile Standard) — covers organic fiber source + processing + social conditions.
+  Bluesign and GOTS are complementary: GOTS covers the fiber, Bluesign covers the factory.
+- 14-17: Bluesign + GOTS combined, or Fair Trade Certified textile, or B Corp for an apparel brand.
+- 16-19: Cradle to Cradle Certified — the circularity framework. Covers material health, circularity,
+  clean water, clean air, social fairness, and renewable energy. Hardest cert in textiles to earn.
+  Or ZDHC (Zero Discharge of Hazardous Chemicals) verified — manufacturing restricted substance list
+  compliance with third-party wastewater testing. This is EU REACH-aligned.
+- "Recycled" claim with no Global Recycled Standard (GRS) verification = 0-4 on certs.
+  Self-reported recycled content is not a certification.
+
+SIGNAL 3 — Packaging Lifecycle / Circularity (0-20)
+For food and cleaning products: full lifecycle of the package (material, weight, format, end-of-life).
+For clothing and gear: circularity of the product itself (fiber recyclability, take-back, design for disassembly).
+
+FOOD / CLEANING PACKAGING:
 - Conventional non-recyclable single-use plastic = 0-5
 - Standard recyclable plastic, no recycled content = 5-8
 - Glass single-use: recyclable but heavy and energy-intensive to produce — score 7-10 (not a green premium just because it feels upscale)
@@ -258,6 +294,24 @@ Apply these benchmarks precisely:
 - Certified compostable (home-compostable only): 13-15; industrial-only compostable: 8-11
 - Concentrate, tablet, powder, refill format: removes the bottle almost entirely — score 15-18
 - Refillable with deposit/return system: 17-20
+
+CLOTHING & GEAR — CIRCULARITY (use this tier instead of packaging for apparel/gear):
+The circularity score reflects: Can this product be recycled, repaired, or returned at end of life?
+- Virgin synthetic with blended fibers (e.g., poly-cotton, nylon-spandex) and no take-back = 0-5.
+  Blended fibers cannot be mechanically recycled. This is design for landfill.
+- Some recycled content but still blended construction, no take-back program = 5-8.
+- Post-consumer recycled synthetic (rPET from bottles, Econyl from fishing nets): real footprint
+  reduction of 50-70% vs virgin. Score 9-13. This is meaningful even if the garment is still blended.
+- Pre-consumer / industrial recycled content (factory offcuts): lower bar than post-consumer = 6-9.
+- Verified brand take-back, resale, or recycle program (Patagonia Worn Wear, Eileen Fisher Renew,
+  Arc'teryx ReBird): adds 2-3 points to base score. A website claim of take-back without a
+  verified partner (e.g., TerraCycle, Renewal Workshop) is worth less.
+- Mono-material construction (100% single polymer: 100% Nylon 6, 100% polyester, 100% wool):
+  technically recyclable at end of life. Add 2-3 pts. Blended fibers are not recyclable.
+- Hardware modularity (zippers, buckles, cords removable without cutting): adds 1-2 pts — enables
+  disassembly before recycling. Brands like Patagonia and Norrona publish repair part availability.
+- Cradle to Cradle Certified or verified closed-loop recycling partnership = 15-18.
+- Rental, library, or subscription model = 17-20. The product never becomes waste.
 
 SIGNAL 4 — Ingredient or Product Impact (0-20)
 What is actually in it and how was it made. Scored by category:
@@ -302,8 +356,42 @@ equivalent scores 12-15. Organic certification is a meaningful farming and land-
 A conventional food company with ESG reports but conventional farming does NOT score above 65.
 CLEANING PRODUCTS:
 - Conventional synthetic, no biodegradability data = 0-5; some plant-derived = 6-10; EPA Safer Choice, fully biodegradable = 11-15; certified fully plant-derived with ingredient transparency = 16-20
-PERSONAL CARE / CLOTHING / OTHER:
-- Same logic applies: fewer ingredients, better provenance, more transparency = higher score
+
+CLOTHING, OUTERWEAR & OUTDOOR GEAR — Material Impact & LCA:
+The environmental footprint of a garment is 70-90% determined at the material and dyeing stage.
+Score this signal based on fiber type, chemical processing, and PFAS status.
+
+FIBER TIERS (from worst to best):
+- Virgin polyester or virgin nylon: petroleum-derived, high global warming potential, microplastic
+  shedding in every wash. No other claims offset this at the fiber level = 0-5.
+- Conventional cotton: 2nd most pesticide-intensive crop globally, extremely water-intensive = 2-6.
+  "Cotton" with no organic cert scores here regardless of how it is marketed.
+- Bamboo / viscose / rayon without OEKO-TEX or certified closed-loop processing: the raw
+  material may be renewable but the chemical processing is often highly polluting = 3-7.
+- Recycled polyester (rPET from post-consumer bottles or textile waste): approximately 50-70%
+  lower GWP than virgin polyester. Microplastic shedding still present but fossil input reduced = 8-12.
+- Recycled nylon (Econyl, Repreve Nylon): made from ocean plastic, fishing nets, or industrial waste.
+  Comparable to rPET in GWP reduction. Strong story if third-party verified = 9-13.
+- GOTS-certified organic cotton: chemical-free cultivation verified, better soil outcomes = 10-14.
+- Lyocell / Tencel with OEKO-TEX or closed-loop certification (Lenzing): wood-pulp fiber with
+  verified solvent recovery. Significantly better than conventional viscose = 10-13.
+- Bluesign-certified fabric: water discharge, chemical inputs, energy use in dyeing verified = 10-14.
+  Bluesign does not certify the fiber origin — it certifies the factory processes.
+- Post-consumer recycled fiber + Bluesign-certified dyeing = 13-16.
+- GOTS-certified organic fiber + responsible dyeing (OEKO-TEX or Bluesign) = 13-16.
+- Responsible Wool Standard (RWS) or Responsible Down Standard (RDS): animal welfare and
+  land management verified for natural fiber sourcing = 11-15.
+- PFAS / DWR STATUS — applies specifically to outerwear and rain gear:
+  PFC-free DWR (Nikwax, Teflon EcoElite, Grangers, etc.) = full points for this category; add 2 pts.
+  C6 fluorocarbon DWR: still PFAS, still persistent forever chemicals, EU-restricted under REACH.
+    Score -2 pts penalty. A brand using C6 in 2026 has made a conscious choice to lag.
+  C8 fluorocarbon DWR: older, more bioaccumulative PFAS chemistry. Score -3 pts penalty.
+  Unknown / undisclosed DWR: score as C6 (assume PFAS until proven otherwise) = -1 pt.
+- Cradle to Cradle certified material health = 16-20.
+  This cert verifies not just what the fiber is, but what every chemical in it does.
+
+PERSONAL CARE:
+- Fewer ingredients, better provenance, more transparency = higher score. Use food signal logic.
 
 SIGNAL 5 — Supply Chain & Real Footprint (0-20)
 Where was it made, how did it get here, and is the main carbon source actually addressed?
@@ -323,6 +411,25 @@ Where was it made, how did it get here, and is the main carbon source actually a
   without a fancy report but with certified organic sourcing scores 10-13 because the certification
   IS the supply chain intervention.
 - Good ingredients + global shipping with no offset = caps at 10 on this signal
+
+CLOTHING & GEAR — Supply Chain & Longevity:
+For apparel and gear, Signal 5 captures two things: supply chain traceability AND durability.
+A durable jacket worn 500 times has a far lower per-wear footprint than a "sustainable" one worn 20.
+- 0-4: No supply chain information. Unknown country of origin. Fast fashion model.
+- 5-9: Country of manufacture stated. Some factory information published. No deeper traceability.
+- 10-13: Tier 2 visibility (cut-and-sew factory named and audited). Published code of conduct.
+  Or brand has committed to no destruction of unsold inventory with published evidence.
+- 13-16: Tier 3 visibility (fabric mill named). Living wage data published for some suppliers.
+  Lifetime repair program or warranty (Patagonia Worn Wear, Arc'teryx ReBird, Fjallraven stitching
+  service): these programs keep products out of landfill for years longer — score the per-wear benefit.
+- 15-18: Tier 4 visibility (fiber source named and verified). Published LCA with per-wear carbon data.
+  This is the supply chain intervention equivalent to a biodynamic cert in food.
+  Brands: Patagonia publishes Tier 4 for some products. Nudie Jeans publishes full supply chain.
+- 17-20: Verified Scope 3 carbon per wear. Full supply chain to fiber source. Living wage at all tiers.
+  Take-back program with verified recycling partner (not just a drop bin).
+DURABILITY MULTIPLIER PRINCIPLE: A product with a 10-year lifespan and a repair program always
+scores higher on this signal than a cheaper "sustainable" item with no longevity commitment.
+Never reward low durability just because the fiber is recycled. The per-wear impact is what matters.
 
 CALIBRATION — most products should land 35-65:
 - Heavily marketed "green" brand, nice packaging, vague claims = 30-48
@@ -354,6 +461,30 @@ EGG & ANIMAL PRODUCT CALIBRATION (the most label-washed category — be precise)
   These farms are managing soil, water, animals, and nutrient cycles as a closed system.
   The sustainability impact is real and deep — not visible on the label but fully audited.
   This should score 15-20 higher than conventional cage-free eggs.
+
+CLOTHING & GEAR CALIBRATION:
+- Fast fashion (Shein, Zara basics, H&M standard): virgin polyester, no certs, no transparency = 15-28
+- "Eco collection" within fast fashion brand (H&M Conscious, Zara Join Life): minor recycled
+  content claim, same supply chain and business model underneath = 25-38.
+  These are marketing lines. The underlying model has not changed. Do not reward the label.
+- Standard outdoor brand basic layer (Columbia, generic): some recycled content, no meaningful
+  certs, limited transparency = 35-50
+- Better outdoor brand with GRS-verified recycled content + OEKO-TEX Standard 100 = 45-58
+- Patagonia standard product (Fair Trade factory, recycled materials, Worn Wear program): 62-72
+- Patagonia top-tier (100% recycled, PFC-free DWR, Fair Trade, B Corp, Worn Wear): 72-80
+- Arc'teryx with Bluesign materials + ReBird repair program: 60-72 (repair program strong,
+  but PFAS DWR historically an issue — check current status)
+- GOTS-certified organic cotton brand with repair program + supply chain transparency: 68-76
+- Eileen Fisher (Renew take-back, organic cotton, B Corp): 68-76
+- Nudie Jeans (lifetime free repairs, 100% organic cotton, full Tier 4 supply chain public): 75-84
+- Brand with Bluesign + GOTS + PFC-free DWR + verified take-back + DPP: 80-88
+- Cradle to Cradle certified garment with verified closed-loop recycling: 84-92
+
+PFAS RULE FOR CLOTHING:
+A brand still using C6 or C8 fluorocarbon DWR in 2026 should be penalized on Signal 4 (material
+chemistry) and Signal 1 (failure to disclose or pivot). PFC-free DWR alternatives perform at parity
+for most outdoor activities. Continued use is a choice to prioritize margin over chemistry safety.
+EU REACH has restricted long-chain PFAS. Score brands accordingly.
 
 LAND MANAGEMENT PREMIUM:
 Demeter Biodynamic and Regenerative Organic Certified represent the hardest, deepest sustainability
@@ -405,7 +536,12 @@ Return ONLY valid JSON, no markdown:
   "sustainability_url": "URL to brand's official sustainability page, or null if unknown",
   "tips": ["1 sentence, 12 words max. Real, useful. Max 2 items."],
   "better_path": "1-2 sentences. What genuinely better looks like in this category. Specific and real — name formats, certs, sourcing models, or actual brands. Sets the ceiling so this score stays honest.",
-  "certifications_found": ["Array of certification names visible or strongly implied on this product. Use exact standard names only: USDA Organic, Demeter Biodynamic, Regenerative Organic Certified, B Corp Certified, Fair Trade USA, Fair Trade Certified, Rainforest Alliance, Non-GMO Verified, EPA Safer Choice, NSF Certified, FSC Certified, Certified Humane, Animal Welfare Approved, Made with Organic Ingredients, Carbon Neutral Certified, Leaping Bunny. Empty array [] if none found. Do not invent or guess — only include what is on the label or strongly verifiable."]
+  "certifications_found": ["Array of certification names visible or strongly implied on this product. Use exact standard names only: USDA Organic, Demeter Biodynamic, Regenerative Organic Certified, B Corp Certified, Fair Trade USA, Fair Trade Certified, Rainforest Alliance, Non-GMO Verified, EPA Safer Choice, NSF Certified, FSC Certified, Certified Humane, Animal Welfare Approved, Made with Organic Ingredients, Carbon Neutral Certified, Leaping Bunny, Bluesign, GOTS, OEKO-TEX Standard 100, OEKO-TEX MADE IN GREEN, Global Recycled Standard, Responsible Wool Standard, Responsible Down Standard, Cradle to Cradle Certified, ZDHC Verified, PFC-Free DWR. Empty array [] if none found. Do not invent or guess — only include what is on the label or strongly verifiable."],
+  "fiber_composition": "For clothing/gear only: main fiber(s) with approximate percentages if visible (e.g. '100% recycled polyester' or '60% cotton 40% polyester'). null for food/cleaning.",
+  "pfc_free": "For clothing/gear only: true if brand explicitly confirms PFC-free or fluorocarbon-free DWR; false if C6/C8 chemistry confirmed; null if unknown or not applicable.",
+  "recycled_content_pct": "For clothing/gear only: approximate percentage of recycled content if stated (e.g. 75). null if not stated or not applicable.",
+  "has_repair_program": "For clothing/gear only: true if brand offers repair service, lifetime warranty, or take-back program; false if none; null if unknown.",
+  "dpp_status": "For clothing/gear only: 'ready' if a verified Digital Product Passport (QR/NFC with fiber origin + chemical data + repair info) exists; 'partial' if QR links only to marketing; 'none' if no DPP; null if not applicable."
 }`;
 
 // ─── Comparison System Prompt ─────────────────────────────────────────────────
@@ -2112,7 +2248,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260415-v12';
+const APP_VERSION = '20260415-v13';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -2639,6 +2775,66 @@ var CERT_GUIDE = {
     desc: 'Verified cruelty-free: no animal testing by the company or any of its ingredient suppliers. More rigorous than the cruelty-free claims brands put on their own labels.',
     auditor: 'Coalition for Consumer Information on Cosmetics', renewed: 'Annually',
     compare: 'The gold standard for cruelty-free. Stricter than self-declared cruelty-free claims because it audits the supplier chain too.'
+  },
+  'Bluesign': {
+    tier: 'gold', badge: 'Factory', scope: 'Chemical inputs \u00b7 Water discharge \u00b7 Energy \u00b7 Worker safety',
+    desc: 'Covers the manufacturing process deeply: what chemicals go in, what comes out in the wastewater, how much energy is used, and whether workers are safe. Auditors visit the fabric mill and dye facility. Hard to earn and means real process change in the factory.',
+    auditor: 'Bluesign Technologies', renewed: 'Ongoing surveillance',
+    compare: 'Covers the factory, not the fiber origin. Best combined with GOTS (which covers the fiber). Stronger than OEKO-TEX Standard 100 because it addresses the process, not just the finished product.'
+  },
+  'GOTS': {
+    tier: 'gold', badge: 'Textile', scope: 'Organic fiber \u00b7 Processing \u00b7 Social conditions',
+    desc: 'Global Organic Textile Standard. Covers the full supply chain: organic fiber sourcing, chemical processing rules, wastewater treatment, and fair labor conditions. The most comprehensive organic textile cert.',
+    auditor: 'GOTS-approved certifier', renewed: 'Annually',
+    compare: 'Covers the fiber (like USDA Organic) AND the factory processing. Best combined with Bluesign. Stronger than OEKO-TEX Standard 100 or a standalone recycled content claim.'
+  },
+  'OEKO-TEX Standard 100': {
+    tier: 'silver', badge: 'Product', scope: 'Harmful chemical absence in finished garment',
+    desc: 'Tests the finished garment for over 100 harmful substances including pesticide residues, heavy metals, and formaldehyde. Confirms nothing harmful is touching your skin. Does not cover supply chain, workers, or carbon.',
+    auditor: 'OEKO-TEX Association', renewed: 'Annually',
+    compare: 'Real value: confirms the garment is safe to wear. Does not tell you how it was made, who made it, or what the footprint was. Weaker than GOTS or Bluesign on supply chain depth.'
+  },
+  'OEKO-TEX MADE IN GREEN': {
+    tier: 'silver', badge: 'Facility', scope: 'Chemicals + social + environmental at the facility',
+    desc: 'Combines OEKO-TEX Standard 100 (product safety) with facility-level environmental and social audits. A step above Standard 100 because it addresses the factory, not just the finished item.',
+    auditor: 'OEKO-TEX Association', renewed: 'Annually',
+    compare: 'Stronger than OEKO-TEX Standard 100. Not as deep as Bluesign on chemical inputs or GOTS on fiber sourcing, but broader than either alone.'
+  },
+  'Global Recycled Standard': {
+    tier: 'silver', badge: 'Material', scope: 'Verified recycled content claim',
+    desc: 'Third-party verification that the recycled content percentage stated on the label is accurate, from post-consumer or pre-consumer sources. Closes the most common greenwashing gap in recycled fiber claims.',
+    auditor: 'Control Union, Bureau Veritas, others', renewed: 'Annually',
+    compare: 'Without GRS, a "made from recycled bottles" claim is self-reported and unverifiable. GRS does not address labor or chemical processing \u2014 combine with Bluesign or GOTS for full picture.'
+  },
+  'Responsible Wool Standard': {
+    tier: 'silver', badge: 'Farm', scope: 'Sheep welfare \u00b7 Land management \u00b7 Wool traceability',
+    desc: 'Third-party audited standard for wool sourcing. Covers sheep welfare (mulesing practices, space, handling), land degradation prevention, and chain of custody from farm to brand.',
+    auditor: 'Control Union / Bureau Veritas', renewed: 'Annually',
+    compare: 'A meaningful improvement over unverified wool claims. Does not require organic farming practices \u2014 for the highest standard, look for Demeter Biodynamic wool or GOTS-certified wool.'
+  },
+  'Responsible Down Standard': {
+    tier: 'silver', badge: 'Farm', scope: 'Duck and goose welfare \u00b7 No live-plucking',
+    desc: 'Verifies that down and feathers come from birds not subjected to live-plucking or force-feeding. Third-party audited traceability from farm to brand.',
+    auditor: 'Control Union / Bureau Veritas', renewed: 'Annually',
+    compare: 'The baseline for ethical down. Confirms no live-plucking. Does not require organic feed or outdoor access \u2014 GOTS-certified down is the next level up.'
+  },
+  'Cradle to Cradle Certified': {
+    tier: 'gold', badge: 'Product', scope: 'Material health \u00b7 Circularity \u00b7 Clean water \u00b7 Clean air \u00b7 Fair labor',
+    desc: 'The most comprehensive product certification in textiles. Scores on five categories: material health (every chemical in the product), circularity (can it be recycled or composted), clean water, clean air and climate protection, and social fairness. Levels: Basic, Bronze, Silver, Gold, Platinum.',
+    auditor: 'Cradle to Cradle Products Innovation Institute', renewed: 'Every 2 years',
+    compare: 'The broadest cert in the industry. Harder to earn than Bluesign or GOTS alone because it covers material chemistry, circularity, and social impact together. The Platinum level is essentially the ceiling.'
+  },
+  'ZDHC Verified': {
+    tier: 'silver', badge: 'Factory', scope: 'Zero discharge of hazardous chemicals \u00b7 Wastewater',
+    desc: 'Verified compliance with the ZDHC Manufacturing Restricted Substances List (MRSL). Third-party wastewater testing confirms that hazardous chemicals are not being discharged into waterways. EU REACH-aligned.',
+    auditor: 'ZDHC Foundation approved labs', renewed: 'Ongoing',
+    compare: 'Addresses chemical discharge specifically. Complementary to Bluesign (broader) and GOTS (fiber + processing). Strong signal that the brand takes chemical management seriously.'
+  },
+  'PFC-Free DWR': {
+    tier: 'silver', badge: 'Chemistry', scope: 'No PFAS in water-repellent coating',
+    desc: 'Confirms the durable water-repellent (DWR) coating uses no perfluorinated or polyfluorinated chemicals (PFAS). PFAS are persistent forever chemicals that accumulate in water, soil, and human bodies. PFC-free alternatives (Nikwax, Teflon EcoElite, Grangers) exist and perform comparably.',
+    auditor: 'Various (brand disclosure + third-party testing)', renewed: 'Per product',
+    compare: 'C6 and C8 fluorocarbon DWR are still PFAS. EU REACH has restricted long-chain PFAS. A brand still using C6 in 2026 is lagging. PFC-free DWR is now table stakes for any serious outdoor brand.'
   }
 };
 
