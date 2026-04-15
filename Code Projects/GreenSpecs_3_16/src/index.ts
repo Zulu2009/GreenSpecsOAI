@@ -1386,6 +1386,46 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .sc-scan-btn:active{background:rgba(82,183,136,0.18)}
 .sc-scan-btn svg{width:14px;height:14px;stroke:var(--moss);fill:none;stroke-width:2}
 
+/* ── RATE & IMPROVE CARD ── */
+.ri-card{background:var(--card);margin:10px 14px 0;border-radius:22px;
+  box-shadow:var(--shadow);overflow:hidden}
+.ri-summary{padding:15px 18px 12px;display:flex;align-items:flex-start;gap:12px}
+.ri-grade{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;
+  justify-content:center;font-family:system-ui,-apple-system,sans-serif;
+  font-size:18px;font-weight:700;flex-shrink:0;letter-spacing:-0.5px}
+.ri-verdict{flex:1;font-size:15px;font-weight:600;color:var(--forest);
+  line-height:1.4;padding-top:3px}
+.ri-chips{padding:0 18px 12px;display:flex;flex-wrap:wrap;gap:6px}
+.ri-chip{font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;line-height:1.45}
+.ri-chip.good{background:rgba(45,106,79,0.07);color:var(--moss)}
+.ri-chip.warn{background:rgba(245,158,11,0.09);color:#92400e}
+.ri-chip.bad{background:rgba(239,68,68,0.07);color:#b91c1c}
+.ri-chip.neutral{background:var(--warm);color:var(--text-mid)}
+.ri-actions{border-top:1px solid var(--warm);display:flex}
+.ri-action{flex:1;padding:13px 6px;display:flex;align-items:center;justify-content:center;
+  gap:4px;cursor:pointer;border:none;background:none;font-size:12px;font-weight:600;
+  color:var(--text-mid);font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  transition:background 0.15s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.ri-action:not(:first-child){border-left:1px solid var(--warm)}
+.ri-action:active{background:var(--warm)}
+.ri-action.selected-good{color:var(--moss);background:rgba(45,106,79,0.05)}
+.ri-action.selected-bad{color:#b91c1c;background:rgba(239,68,68,0.04)}
+.ri-action.ri-add{color:var(--forest);font-weight:700}
+.ri-action svg{width:13px;height:13px;stroke:currentColor;fill:none;
+  stroke-width:2.2;flex-shrink:0}
+/* ── INSIGHT SHEET ── */
+.insight-hint{font-size:13px;color:var(--text-mid);margin-bottom:14px;line-height:1.65}
+.insight-textarea{width:100%;padding:12px 14px;border-radius:12px;
+  border:1.5px solid var(--warm);font-size:15px;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  color:var(--text);background:white;outline:none;resize:none;
+  line-height:1.55;transition:border-color 0.2s;-webkit-appearance:none}
+.insight-textarea:focus{border-color:var(--sage)}
+.insight-submit{width:100%;margin-top:12px;padding:14px;background:var(--forest);
+  color:white;border:none;border-radius:14px;font-size:15px;font-weight:600;
+  cursor:pointer;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  transition:opacity 0.15s}
+.insight-submit:active{opacity:0.85}
 /* ── MILESTONE BANNER ── */
 .milestone-banner{position:fixed;bottom:calc(90px + var(--safe-bottom) + 12px);
   left:14px;right:14px;max-width:402px;margin:0 auto;
@@ -1727,6 +1767,25 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <div class="swap-sheet-body" id="swap-sheet-body"></div>
 </div>
 
+<!-- \u2550\u2550 INSIGHT SHEET \u2550\u2550 -->
+<div class="swap-sheet-backdrop" id="insight-backdrop" onclick="closeInsightSheet()"></div>
+<div class="swap-sheet" id="insight-sheet">
+  <div class="swap-handle-row"><div class="swap-handle-bar"></div></div>
+  <div class="swap-sheet-header">
+    <div class="swap-sheet-title">What did we miss?</div>
+    <button class="swap-close" onclick="closeInsightSheet()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div style="padding:16px 18px calc(16px + var(--safe-bottom))">
+    <div class="insight-hint">Tell us what you see on the label that we may have missed. A cert logo, the format, where it was made, a recent change.</div>
+    <textarea id="insight-input" rows="3" class="insight-textarea"
+      placeholder='e.g. "EPA Safer Choice logo on the back" or "this is the concentrate, not single-use"'></textarea>
+    <button class="insight-submit" onclick="submitInsight()">Re-score with this \u2192</button>
+    <button onclick="closeInsightSheet()" style="width:100%;padding:11px;background:none;border:none;color:var(--text-light);font-size:14px;cursor:pointer;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;margin-top:2px">Cancel</button>
+  </div>
+</div>
+
 <!-- \u2550\u2550 MILESTONE BANNER \u2550\u2550 -->
 <div class="milestone-banner" id="milestone-banner">
   <div class="mb-title" id="mb-title"></div>
@@ -1735,7 +1794,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260415-v8';
+const APP_VERSION = '20260415-v9';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -1994,35 +2053,65 @@ function animateScoreRing(score) {
   requestAnimationFrame(step);
 }
 
-// ─── INSTANT CARD (above fold) ────────────────────────────────────────────────
+// ─── INSTANT CARD — rate & improve ───────────────────────────────────────────
 function buildInstantCard(scan, rubricRows) {
-  const verdictText = scan.verdict_tag || scan.headline || '';
-  // Pick 3 most illustrative pills: best, worst, and middle signal
-  var shortLabels = ['Claims', 'Certs', 'Packaging', 'Ingredients', 'Supply'];
-  var pills = rubricRows.map(function(r, i) {
-    return { label: shortLabels[i] || 'Signal', val: Number(r[2]) };
-  });
-  var sorted = pills.slice().sort(function(a, b) { return b.val - a.val; });
-  var selected = sorted.length >= 3
-    ? [sorted[0], sorted[sorted.length - 1], sorted[Math.floor((sorted.length - 1) / 2)]]
-    : sorted;
-  // De-dupe by label
-  var seen = {};
-  var pills3 = selected.filter(function(p) {
-    if (seen[p.label]) return false;
-    seen[p.label] = true; return true;
-  }).slice(0, 3);
-  return '<div class="instant-card">'
-    + (verdictText ? '<div class="verdict-tag-text">' + escH(noEmoji(verdictText)) + '</div>' : '')
-    + '<div class="signal-pills-row">'
-    + pills3.map(function(p) {
-        var cls = p.val >= 14 ? 'sp-high' : p.val >= 9 ? 'sp-mid' : 'sp-low';
-        return '<div class="sig-pill ' + cls + '">'
-          + '<div class="sig-pill-val">' + p.val + '/20</div>'
-          + '<div class="sig-pill-label">' + escH(p.label) + '</div>'
-          + '</div>';
-      }).join('')
-    + '</div></div>';
+  var sc = Number(scan.score) || 0;
+  var grade = letterGrade(sc);
+  var gColor = gradeColor(sc);
+  var verdictText = scan.verdict_tag || scan.headline || '';
+
+  // Signal chips — prefer Gemini text labels, color from rubric scores
+  var rb = scan.rubric || {};
+  var chips = [];
+  var pkgScore = Number(rb.packaging_lifecycle !== undefined ? rb.packaging_lifecycle : (rb.third_party !== undefined ? rb.third_party : 0));
+  var ingScore = Number(rb.ingredient_impact !== undefined ? rb.ingredient_impact : (rb.biggest_impact !== undefined ? rb.biggest_impact : 0));
+  var clmScore = Number(rb.claims !== undefined ? rb.claims : (rb.specificity !== undefined ? rb.specificity : 0));
+  var crtScore = Number(rb.certifications !== undefined ? rb.certifications : (rb.transparency !== undefined ? rb.transparency : 0));
+
+  function chipClass(score) { return score >= 14 ? 'good' : score >= 9 ? 'warn' : 'bad'; }
+
+  if (scan.ingredients) chips.push({ text: scan.ingredients, cls: chipClass(ingScore) });
+  if (scan.packaging)   chips.push({ text: scan.packaging,   cls: chipClass(pkgScore) });
+  if (scan.transparency_label) chips.push({ text: scan.transparency_label, cls: chipClass(clmScore) });
+
+  // Fallback: rubric-based text chips
+  if (!chips.length) {
+    var shortLabels = ['Claims', 'Certs', 'Packaging', 'Ingredients', 'Supply'];
+    var rpills = rubricRows.map(function(r, i) {
+      return { label: shortLabels[i], val: Number(r[2]) };
+    }).sort(function(a, b) { return b.val - a.val; });
+    [rpills[0], rpills[rpills.length - 1]].forEach(function(p) {
+      chips.push({ text: p.label + ' ' + p.val + '/20', cls: chipClass(p.val) });
+    });
+  }
+
+  // Already rated?
+  var scanId = scan.id || '';
+  var prevRating = scanId ? localStorage.getItem('gs_rated_' + scanId) : null;
+
+  var thumbUpSVG = '<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>';
+  var thumbDnSVG = '<svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>';
+  var plusSVG = '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+
+  var goodCls = 'ri-action' + (prevRating === 'good' ? ' selected-good' : '');
+  var badCls  = 'ri-action' + (prevRating === 'bad'  ? ' selected-bad'  : '');
+
+  return '<div class="ri-card">'
+    + '<div class="ri-summary">'
+    + '<div class="ri-grade" style="background:' + gColor + '1a;color:' + gColor + ';border:1.5px solid ' + gColor + '33">' + escH(grade) + '</div>'
+    + (verdictText ? '<div class="ri-verdict">' + escH(noEmoji(verdictText)) + '</div>' : '')
+    + '</div>'
+    + (chips.length ? '<div class="ri-chips">'
+        + chips.slice(0, 3).map(function(c) {
+            return '<div class="ri-chip ' + c.cls + '">' + escH(noEmoji(c.text)) + '</div>';
+          }).join('')
+        + '</div>' : '')
+    + '<div class="ri-actions">'
+    + '<button class="' + goodCls + '" id="ri-good" onclick="rateScore(\'good\')">' + thumbUpSVG + 'Accurate</button>'
+    + '<button class="' + badCls  + '" id="ri-bad"  onclick="rateScore(\'bad\')">'  + thumbDnSVG + 'Off</button>'
+    + '<button class="ri-action ri-add" onclick="openInsightSheet()">' + plusSVG + 'Add insight</button>'
+    + '</div>'
+    + '</div>';
 }
 
 // ─── PROGRESS STRIP (gamification) ───────────────────────────────────────────
@@ -2097,6 +2186,91 @@ function buildFullBreakdown(scan, rubricRows, tips) {
     + '<button class="action-btn primary" onclick="addToCompare()">Compare</button>'
     + '<button class="action-btn secondary" onclick="shareScore()">Share</button>'
     + '</div>';
+}
+
+// ─── RATE & IMPROVE ───────────────────────────────────────────────────────────
+function rateScore(rating) {
+  if (!currentScan) return;
+  var scanId = currentScan.id || '';
+  var ratedKey = scanId ? 'gs_rated_' + scanId : null;
+  // Update button state immediately
+  var goodBtn = document.getElementById('ri-good');
+  var badBtn  = document.getElementById('ri-bad');
+  if (goodBtn) goodBtn.className = 'ri-action' + (rating === 'good' ? ' selected-good' : '');
+  if (badBtn)  badBtn.className  = 'ri-action' + (rating === 'bad'  ? ' selected-bad'  : '');
+  // Persist
+  if (ratedKey) localStorage.setItem(ratedKey, rating);
+  // Save to backend (fire and forget)
+  if (scanId) {
+    fetch('/api/rate/' + scanId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: rating, session_id: session_id })
+    }).catch(function() {});
+  }
+  if (rating === 'bad') {
+    setTimeout(function() { openInsightSheet(); }, 180);
+  } else {
+    showToast('Thanks \u2014 helps us calibrate');
+  }
+}
+
+function openInsightSheet() {
+  document.getElementById('insight-backdrop').classList.add('open');
+  document.getElementById('insight-sheet').classList.add('open');
+  setTimeout(function() {
+    var el = document.getElementById('insight-input');
+    if (el) el.focus();
+  }, 360);
+}
+function closeInsightSheet() {
+  document.getElementById('insight-backdrop').classList.remove('open');
+  document.getElementById('insight-sheet').classList.remove('open');
+}
+
+async function submitInsight() {
+  var text = (document.getElementById('insight-input').value || '').trim();
+  if (!text) { showToast('Add what you see on the label'); return; }
+  if (!currentScan) return;
+  closeInsightSheet();
+  // Save the insight as training data
+  var scanId = currentScan.id || '';
+  if (scanId) {
+    fetch('/api/rate/' + scanId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: 'insight', insight: text, session_id: session_id })
+    }).catch(function() {});
+  }
+  // Re-score — inject user context into the claim so cache key is unique
+  showAnalyzing();
+  try {
+    var ctrl = new AbortController();
+    var t = setTimeout(function() { ctrl.abort(); }, 45000);
+    var claim = (currentScan.primary_claim || 'sustainability claim')
+      + ' [User added: ' + text + ']';
+    var res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: ctrl.signal,
+      body: JSON.stringify({
+        product_name: currentScan.product_name,
+        claim: claim,
+        session_id: session_id,
+        lat: userLat, lng: userLng,
+        location_name: userCity || currentScan.location_name || null
+      })
+    });
+    clearTimeout(t);
+    var d = await res.json();
+    if (d.error) throw new Error(d.error);
+    hideAnalyzing();
+    showResult(d.scan || d);
+    showToast('Score updated with your insight');
+  } catch (e) {
+    hideAnalyzing();
+    showToast('Could not re-score \u2014 try again');
+  }
 }
 
 // ─── BREAKDOWN TOGGLE ─────────────────────────────────────────────────────────
@@ -3447,6 +3621,38 @@ app.get('/icon.svg', (c) => {
   return new Response(svg, {
     headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' },
   });
+});
+
+// ─── POST /api/rate/:scan_id ──────────────────────────────────────────────────
+
+app.post('/api/rate/:scan_id', async (c) => {
+  const scanId = c.req.param('scan_id');
+  const body = await c.req.json<{ rating: string; insight?: string; session_id?: string }>();
+
+  // Lazy create table
+  await c.env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS score_ratings (
+      id TEXT PRIMARY KEY,
+      scan_id TEXT NOT NULL,
+      rating TEXT NOT NULL,
+      insight TEXT,
+      session_id TEXT,
+      created_at INTEGER DEFAULT (unixepoch())
+    )
+  `).run();
+
+  c.executionCtx.waitUntil(
+    c.env.DB.prepare(
+      'INSERT INTO score_ratings (id, scan_id, rating, insight, session_id) VALUES (?,?,?,?,?)'
+    ).bind(
+      nanoid(), scanId,
+      body.rating || 'unknown',
+      body.insight || null,
+      body.session_id || null
+    ).run()
+  );
+
+  return c.json({ ok: true });
 });
 
 // ─── GET /api/swaps/:scan_id ──────────────────────────────────────────────────
