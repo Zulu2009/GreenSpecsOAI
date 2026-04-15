@@ -21,6 +21,7 @@ interface UserRow {
 
 interface ScanRow {
   id: string;
+  session_id: string | null;
   product_name: string;
   brand: string | null;
   category: string | null;
@@ -50,6 +51,8 @@ interface ScanRow {
   lng: number | null;
   served_from_cache: number;
   created_at: number;
+  export_eligible: number;
+  yko_tier: string | null;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1752,7 +1755,7 @@ function showResult(scan) {
   document.getElementById('r-body').scrollTop = 0;
 
   // Fire async extras — non-blocking, fill in after quick score shows
-  if (scan.brand) loadYkoCard(scan.brand, scan.product_name || '');
+  if (scan.brand) loadYkoCard(scan.brand, scan.product_name || '', scan);
   loadSustainUrl(scan);
 }
 
@@ -1790,7 +1793,7 @@ const YKO_ARROW_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 3
 // Carbon SVG analytics icon for YKO card
 const YKO_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20" fill="rgba(255,255,255,0.8)"><path d="M11 2H2v9h9V2zm-2 7H4V4h5v5zM20 2h-5v2h5v2h-5v2h5v2h-7V2h-2v10h11V2h-2zM2 20v10h10V20H2zm8 8H4v-6h6v6zM22 20h-2v4h-4v2h4v4h2v-4h4v-2h-4z"/></svg>';
 
-async function loadYkoCard(brandName, productName) {
+async function loadYkoCard(brandName, productName, scan) {
   const slot = document.getElementById('yko-card-slot');
   if (!slot) return;
 
@@ -1801,7 +1804,7 @@ async function loadYkoCard(brandName, productName) {
     const res = await fetch('https://yko-api.phill-carter.workers.dev/api/scan-signal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ brand_name: brandName, product_name: productName }),
+      body: JSON.stringify({ brand_name: brandName, product_name: productName, scan: scan || null }),
     });
     if (!res.ok) throw new Error('signal failed');
     const d = await res.json();
@@ -2617,6 +2620,27 @@ app.post('/api/scan', async (c) => {
 
     await c.env.DB.prepare(`UPDATE sessions SET scan_count = scan_count + 1 WHERE id = ?`).bind(sid).run();
 
+    // Background YKO tier lookup — fire and forget, zero impact on response latency
+    const ykoLookupPromise = (async () => {
+      try {
+        const ykoRes = await fetch('https://yko-api.phill-carter.workers.dev/api/scan-signal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_name: String(r.brand ?? ''), product_name: String(r.product_name ?? product_name) }),
+        });
+        if (ykoRes.ok) {
+          const ykoData = await ykoRes.json() as { scored?: boolean; tier?: string };
+          if (ykoData.scored && ykoData.tier) {
+            await c.env.DB.prepare('UPDATE scans SET yko_tier = ? WHERE id = ?')
+              .bind(ykoData.tier, id).run();
+          }
+        }
+      } catch {}
+    })();
+    if (c.executionCtx?.waitUntil) {
+      c.executionCtx.waitUntil(ykoLookupPromise);
+    }
+
     const saved = await c.env.DB.prepare(`SELECT * FROM scans WHERE id = ?`).bind(id).first<ScanRow>();
     return c.json({ session_id: sid, scan: formatScan(saved!), cached: false });
 
@@ -2764,11 +2788,51 @@ app.post('/api/compare', async (c) => {
 
   try {
     const { result } = await compareWithGemini(c.env.GEMINI_API_KEY, products);
-    return c.json({ scans, ranked, ai: result });
+    const ai = result;
+
+    // Background: capture compare event for training data — fire and forget
+    const compareEventPromise = (async () => {
+      try {
+        const eventId = nanoid(12);
+        await c.env.DB.prepare(
+          `INSERT INTO compare_events (id, session_id, scan_ids, ai_winner_id, ai_verdict, product_count, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, unixepoch())`
+        ).bind(
+          eventId,
+          rows.results[0]?.session_id ?? null,
+          JSON.stringify(scan_ids),
+          (ai?.winner_id as string) ?? null,
+          (ai?.overall_verdict as string) ?? null,
+          scan_ids.length
+        ).run();
+
+        // If AI named a winner, write a compare_win signal on that scan
+        if (ai?.winner_id) {
+          await c.env.DB.prepare(
+            `INSERT INTO scan_signals (id, scan_id, signal_type, weight, session_id, created_at)
+             VALUES (?, ?, 'compare_win', 3.0, ?, unixepoch())`
+          ).bind(nanoid(12), ai.winner_id as string, rows.results[0]?.session_id ?? null).run();
+
+          // Write compare_loss signals for non-winners
+          for (const s of rows.results) {
+            if (s.id !== ai.winner_id) {
+              await c.env.DB.prepare(
+                `INSERT INTO scan_signals (id, scan_id, signal_type, weight, session_id, created_at)
+                 VALUES (?, ?, 'compare_loss', 1.0, ?, unixepoch())`
+              ).bind(nanoid(12), s.id, rows.results[0]?.session_id ?? null).run();
+            }
+          }
+        }
+      } catch {}
+    })();
+    if (c.executionCtx?.waitUntil) {
+      c.executionCtx.waitUntil(compareEventPromise);
+    }
+
+    return c.json({ scans, ranked, ai });
   } catch (err) {
     console.error('Compare AI error:', err);
     // Fallback to simple comparison if AI fails
-    const winner = ranked[0];
     return c.json({ scans, ranked, ai: null, fallback: true });
   }
 });
@@ -2796,6 +2860,91 @@ app.post('/api/learn', async (c) => {
     console.error('Learn error:', err);
     return c.json({ error: 'Could not answer — try again', detail: String(err) }, 500);
   }
+});
+
+// ─── GET /api/admin/export/training ──────────────────────────────────────────
+
+app.get('/api/admin/export/training', async (c) => {
+  const adminKey = c.req.header('x-admin-key');
+  if (adminKey !== 'gs-export-2026') return c.json({ error: 'Unauthorized' }, 401);
+
+  const from = Number(c.req.query('from') || 0);
+  const to = Number(c.req.query('to') || Date.now() / 1000);
+  const minWeight = Number(c.req.query('min_weight') || 0);
+  const category = c.req.query('category') || null;
+  const limit = Math.min(Number(c.req.query('limit') || 1000), 5000);
+
+  const categoryClause = category ? `AND s.category = '${category.replace(/'/g,"''")}' ` : '';
+
+  const rows = await c.env.DB.prepare(
+    `SELECT s.*,
+      COALESCE(sig.total_weight, 0) as signal_weight,
+      sig.signal_types
+     FROM scans s
+     LEFT JOIN (
+       SELECT scan_id,
+         SUM(weight) as total_weight,
+         GROUP_CONCAT(signal_type) as signal_types
+       FROM scan_signals GROUP BY scan_id
+     ) sig ON s.id = sig.scan_id
+     WHERE s.export_eligible = 1
+       AND s.served_from_cache = 0
+       AND s.created_at >= ? AND s.created_at <= ?
+       AND (COALESCE(sig.total_weight, 0) >= ? OR ? = 0)
+       ${categoryClause}
+     ORDER BY s.created_at DESC
+     LIMIT ?`
+  ).bind(from, to, minWeight, minWeight, limit).all<ScanRow & { signal_weight: number; signal_types: string | null }>();
+
+  const lines = rows.results.map(row => {
+    const rd = safeJSON<Record<string,string>>(row.research_data, {});
+    return JSON.stringify({
+      id: `gs_${row.id}`,
+      source: 'greenspecs',
+      created_at: row.created_at,
+      weight: (row as any).signal_weight || 1.0,
+      human_signals: (row as any).signal_types ? (row as any).signal_types.split(',') : [],
+      input: {
+        product: row.product_name,
+        brand: row.brand,
+        category: row.category,
+        claim: row.primary_claim,
+        location_region: row.location_name || null,
+        price: row.price || null,
+      },
+      label: {
+        score: row.score,
+        letter_grade: row.letter_grade,
+        confidence: row.confidence,
+        rubric: {
+          specificity: row.specificity_score,
+          transparency: row.transparency_score,
+          third_party: row.third_party_score,
+          biggest_impact: row.bigimpact_score,
+          marketing_vs_action: row.marketing_score,
+        },
+        headline: row.verdict,
+        real_story: rd.real_story || null,
+        why_it_matters: rd.why_it_matters || null,
+        win: rd.win || null,
+        tradeoff: rd.tradeoff || null,
+        packaging: rd.packaging || null,
+        ingredients: rd.ingredients || null,
+        transport: rd.transport || null,
+        transparency: rd.transparency || null,
+        verdict_tag: rd.verdict_tag || null,
+        better_path: rd.better_path || null,
+      },
+      yko_context: row.yko_tier ? { brand_tier: row.yko_tier } : null,
+    });
+  });
+
+  return new Response(lines.join('\n'), {
+    headers: {
+      'Content-Type': 'application/x-ndjson',
+      'Content-Disposition': `attachment; filename="greenspecs-training-${Date.now()}.jsonl"`,
+    },
+  });
 });
 
 // ─── GET /manifest.json ───────────────────────────────────────────────────────
