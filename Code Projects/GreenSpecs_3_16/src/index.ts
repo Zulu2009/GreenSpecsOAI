@@ -626,6 +626,69 @@ Return ONLY valid JSON (no markdown):
   return { answer, cost: totalCost };
 }
 
+// ─── Swaps Generation ─────────────────────────────────────────────────────────
+
+async function generateSwapsWithGemini(
+  apiKey: string,
+  scan: ScanRow,
+): Promise<Array<{ name: string; brand: string; why_better: string; estimated_score: number }>> {
+  const cat = scan.category || 'general';
+  const weaknesses = [scan.what_missing, scan.better_alternatives]
+    .filter(Boolean)
+    .map(s => { try { return JSON.parse(s!).slice(0,2).join(', '); } catch { return s; } })
+    .filter(Boolean).join('; ');
+
+  const prompt = `A shopper just scanned: "${scan.product_name}" by ${scan.brand || 'unknown brand'}.
+Category: ${cat}
+Score: ${scan.score}/100
+Key gaps: ${weaknesses || 'not specified'}
+${scan.better_alternatives ? 'Better path hint: ' + scan.better_alternatives : ''}
+
+Suggest 2-3 specific real products that are meaningfully better in this category and widely available (Whole Foods, Target, Amazon, mainstream grocery).
+Each should score at least 10 points higher than ${scan.score}/100.
+Give one sharp reason per swap — what specifically makes it better.
+
+Return ONLY valid JSON:
+{
+  "swaps": [
+    {
+      "name": "exact product name",
+      "brand": "brand name",
+      "why_better": "One sentence, under 20 words. Specific improvement only.",
+      "estimated_score": 65
+    }
+  ]
+}`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          response_mime_type: 'application/json',
+          maxOutputTokens: 600,
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      }),
+    }
+  );
+
+  if (!res.ok) throw new Error(`Gemini swaps error: ${res.status}`);
+
+  const data = await res.json() as {
+    candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+  };
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}';
+  const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const result = JSON.parse(clean);
+  return (result.swaps || []).slice(0, 3);
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 const app = new Hono<{ Bindings: Env }>();
@@ -1205,6 +1268,133 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .install-btn-el{background:var(--sage);color:white;border:none;border-radius:10px;
   padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;
   font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;white-space:nowrap}
+
+/* ── SCORE RING ── */
+.score-ring-wrap{position:relative;width:116px;height:116px;margin:0 auto 14px}
+.score-ring-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ring-track{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:7}
+.ring-fill{fill:none;stroke:rgba(255,255,255,0.88);stroke-width:7;stroke-linecap:round;
+  transition:stroke-dashoffset 1.15s cubic-bezier(0.4,0,0.2,1),stroke 0.55s ease;
+  transform-origin:58px 58px;transform:rotate(-90deg)}
+.score-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+.score-num{font-family:system-ui,-apple-system,sans-serif;font-size:40px;font-weight:700;
+  color:white;line-height:1;letter-spacing:-2px}
+.score-denom{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:0.5px}
+
+/* ── INSTANT CARD (above fold) ── */
+.instant-card{background:var(--card);margin:10px 14px 0;border-radius:22px;
+  padding:16px 18px 14px;box-shadow:var(--shadow)}
+.verdict-tag-text{font-size:18px;font-weight:700;color:var(--forest);line-height:1.3;margin-bottom:14px}
+.signal-pills-row{display:flex;gap:7px}
+.sig-pill{flex:1;border-radius:13px;padding:9px 7px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  opacity:0;animation:fadeUp 0.38s ease forwards}
+.sig-pill:nth-child(1){animation-delay:0.06s}
+.sig-pill:nth-child(2){animation-delay:0.14s}
+.sig-pill:nth-child(3){animation-delay:0.22s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.sig-pill-val{font-size:15px;font-weight:700;line-height:1}
+.sig-pill-label{font-size:9px;font-weight:600;text-align:center;line-height:1.3;
+  text-transform:uppercase;letter-spacing:0.3px;opacity:0.75}
+.sp-high{background:rgba(45,106,79,0.07);color:var(--moss)}
+.sp-mid{background:rgba(245,158,11,0.09);color:#92400e}
+.sp-low{background:rgba(239,68,68,0.07);color:#b91c1c}
+
+/* ── PROGRESS STRIP ── */
+.progress-strip{margin:8px 14px 0;padding:11px 16px;background:white;border-radius:16px;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:10px}
+.ps-dots{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.ps-dot{width:7px;height:7px;border-radius:50%;background:var(--warm);
+  transition:background 0.3s,width 0.2s,height 0.2s}
+.ps-dot.filled{background:var(--sage)}
+.ps-dot.current{background:var(--forest);width:9px;height:9px}
+.ps-text{font-size:12px;color:var(--text-mid);line-height:1.45;flex:1}
+.ps-text strong{color:var(--forest)}
+
+/* ── SWAP CTA ── */
+.swap-cta{margin:8px 14px 0;padding:14px 16px;background:var(--forest);border-radius:18px;
+  display:flex;align-items:center;gap:14px;cursor:pointer;
+  transition:opacity 0.15s;-webkit-tap-highlight-color:transparent}
+.swap-cta:active{opacity:0.82}
+.swap-cta-left{flex:1}
+.swap-cta-title{font-size:14px;font-weight:600;color:white;line-height:1.25}
+.swap-cta-sub{font-size:11px;color:rgba(255,255,255,0.48);margin-top:2px}
+.swap-cta-chevron{width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,0.12);display:flex;align-items:center;
+  justify-content:center;flex-shrink:0}
+.swap-cta-chevron svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5}
+
+/* ── BREAKDOWN TOGGLE ── */
+.breakdown-toggle{margin:8px 14px 0;padding:13px 18px;background:var(--warm);
+  border-radius:16px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:background 0.15s;user-select:none;
+  -webkit-tap-highlight-color:transparent}
+.breakdown-toggle:active{background:rgba(82,183,136,0.13)}
+.bt-text{font-size:13px;font-weight:600;color:var(--text-mid)}
+.bt-chev{width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  transition:transform 0.28s}
+.bt-chev.open{transform:rotate(180deg)}
+.bt-chev svg{width:16px;height:16px;stroke:var(--text-mid);fill:none;stroke-width:2.5}
+.breakdown-body{overflow:hidden;max-height:0;opacity:0;
+  transition:max-height 0.46s cubic-bezier(0.4,0,0.2,1),opacity 0.32s ease}
+
+/* ── SWAP SHEET ── */
+.swap-sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:800;
+  pointer-events:none;transition:background 0.3s}
+.swap-sheet-backdrop.open{background:rgba(0,0,0,0.48);pointer-events:all}
+.swap-sheet{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
+  background:var(--cream);border-radius:26px 26px 0 0;z-index:801;
+  transform:translateY(100%);transition:transform 0.38s cubic-bezier(0.4,0,0.2,1);
+  padding-bottom:calc(16px + var(--safe-bottom));will-change:transform;
+  max-height:80vh;display:flex;flex-direction:column}
+.swap-sheet.open{transform:translateY(0)}
+.swap-handle-row{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0}
+.swap-handle-bar{width:38px;height:4px;border-radius:2px;background:var(--warm)}
+.swap-sheet-header{padding:2px 18px 14px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--warm)}
+.swap-sheet-title{font-family:system-ui,-apple-system,sans-serif;
+  font-size:17px;font-weight:700;color:var(--forest)}
+.swap-close{width:30px;height:30px;border-radius:50%;background:var(--warm);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:none;flex-shrink:0}
+.swap-close svg{width:14px;height:14px;stroke:var(--text-mid);fill:none;stroke-width:2.5}
+.swap-sheet-body{flex:1;overflow-y:auto;padding:14px 14px 0;scrollbar-width:none}
+.swap-sheet-body::-webkit-scrollbar{display:none}
+
+/* ── SWAP CARDS ── */
+.swap-card{background:white;border-radius:18px;padding:14px 16px;margin-bottom:10px;
+  box-shadow:var(--shadow);opacity:0;animation:fadeUp 0.35s ease forwards}
+.swap-card:nth-child(1){animation-delay:0.04s}
+.swap-card:nth-child(2){animation-delay:0.13s}
+.swap-card:nth-child(3){animation-delay:0.22s}
+.sc-top{display:flex;align-items:flex-start;gap:12px}
+.sc-score{width:44px;height:44px;border-radius:13px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;flex-shrink:0}
+.sc-score-num{font-family:system-ui,-apple-system,sans-serif;font-size:18px;font-weight:700;line-height:1}
+.sc-score-sub{font-size:8px;letter-spacing:0.3px;opacity:0.65}
+.sc-info{flex:1;min-width:0;padding-top:2px}
+.sc-name{font-size:14px;font-weight:700;color:var(--forest);line-height:1.3}
+.sc-brand{font-size:12px;color:var(--text-light);margin-top:1px}
+.sc-why{font-size:13px;color:var(--text-mid);line-height:1.6;
+  border-top:1px solid var(--warm);padding-top:10px;margin-top:10px}
+.sc-scan-btn{margin-top:10px;width:100%;display:flex;align-items:center;justify-content:center;
+  gap:6px;background:var(--pale);border-radius:10px;padding:9px 14px;cursor:pointer;
+  border:none;font-size:12px;font-weight:600;color:var(--moss);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;
+  transition:background 0.15s;-webkit-tap-highlight-color:transparent}
+.sc-scan-btn:active{background:rgba(82,183,136,0.18)}
+.sc-scan-btn svg{width:14px;height:14px;stroke:var(--moss);fill:none;stroke-width:2}
+
+/* ── MILESTONE BANNER ── */
+.milestone-banner{position:fixed;bottom:calc(90px + var(--safe-bottom) + 12px);
+  left:14px;right:14px;max-width:402px;margin:0 auto;
+  background:var(--forest);border-radius:18px;padding:13px 18px;
+  z-index:700;transform:translateY(16px);opacity:0;pointer-events:none;
+  transition:opacity 0.32s ease,transform 0.32s ease;box-shadow:var(--shadow-md)}
+.milestone-banner.show{opacity:1;transform:translateY(0)}
+.mb-title{font-size:13px;font-weight:700;color:white;margin-bottom:2px}
+.mb-sub{font-size:11px;color:rgba(255,255,255,0.56);line-height:1.5}
 </style>
 </head>
 <body>
@@ -1280,9 +1470,16 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </div>
     <div class="r-compare-btn" onclick="addToCompare()">Compare</div>
-    <div class="grade-circle" id="r-grade-circle">
-      <div class="grade-letter" id="r-grade-letter">—</div>
-      <div class="grade-num" id="r-grade-num">—/100</div>
+    <div class="score-ring-wrap" id="r-grade-circle">
+      <svg class="score-ring-svg" viewBox="0 0 116 116">
+        <circle class="ring-track" cx="58" cy="58" r="50"/>
+        <circle class="ring-fill" id="r-ring-fill" cx="58" cy="58" r="50"
+          stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+      </svg>
+      <div class="score-ring-inner">
+        <div id="r-grade-letter" class="score-num">—</div>
+        <div id="r-grade-num" class="score-denom">/100</div>
+      </div>
     </div>
     <div class="r-name" id="r-name">Product</div>
     <div class="r-brand-cat" id="r-brand-cat"></div>
@@ -1517,9 +1714,28 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <div class="toast" id="toast"></div>
 
+<!-- \u2550\u2550 SWAP SHEET \u2550\u2550 -->
+<div class="swap-sheet-backdrop" id="swap-backdrop" onclick="closeSwapSheet()"></div>
+<div class="swap-sheet" id="swap-sheet">
+  <div class="swap-handle-row"><div class="swap-handle-bar"></div></div>
+  <div class="swap-sheet-header">
+    <div class="swap-sheet-title" id="swap-sheet-title">Better options</div>
+    <button class="swap-close" onclick="closeSwapSheet()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="swap-sheet-body" id="swap-sheet-body"></div>
+</div>
+
+<!-- \u2550\u2550 MILESTONE BANNER \u2550\u2550 -->
+<div class="milestone-banner" id="milestone-banner">
+  <div class="mb-title" id="mb-title"></div>
+  <div class="mb-sub" id="mb-sub"></div>
+</div>
+
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260320-v7';
+const APP_VERSION = '20260415-v8';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -1651,13 +1867,10 @@ function showResult(scan) {
   currentScan = scan;
   if (isSpeaking) { speechSynthesis.cancel(); isSpeaking = false; }
   const sc = Number(scan.score) || 0;
-  const grade = letterGrade(sc);
-  const gColor = gradeColor(sc);
 
-  document.getElementById('r-grade-letter').textContent = sc;
-  document.getElementById('r-grade-letter').style.color = 'white';
+  // ── Hero header ──
+  document.getElementById('r-grade-letter').textContent = '0';
   document.getElementById('r-grade-num').textContent = '/100';
-  document.getElementById('r-grade-circle').style.borderColor = 'rgba(255,255,255,0.35)';
   document.getElementById('r-name').textContent = noEmoji(scan.product_name || 'Unknown product');
   document.getElementById('r-brand-cat').textContent =
     [scan.brand, scan.category ? scan.category.replace(/_/g,' ') : ''].filter(Boolean).join(' · ');
@@ -1666,14 +1879,13 @@ function showResult(scan) {
     const slug = scan.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     ykoLink.href = 'https://yko.earth/brand/' + slug + '/';
     ykoLink.style.display = '';
-  } else {
-    ykoLink.style.display = 'none';
-  }
+  } else { ykoLink.style.display = 'none'; }
   document.getElementById('r-loc').textContent = scan.location_name || userCity || '';
   const priceEl = document.getElementById('r-price');
   if (scan.price) { priceEl.textContent = scan.price; priceEl.style.display = ''; }
   else priceEl.style.display = 'none';
 
+  // ── Rubric data ──
   const rb = scan.rubric || {};
   const rubricRows = [
     ['Claims & Disclosure', 'Specific and verifiable?', rb.claims ?? rb.specificity ?? 0],
@@ -1682,108 +1894,54 @@ function showResult(scan) {
     ['Ingredient Impact', 'What is actually in it', rb.ingredient_impact ?? rb.biggest_impact ?? 0],
     ['Supply Chain', 'Origin, distance, footprint', rb.supply_chain ?? rb.marketing_vs_action ?? 0],
   ];
-
-  const verdict = scan.verdict || buildVerdict(scan);
-  const whatsGood = scan.whats_good || scan.what_covers || [];
-  const notOnLabel = scan.whats_not_on_label || scan.what_missing || [];
-  const worthKnowing = scan.worth_knowing || scan.red_flags || [];
   const tips = scan.tips || [];
 
-  const rd = {};  // structured data already in scan fields
-
+  // ── Build 3-tier body ──
   document.getElementById('r-body').innerHTML =
-    // Headline — the 1-liner
-    (scan.headline
-      ? '<div class="gs-headline">' + escH(noEmoji(scan.headline)) + '</div>'
+
+    // ── TIER 1: Instant answer (above fold) ──
+    buildInstantCard(scan, rubricRows)
+
+    // Win / Tradeoff — fast context
+    + ((scan.win || scan.tradeoff)
+      ? '<div class="card" style="margin-top:0">'
+        + '<div class="win-trade">'
+        + (scan.win ? '<div class="wt-block wt-win"><div class="wt-label">Win</div><div class="wt-text">' + escH(noEmoji(scan.win)) + '</div></div>' : '')
+        + (scan.tradeoff ? '<div class="wt-block wt-trade"><div class="wt-label">Trade-off</div><div class="wt-text">' + escH(noEmoji(scan.tradeoff)) + '</div></div>' : '')
+        + '</div></div>'
       : '')
 
-    // Quick view: packaging / ingredients / transport / transparency
-    + ((scan.packaging || scan.ingredients || scan.transport || scan.transparency_label)
-      ? '<div class="card quick-view">'
-        + (scan.packaging ? '<div class="qv-row"><span class="qv-label">Packaging</span><span class="qv-val">' + escH(noEmoji(scan.packaging)) + '</span></div>' : '')
-        + (scan.ingredients ? '<div class="qv-row"><span class="qv-label">Ingredients</span><span class="qv-val">' + escH(noEmoji(scan.ingredients)) + '</span></div>' : '')
-        + (scan.transport ? '<div class="qv-row"><span class="qv-label">Transport</span><span class="qv-val">' + escH(noEmoji(scan.transport)) + '</span></div>' : '')
-        + (scan.transparency_label ? '<div class="qv-row"><span class="qv-label">Transparency</span><span class="qv-val">' + escH(noEmoji(scan.transparency_label)) + '</span></div>' : '')
-        + (scan.verdict_tag ? '<div class="qv-verdict">' + escH(noEmoji(scan.verdict_tag)) + '</div>' : '')
-        + '</div>'
-      : '')
+    // ── TIER 2: Progress + Swap CTA ──
+    + buildProgressStrip(sc)
+    + '<div id="swap-cta-slot"></div>'
 
-    // Real story
-    + (scan.real_story
-      ? '<div class="card"><div class="card-label">The real story</div><div class="verdict-text">' + escH(noEmoji(scan.real_story)) + '</div></div>'
-      : (!scan.headline && verdict ? '<div class="card"><div class="card-label">The Verdict</div><div class="verdict-text">' + escH(verdict) + '</div></div>' : ''))
-
-    // Why it matters + Win/Tradeoff
-    + ((scan.why_it_matters || scan.win || scan.tradeoff)
-      ? '<div class="card">'
-        + (scan.why_it_matters ? '<div class="card-label">Why it matters</div><div class="why-text">' + escH(noEmoji(scan.why_it_matters)) + '</div>' : '')
-        + ((scan.win || scan.tradeoff)
-          ? '<div class="win-trade">'
-            + (scan.win ? '<div class="wt-block wt-win"><div class="wt-label">Win</div><div class="wt-text">' + escH(noEmoji(scan.win)) + '</div></div>' : '')
-            + (scan.tradeoff ? '<div class="wt-block wt-trade"><div class="wt-label">Trade-off</div><div class="wt-text">' + escH(noEmoji(scan.tradeoff)) + '</div></div>' : '')
-            + '</div>'
-          : '')
-        + '</div>'
-      : '')
-
-    // Compare hook
-    + (scan.compare_hook
-      ? '<div class="compare-hook">' + escH(noEmoji(scan.compare_hook)) + '</div>'
-      : '')
-
-    // What better looks like
-    + (scan.better_path
-      ? '<div class="card better-path-card"><div class="card-label">What better looks like</div>'
-        + '<div class="better-path-text">' + escH(noEmoji(scan.better_path)) + '</div>'
-        + '</div>'
-      : '')
-
-    // 5 signals
-    + '<div class="card"><div class="card-label">The 5 Signals</div>'
-    + rubricRows.map(([label, sub, val]) => {
-        const pct = Math.round((Number(val) / 20) * 100);
-        const color = Number(val) >= 15 ? 'var(--sage)' : Number(val) >= 10 ? 'var(--amber)' : '#EF4444';
-        return '<div class="rbar">'
-          + '<div class="rbar-row"><span class="rbar-label">' + label + '<span class="rbar-sub"> — ' + sub + '</span></span>'
-          + '<span class="rbar-val" style="color:' + color + '">' + val + '/20</span></div>'
-          + '<div class="rbar-track"><div class="rbar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
-      }).join('')
+    // Full breakdown toggle
+    + '<div class="breakdown-toggle" onclick="toggleBreakdown(this)">'
+    + '<span class="bt-text">Full breakdown</span>'
+    + '<span class="bt-chev" id="bt-chev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>'
     + '</div>'
 
-    // Scope 3 only (most important)
-    + ((scan.scope?.scope3 || scan.scope3_text)
-      ? '<div class="card"><div class="card-label">Where the footprint actually hides</div>'
-        + '<div class="scope-row"><div class="scope-bub s3">S3</div><div>'
-        + '<div class="scope-desc">' + escH(scan.scope?.scope3 || scan.scope3_text || '') + '</div>'
-        + '</div></div></div>'
-      : '')
-
-    // Tips
-    + (tips.length
-      ? '<div class="card"><div class="card-label">Worth knowing</div>'
-        + tips.map(t => '<div style="font-size:17px;color:var(--text-mid);padding:9px 0;border-bottom:1px solid var(--warm);line-height:1.65;display:flex;gap:8px"><span style="color:var(--sage);flex-shrink:0">→</span><span>' + escH(noEmoji(t)) + '</span></div>').join('')
-        + '</div>'
-      : '')
-
-    // Sustainability URL — async-loaded after quick score (shown lower on page)
-    + '<div id="sustain-url-slot"></div>'
-
-    // YKO card
-    + (scan.brand ? '<div id="yko-card-slot" style="min-height:72px"></div>' : '')
-
-    // Actions
-    + '<div class="action-row">'
-    + '<button class="action-btn primary" onclick="addToCompare()">Compare</button>'
-    + '<button class="action-btn secondary" onclick="shareScore()">Share</button>'
+    // ── TIER 3: Full breakdown (collapsed until tapped) ──
+    + '<div class="breakdown-body" id="breakdown-body">'
+    + buildFullBreakdown(scan, rubricRows, tips)
     + '</div>';
 
   setActiveNav('');
   show('s-result');
   document.getElementById('r-body').scrollTop = 0;
 
-  // Fire async extras — non-blocking, fill in after quick score shows
+  // Animate score ring with count-up (80ms delay lets the screen transition settle)
+  setTimeout(() => animateScoreRing(sc), 80);
+
+  // Async extras into slots inside breakdown body
   if (scan.brand) loadYkoCard(scan.brand, scan.product_name || '', scan);
   loadSustainUrl(scan);
+
+  // Gamification
+  recordScan(sc);
+
+  // Lazy-load swap suggestions 450ms post-render (non-blocking)
+  setTimeout(() => loadSwaps(scan), 450);
 }
 
 function loadSustainUrl(scan) {
@@ -1791,15 +1949,14 @@ function loadSustainUrl(scan) {
   if (!slot) return;
   const url = scan.sustainability_url;
   if (!url || url === 'null' || !url.startsWith('http')) return;
-  // Small delay so main content renders first
   setTimeout(() => {
     if (!document.getElementById('sustain-url-slot')) return;
-    slot.innerHTML = '<div style="margin:0 14px 10px;padding:12px 16px;background:var(--pale);border-radius:16px;display:flex;align-items:center;justify-content:space-between">'
+    slot.innerHTML = '<div style="margin:0 0 10px;padding:12px 16px;background:var(--pale);border-radius:16px;display:flex;align-items:center;justify-content:space-between">'
       + '<div><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--moss);text-transform:uppercase;margin-bottom:3px">Sustainability page</div>'
       + '<div style="font-size:13px;color:var(--forest)">' + escH(url.split('//').pop().replace('www.','').split('/')[0]) + '</div></div>'
-      + '<a href="' + escH(url) + '" target="_blank" rel="noopener" style="background:var(--forest);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;text-decoration:none;white-space:nowrap">View →</a>'
+      + '<a href="' + escH(url) + '" target="_blank" rel="noopener" style="background:var(--forest);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;text-decoration:none;white-space:nowrap">View \u2192</a>'
       + '</div>';
-  }, 400);
+  }, 600);
 }
 
 function shareScore() {
@@ -1813,6 +1970,274 @@ function shareScore() {
   } else {
     navigator.clipboard.writeText(text + ' ' + url).then(() => showToast('Copied to clipboard')).catch(() => showToast('Score: ' + sc + '/100'));
   }
+}
+
+// ─── SCORE RING ANIMATION ─────────────────────────────────────────────────────
+function animateScoreRing(score) {
+  const fill = document.getElementById('r-ring-fill');
+  const numEl = document.getElementById('r-grade-letter');
+  if (!fill || !numEl) return;
+  const circ = 314.16; // 2 * pi * 50
+  const targetOffset = circ * (1 - score / 100);
+  const ringColor = score >= 80 ? '#95D5B2' : score >= 60 ? '#FCD34D' : '#FCA5A5';
+  fill.style.stroke = ringColor;
+  fill.style.strokeDashoffset = targetOffset;
+  // Number count-up
+  const duration = 950;
+  const startTime = performance.now();
+  function step(now) {
+    const p = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    numEl.textContent = Math.round(eased * score);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ─── INSTANT CARD (above fold) ────────────────────────────────────────────────
+function buildInstantCard(scan, rubricRows) {
+  const verdictText = scan.verdict_tag || scan.headline || '';
+  // Pick 3 most illustrative pills: best, worst, and middle signal
+  var shortLabels = ['Claims', 'Certs', 'Packaging', 'Ingredients', 'Supply'];
+  var pills = rubricRows.map(function(r, i) {
+    return { label: shortLabels[i] || 'Signal', val: Number(r[2]) };
+  });
+  var sorted = pills.slice().sort(function(a, b) { return b.val - a.val; });
+  var selected = sorted.length >= 3
+    ? [sorted[0], sorted[sorted.length - 1], sorted[Math.floor((sorted.length - 1) / 2)]]
+    : sorted;
+  // De-dupe by label
+  var seen = {};
+  var pills3 = selected.filter(function(p) {
+    if (seen[p.label]) return false;
+    seen[p.label] = true; return true;
+  }).slice(0, 3);
+  return '<div class="instant-card">'
+    + (verdictText ? '<div class="verdict-tag-text">' + escH(noEmoji(verdictText)) + '</div>' : '')
+    + '<div class="signal-pills-row">'
+    + pills3.map(function(p) {
+        var cls = p.val >= 14 ? 'sp-high' : p.val >= 9 ? 'sp-mid' : 'sp-low';
+        return '<div class="sig-pill ' + cls + '">'
+          + '<div class="sig-pill-val">' + p.val + '/20</div>'
+          + '<div class="sig-pill-label">' + escH(p.label) + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div></div>';
+}
+
+// ─── PROGRESS STRIP (gamification) ───────────────────────────────────────────
+function buildProgressStrip(currentScore) {
+  var stats = getTripStats();
+  var scanNum = stats.count + 1; // +1 because recordScan runs after body builds
+  var betterCount = stats.better + (currentScore >= 60 ? 1 : 0);
+  var maxDots = 5;
+  var dotCount = Math.min(scanNum, maxDots);
+  var dotsHtml = '';
+  for (var i = 0; i < Math.max(dotCount, 3); i++) {
+    if (i > maxDots - 1) break;
+    if (i < scanNum - 1) dotsHtml += '<div class="ps-dot filled"></div>';
+    else if (i === scanNum - 1) dotsHtml += '<div class="ps-dot current"></div>';
+    else dotsHtml += '<div class="ps-dot"></div>';
+  }
+  var text = '';
+  if (scanNum === 1) text = 'First scan of your trip.';
+  else if (scanNum <= 5) text = '<strong>Scan ' + scanNum + '</strong> of your trip';
+  else text = '<strong>' + scanNum + ' products</strong> scanned this session';
+  if (betterCount > 0) {
+    text += ' \u00b7 <strong>' + betterCount + ' better choice' + (betterCount !== 1 ? 's' : '') + '</strong>';
+  }
+  return '<div class="progress-strip"><div class="ps-dots">' + dotsHtml + '</div>'
+    + '<div class="ps-text">' + text + '</div></div>';
+}
+
+// ─── FULL BREAKDOWN (collapsed tier-3 content) ────────────────────────────────
+function buildFullBreakdown(scan, rubricRows, tips) {
+  var verdict = scan.verdict || buildVerdict(scan);
+  return ''
+    + (scan.headline ? '<div class="gs-headline">' + escH(noEmoji(scan.headline)) + '</div>' : '')
+    + ((scan.packaging || scan.ingredients || scan.transport || scan.transparency_label)
+      ? '<div class="card quick-view">'
+        + (scan.packaging ? '<div class="qv-row"><span class="qv-label">Packaging</span><span class="qv-val">' + escH(noEmoji(scan.packaging)) + '</span></div>' : '')
+        + (scan.ingredients ? '<div class="qv-row"><span class="qv-label">Ingredients</span><span class="qv-val">' + escH(noEmoji(scan.ingredients)) + '</span></div>' : '')
+        + (scan.transport ? '<div class="qv-row"><span class="qv-label">Transport</span><span class="qv-val">' + escH(noEmoji(scan.transport)) + '</span></div>' : '')
+        + (scan.transparency_label ? '<div class="qv-row"><span class="qv-label">Transparency</span><span class="qv-val">' + escH(noEmoji(scan.transparency_label)) + '</span></div>' : '')
+        + '</div>' : '')
+    + (scan.real_story
+      ? '<div class="card"><div class="card-label">The real story</div><div class="verdict-text">' + escH(noEmoji(scan.real_story)) + '</div></div>'
+      : (!scan.headline && verdict ? '<div class="card"><div class="card-label">Verdict</div><div class="verdict-text">' + escH(verdict) + '</div></div>' : ''))
+    + (scan.why_it_matters
+      ? '<div class="card"><div class="card-label">Why it matters</div><div class="why-text">' + escH(noEmoji(scan.why_it_matters)) + '</div></div>' : '')
+    + (scan.compare_hook ? '<div class="compare-hook">' + escH(noEmoji(scan.compare_hook)) + '</div>' : '')
+    + (scan.better_path
+      ? '<div class="card better-path-card"><div class="card-label">What better looks like</div><div class="better-path-text">' + escH(noEmoji(scan.better_path)) + '</div></div>' : '')
+    + '<div class="card"><div class="card-label">The 5 Signals</div>'
+    + rubricRows.map(function(row) {
+        var label = row[0], sub = row[1], val = Number(row[2]);
+        var pct = Math.round((val / 20) * 100);
+        var color = val >= 15 ? 'var(--sage)' : val >= 10 ? 'var(--amber)' : '#EF4444';
+        return '<div class="rbar"><div class="rbar-row">'
+          + '<span class="rbar-label">' + escH(label) + '<span class="rbar-sub"> \u2014 ' + escH(sub) + '</span></span>'
+          + '<span class="rbar-val" style="color:' + color + '">' + val + '/20</span></div>'
+          + '<div class="rbar-track"><div class="rbar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
+      }).join('')
+    + '</div>'
+    + ((scan.scope && scan.scope.scope3) || scan.scope3_text
+      ? '<div class="card"><div class="card-label">Where the footprint actually hides</div>'
+        + '<div class="scope-row"><div class="scope-bub s3">S3</div><div>'
+        + '<div class="scope-desc">' + escH((scan.scope && scan.scope.scope3) || scan.scope3_text || '') + '</div>'
+        + '</div></div></div>' : '')
+    + (tips.length
+      ? '<div class="card"><div class="card-label">Worth knowing</div>'
+        + tips.map(function(t) {
+            return '<div style="font-size:17px;color:var(--text-mid);padding:9px 0;border-bottom:1px solid var(--warm);line-height:1.65;display:flex;gap:8px"><span style="color:var(--sage);flex-shrink:0">\u2192</span><span>' + escH(noEmoji(t)) + '</span></div>';
+          }).join('') + '</div>' : '')
+    + '<div id="sustain-url-slot"></div>'
+    + (scan.brand ? '<div id="yko-card-slot" style="min-height:72px"></div>' : '')
+    + '<div class="action-row">'
+    + '<button class="action-btn primary" onclick="addToCompare()">Compare</button>'
+    + '<button class="action-btn secondary" onclick="shareScore()">Share</button>'
+    + '</div>';
+}
+
+// ─── BREAKDOWN TOGGLE ─────────────────────────────────────────────────────────
+function toggleBreakdown(toggleEl) {
+  var body = document.getElementById('breakdown-body');
+  var chev = document.getElementById('bt-chev');
+  if (!body) return;
+  var isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+  if (!isOpen) {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    body.style.opacity = '1';
+    if (chev) chev.classList.add('open');
+  } else {
+    body.style.maxHeight = '0px';
+    body.style.opacity = '0';
+    if (chev) chev.classList.remove('open');
+  }
+}
+
+// ─── GAMIFICATION ─────────────────────────────────────────────────────────────
+function getTodayKey() {
+  return 'gs_trip_' + new Date().toISOString().slice(0, 10);
+}
+function getTripStats() {
+  var raw = localStorage.getItem(getTodayKey());
+  return raw ? JSON.parse(raw) : { count: 0, better: 0 };
+}
+function saveTripStats(stats) {
+  localStorage.setItem(getTodayKey(), JSON.stringify(stats));
+}
+function recordScan(score) {
+  var stats = getTripStats();
+  stats.count = (stats.count || 0) + 1;
+  if (score >= 60) stats.better = (stats.better || 0) + 1;
+  saveTripStats(stats);
+  var lifetime = (parseInt(localStorage.getItem('gs_total_scans') || '0', 10)) + 1;
+  localStorage.setItem('gs_total_scans', String(lifetime));
+  checkMilestone(lifetime);
+}
+function checkMilestone(lifetime) {
+  var milestones = {
+    5: ['5 products scanned.', 'You are starting to see real patterns.'],
+    10: ['10 products scanned.', 'You are getting good at spotting greenwashing.'],
+    25: ['25 products scanned.', 'You are building real sustainability literacy.'],
+    50: ['50 scans.', 'You have a sharper eye than most shoppers.'],
+    100: ['100 scans.', 'You see through labels that fool everyone else.'],
+  };
+  var msg = milestones[lifetime];
+  if (msg) showMilestone(msg[0], msg[1]);
+}
+function showMilestone(title, sub) {
+  var banner = document.getElementById('milestone-banner');
+  if (!banner) return;
+  document.getElementById('mb-title').textContent = title;
+  document.getElementById('mb-sub').textContent = sub || '';
+  banner.classList.add('show');
+  setTimeout(function() { banner.classList.remove('show'); }, 4200);
+}
+
+// ─── SWAPS ────────────────────────────────────────────────────────────────────
+var _swaps = null;
+
+function openSwapSheet() {
+  document.getElementById('swap-backdrop').classList.add('open');
+  document.getElementById('swap-sheet').classList.add('open');
+}
+function closeSwapSheet() {
+  document.getElementById('swap-backdrop').classList.remove('open');
+  document.getElementById('swap-sheet').classList.remove('open');
+}
+
+async function loadSwaps(scan) {
+  if (!scan || !scan.id) return;
+  var ctaSlot = document.getElementById('swap-cta-slot');
+  if (!ctaSlot) return;
+  // Show loading state
+  ctaSlot.innerHTML = '<div class="swap-cta" style="opacity:0.55;pointer-events:none">'
+    + '<div class="swap-cta-left"><div class="swap-cta-title">Finding better options\u2026</div>'
+    + '<div class="swap-cta-sub">Based on your category and score</div></div>'
+    + '<div class="swap-cta-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div></div>';
+  try {
+    var res = await fetch('/api/swaps/' + scan.id);
+    if (!res.ok) throw new Error('swaps failed');
+    var d = await res.json();
+    _swaps = d.swaps || [];
+    if (!_swaps.length) { ctaSlot.innerHTML = ''; return; }
+    // Render CTA
+    var cat = (scan.category || 'this category').replace(/_/g, ' ');
+    ctaSlot.innerHTML = '<div class="swap-cta" onclick="openSwapSheet()">'
+      + '<div class="swap-cta-left">'
+      + '<div class="swap-cta-title">' + _swaps.length + ' better option' + (_swaps.length !== 1 ? 's' : '') + ' in ' + escH(cat) + '</div>'
+      + '<div class="swap-cta-sub">Tap to see alternatives</div>'
+      + '</div>'
+      + '<div class="swap-cta-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>'
+      + '</div>';
+    // Pre-render swap sheet content
+    renderSwapSheet(scan.category, _swaps);
+  } catch (e) {
+    if (ctaSlot) ctaSlot.innerHTML = '';
+  }
+}
+
+function renderSwapSheet(category, swaps) {
+  var titleEl = document.getElementById('swap-sheet-title');
+  var bodyEl = document.getElementById('swap-sheet-body');
+  if (!titleEl || !bodyEl) return;
+  var cat = (category || 'this category').replace(/_/g, ' ');
+  titleEl.textContent = 'Better options in ' + cat;
+  if (!swaps || !swaps.length) {
+    bodyEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-light);font-size:13px">No specific alternatives found.</div>';
+    return;
+  }
+  bodyEl.innerHTML = swaps.map(function(sw) {
+    var sc = Number(sw.estimated_score) || 0;
+    var bg = sc >= 70 ? 'var(--pale)' : sc >= 55 ? 'var(--amber-bg)' : 'var(--warm)';
+    var fg = sc >= 70 ? 'var(--moss)' : sc >= 55 ? '#92400e' : 'var(--text-mid)';
+    var nameArg = JSON.stringify(String(sw.name || ''));
+    var brandArg = JSON.stringify(String(sw.brand || ''));
+    return '<div class="swap-card">'
+      + '<div class="sc-top">'
+      + '<div class="sc-score" style="background:' + bg + '">'
+      + '<div class="sc-score-num" style="color:' + fg + '">' + sc + '</div>'
+      + '<div class="sc-score-sub" style="color:' + fg + '">/100</div>'
+      + '</div>'
+      + '<div class="sc-info">'
+      + '<div class="sc-name">' + escH(sw.name || '') + '</div>'
+      + '<div class="sc-brand">' + escH(sw.brand || '') + '</div>'
+      + '</div></div>'
+      + '<div class="sc-why">' + escH(sw.why_better || '') + '</div>'
+      + '<button class="sc-scan-btn" onclick="scanSwapProduct(' + nameArg + ',' + brandArg + ')">'
+      + '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>'
+      + 'Scan to compare'
+      + '</button></div>';
+  }).join('');
+}
+
+function scanSwapProduct(name, brand) {
+  closeSwapSheet();
+  document.getElementById('input-product').value = ((brand ? brand + ' ' : '') + name).trim();
+  document.getElementById('input-claim').value = '';
+  showManualInput();
 }
 
 // Carbon SVG arrow — no emoji
@@ -3022,6 +3447,50 @@ app.get('/icon.svg', (c) => {
   return new Response(svg, {
     headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' },
   });
+});
+
+// ─── GET /api/swaps/:scan_id ──────────────────────────────────────────────────
+
+app.get('/api/swaps/:scan_id', async (c) => {
+  const scanId = c.req.param('scan_id');
+
+  // Ensure swaps table exists (lazy migration)
+  await c.env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS swaps (
+      id TEXT PRIMARY KEY,
+      scan_id TEXT NOT NULL,
+      swaps_json TEXT NOT NULL,
+      created_at INTEGER DEFAULT (unixepoch())
+    )
+  `).run();
+
+  const scan = await c.env.DB.prepare('SELECT * FROM scans WHERE id = ?').bind(scanId).first<ScanRow>();
+  if (!scan) return c.json({ error: 'Scan not found' }, 404);
+
+  // Serve from cache if less than 7 days old
+  const cutoff = Math.floor(Date.now() / 1000) - 7 * 24 * 3600;
+  const cached = await c.env.DB.prepare(
+    'SELECT swaps_json FROM swaps WHERE scan_id = ? AND created_at > ? LIMIT 1'
+  ).bind(scanId, cutoff).first<{ swaps_json: string }>();
+
+  if (cached) {
+    return c.json({ swaps: JSON.parse(cached.swaps_json) });
+  }
+
+  try {
+    const swaps = await generateSwapsWithGemini(c.env.GEMINI_API_KEY, scan);
+
+    // Cache in background — don't block response
+    c.executionCtx.waitUntil(
+      c.env.DB.prepare('INSERT OR REPLACE INTO swaps (id, scan_id, swaps_json, created_at) VALUES (?,?,?,?)')
+        .bind(nanoid(), scanId, JSON.stringify(swaps), Math.floor(Date.now() / 1000)).run()
+    );
+
+    return c.json({ swaps });
+  } catch (err) {
+    console.error('Swaps generation error:', err);
+    return c.json({ swaps: [] });
+  }
 });
 
 export default app;
