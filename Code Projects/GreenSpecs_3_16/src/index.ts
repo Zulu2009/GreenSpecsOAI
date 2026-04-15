@@ -134,6 +134,7 @@ function formatScan(row: ScanRow) {
     verdict_tag: (safeJSON<Record<string,string>>(row.research_data, {})).verdict_tag || null,
     sustainability_url: (safeJSON<Record<string,string>>(row.research_data, {})).sustainability_url || null,
     better_path: (safeJSON<Record<string,string>>(row.research_data, {})).better_path || null,
+    certifications_found: (safeJSON<Record<string,unknown>>(row.research_data, {})).certifications_found || [],
     location_name: row.location_name,
     price: row.price,
     lat: row.lat,
@@ -329,7 +330,8 @@ Return ONLY valid JSON, no markdown:
   "scope3_text": "1 sentence. Everything upstream — where the real footprint hides.",
   "sustainability_url": "URL to brand's official sustainability page, or null if unknown",
   "tips": ["1 sentence, 12 words max. Real, useful. Max 2 items."],
-  "better_path": "1-2 sentences. What genuinely better looks like in this category. Specific and real — name formats, certs, sourcing models, or actual brands. Sets the ceiling so this score stays honest."
+  "better_path": "1-2 sentences. What genuinely better looks like in this category. Specific and real — name formats, certs, sourcing models, or actual brands. Sets the ceiling so this score stays honest.",
+  "certifications_found": ["Array of certification names visible or strongly implied on this product. Use exact standard names only: USDA Organic, Demeter Biodynamic, Regenerative Organic Certified, B Corp Certified, Fair Trade USA, Fair Trade Certified, Rainforest Alliance, Non-GMO Verified, EPA Safer Choice, NSF Certified, FSC Certified, Certified Humane, Animal Welfare Approved, Made with Organic Ingredients, Carbon Neutral Certified, Leaping Bunny. Empty array [] if none found. Do not invent or guess — only include what is on the label or strongly verifiable."]
 }`;
 
 // ─── Comparison System Prompt ─────────────────────────────────────────────────
@@ -1421,6 +1423,71 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .sc-scan-btn:active{background:rgba(82,183,136,0.18)}
 .sc-scan-btn svg{width:14px;height:14px;stroke:var(--moss);fill:none;stroke-width:2}
 
+/* ── CERT STRIP (in result) ── */
+.cert-strip{background:var(--card);margin:8px 14px 0;border-radius:18px;
+  padding:13px 16px;box-shadow:var(--shadow)}
+.cert-strip-label{font-size:10px;font-weight:700;letter-spacing:1.2px;
+  color:var(--text-light);text-transform:uppercase;margin-bottom:10px}
+.cert-chips-row{display:flex;flex-wrap:wrap;gap:7px}
+.cert-chip{display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:20px;
+  cursor:pointer;font-size:12px;font-weight:600;line-height:1;
+  transition:opacity 0.15s;-webkit-tap-highlight-color:transparent;border:none}
+.cert-chip:active{opacity:0.75}
+.cert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* Gold: government-audited, farm-level */
+.ct-gold{background:rgba(45,106,79,0.08);color:var(--forest)}
+.ct-gold .cert-dot{background:var(--moss)}
+/* Silver: real third-party testing, specific scope */
+.ct-silver{background:rgba(59,130,246,0.07);color:#1D4ED8}
+.ct-silver .cert-dot{background:#3B82F6}
+/* Bronze: some value, limited scope */
+.ct-bronze{background:rgba(245,158,11,0.08);color:#92400e}
+.ct-bronze .cert-dot{background:#F59E0B}
+/* None: marketing, no standard */
+.ct-none{background:rgba(239,68,68,0.06);color:#b91c1c}
+.ct-none .cert-dot{background:#EF4444}
+.cert-hint{margin-top:9px;font-size:11px;color:var(--text-light);font-style:italic}
+
+/* ── CERT GUIDE SCREEN ── */
+.cg-hero{background:linear-gradient(155deg,var(--forest),var(--moss));
+  padding:calc(var(--safe-top) + 52px) 20px 24px;position:relative;flex-shrink:0}
+.cg-back{position:absolute;top:calc(var(--safe-top) + 12px);left:14px;
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cg-back svg{width:18px;height:18px;stroke:white;fill:none;stroke-width:2.5}
+.cg-title{font-family:system-ui,-apple-system,sans-serif;font-size:26px;
+  font-weight:700;color:white;margin-bottom:5px}
+.cg-sub{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6}
+.cg-tier-block{margin:10px 14px 0}
+.cg-tier-header{display:flex;align-items:center;gap:10px;padding:12px 0 8px}
+.cg-tier-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cg-tier-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px}
+.cg-tier-sub{font-size:11px;color:var(--text-light);margin-left:auto}
+.cg-cert-card{background:var(--card);border-radius:16px;padding:13px 16px;
+  margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;
+  transition:box-shadow 0.15s}
+.cg-cert-card:active{box-shadow:none}
+.cg-cert-top{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.cg-cert-name{font-size:14px;font-weight:700;color:var(--forest);flex:1}
+.cg-cert-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;
+  text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.cg-cert-desc{font-size:12px;color:var(--text-mid);line-height:1.6}
+.cg-cert-scope{font-size:10px;font-weight:600;color:var(--text-light);
+  text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+/* Cert detail sheet */
+.cert-detail-name{font-family:system-ui,-apple-system,sans-serif;
+  font-size:19px;font-weight:700;color:var(--forest);margin-bottom:4px}
+.cert-detail-badge{display:inline-block;font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:20px;text-transform:uppercase;
+  letter-spacing:0.5px;margin-bottom:14px}
+.cert-detail-desc{font-size:15px;color:var(--text-mid);line-height:1.75;margin-bottom:14px}
+.cert-detail-row{display:flex;gap:12px;margin-bottom:8px;align-items:flex-start}
+.cert-detail-key{font-size:11px;font-weight:700;color:var(--text-light);
+  text-transform:uppercase;letter-spacing:0.5px;width:80px;flex-shrink:0;padding-top:2px}
+.cert-detail-val{font-size:13px;color:var(--text);line-height:1.55;flex:1}
+.cert-compare-note{margin-top:14px;padding:12px 14px;background:var(--pale);
+  border-radius:12px;font-size:12px;color:var(--forest);line-height:1.6;
+  font-style:italic}
 /* ── RATE & IMPROVE CARD ── */
 .ri-card{background:var(--card);margin:10px 14px 0;border-radius:22px;
   box-shadow:var(--shadow);overflow:hidden}
@@ -1693,6 +1760,10 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
       <span>How We Score</span>
     </button>
+    <button class="d-item" onclick="showCerts();closeDrawer()">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Cert Guide</span>
+    </button>
     <button class="d-item" id="d-learn" onclick="showLearn();closeDrawer()">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <span>Ask Sustainability</span>
@@ -1802,6 +1873,139 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <div class="swap-sheet-body" id="swap-sheet-body"></div>
 </div>
 
+<!-- \u2550\u2550 CERT GUIDE SCREEN \u2550\u2550 -->
+<div class="screen hidden" id="s-certs">
+  <div class="cg-hero">
+    <div class="cg-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="cg-title">Cert Guide</div>
+    <div class="cg-sub">What each certification actually requires \u2014 ranked by rigor.</div>
+  </div>
+  <div class="scrollable">
+    <!-- Gold tier -->
+    <div class="cg-tier-block">
+      <div class="cg-tier-header">
+        <div class="cg-tier-dot" style="background:var(--moss)"></div>
+        <div class="cg-tier-name" style="color:var(--forest)">Gold \u2014 Farm or company audited</div>
+        <div class="cg-tier-sub">Independent inspector visited</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('USDA Organic')">
+        <div class="cg-cert-top"><div class="cg-cert-name">USDA Organic</div><div class="cg-cert-badge" style="background:rgba(45,106,79,0.1);color:var(--forest)">Government</div></div>
+        <div class="cg-cert-desc">Farm inspector visits annually. No synthetic pesticides, no GMOs, soil health requirements. The gold standard for food ingredients.</div>
+        <div class="cg-cert-scope">Scope: Farm practices \u00b7 Ingredients \u00b7 Processing</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Demeter Biodynamic')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Demeter Biodynamic</div><div class="cg-cert-badge" style="background:rgba(45,106,79,0.1);color:var(--forest)">Farm</div></div>
+        <div class="cg-cert-desc">The most rigorous farm cert. Builds on organic \u2014 treats the farm as a living ecosystem. Composting, biodiversity, animal integration required.</div>
+        <div class="cg-cert-scope">Scope: Whole farm ecosystem \u00b7 Soil \u00b7 Animal welfare</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Regenerative Organic Certified')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Regenerative Organic Certified</div><div class="cg-cert-badge" style="background:rgba(45,106,79,0.1);color:var(--forest)">Farm</div></div>
+        <div class="cg-cert-desc">Built on top of USDA Organic. Adds soil carbon sequestration, animal welfare, and farmer economic resilience. The newest and most comprehensive.</div>
+        <div class="cg-cert-scope">Scope: Organic + soil carbon + farmer welfare</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('B Corp Certified')">
+        <div class="cg-cert-top"><div class="cg-cert-name">B Corp Certified</div><div class="cg-cert-badge" style="background:rgba(45,106,79,0.1);color:var(--forest)">Company</div></div>
+        <div class="cg-cert-desc">The whole company is audited \u2014 workers, community, environment, governance. Not just one product or one claim. Renewed every 3 years.</div>
+        <div class="cg-cert-scope">Scope: Entire company \u00b7 Workers \u00b7 Community</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Fair Trade USA')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Fair Trade USA</div><div class="cg-cert-badge" style="background:rgba(45,106,79,0.1);color:var(--forest)">Farm</div></div>
+        <div class="cg-cert-desc">Audits that farmers receive fair wages and safe conditions. Means the premium you pay reaches the people who grew it.</div>
+        <div class="cg-cert-scope">Scope: Farmer wages \u00b7 Working conditions \u00b7 Community</div>
+      </div>
+    </div>
+    <!-- Silver tier -->
+    <div class="cg-tier-block">
+      <div class="cg-tier-header">
+        <div class="cg-tier-dot" style="background:#3B82F6"></div>
+        <div class="cg-tier-name" style="color:#1D4ED8">Silver \u2014 Real testing, specific scope</div>
+        <div class="cg-tier-sub">Verified but narrower</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Non-GMO Verified')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Non-GMO Verified</div><div class="cg-cert-badge" style="background:rgba(59,130,246,0.09);color:#1D4ED8">Testing</div></div>
+        <div class="cg-cert-desc">Third-party testing confirms no GMO ingredients. Does not cover pesticides, farming practices, or soil health. A start, not the whole story.</div>
+        <div class="cg-cert-scope">Scope: GMO absence only</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Rainforest Alliance')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Rainforest Alliance</div><div class="cg-cert-badge" style="background:rgba(59,130,246,0.09);color:#1D4ED8">Farm</div></div>
+        <div class="cg-cert-desc">Farm-level audit covering environment and worker welfare. Variable rigor \u2014 some farms meet higher standards than others. Better than nothing, not as strong as organic.</div>
+        <div class="cg-cert-scope">Scope: Environment + worker welfare (variable)</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('EPA Safer Choice')">
+        <div class="cg-cert-top"><div class="cg-cert-name">EPA Safer Choice</div><div class="cg-cert-badge" style="background:rgba(59,130,246,0.09);color:#1D4ED8">Ingredients</div></div>
+        <div class="cg-cert-desc">EPA reviews every ingredient for safety to people and aquatic life. The real standard for cleaning products. Better than marketing claims on cleaning.</div>
+        <div class="cg-cert-scope">Scope: Cleaning + personal care ingredients</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Certified Humane')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Certified Humane</div><div class="cg-cert-badge" style="background:rgba(59,130,246,0.09);color:#1D4ED8">Farm</div></div>
+        <div class="cg-cert-desc">Animal welfare standards for farms raising livestock and poultry. Third-party audited. More meaningful than "cage-free" or "free-range" labels.</div>
+        <div class="cg-cert-scope">Scope: Animal welfare on farm</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('FSC Certified')">
+        <div class="cg-cert-top"><div class="cg-cert-name">FSC Certified</div><div class="cg-cert-badge" style="background:rgba(59,130,246,0.09);color:#1D4ED8">Forest</div></div>
+        <div class="cg-cert-desc">Wood and paper products from responsibly managed forests. Third-party audited. The real standard for paper, packaging, and wood products.</div>
+        <div class="cg-cert-scope">Scope: Paper \u00b7 Wood \u00b7 Packaging</div>
+      </div>
+    </div>
+    <!-- Bronze tier -->
+    <div class="cg-tier-block">
+      <div class="cg-tier-header">
+        <div class="cg-tier-dot" style="background:#F59E0B"></div>
+        <div class="cg-tier-name" style="color:#92400e">Bronze \u2014 Some value, limited scope</div>
+        <div class="cg-tier-sub">Worth noting, not the whole picture</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('Made with Organic Ingredients')">
+        <div class="cg-cert-top"><div class="cg-cert-name">Made with Organic Ingredients</div><div class="cg-cert-badge" style="background:rgba(245,158,11,0.1);color:#92400e">Partial</div></div>
+        <div class="cg-cert-desc">At least 70% organic ingredients, but not fully certified. Better than conventional but the remaining 30% is uncertified. Ask what the rest is.</div>
+        <div class="cg-cert-scope">Scope: Partial \u2014 70%+ organic only</div>
+      </div>
+      <div class="cg-cert-card" onclick="showCertByName('NSF Certified')">
+        <div class="cg-cert-top"><div class="cg-cert-name">NSF Certified</div><div class="cg-cert-badge" style="background:rgba(245,158,11,0.1);color:#92400e">Testing</div></div>
+        <div class="cg-cert-desc">Tests that ingredients match the label. Covers safety and identity \u2014 not farming practices or environmental impact.</div>
+        <div class="cg-cert-scope">Scope: Ingredient safety + label accuracy</div>
+      </div>
+    </div>
+    <!-- Marketing claims -->
+    <div class="cg-tier-block">
+      <div class="cg-tier-header">
+        <div class="cg-tier-dot" style="background:#EF4444"></div>
+        <div class="cg-tier-name" style="color:#b91c1c">Marketing \u2014 No standard, unverified</div>
+        <div class="cg-tier-sub">Anyone can print these</div>
+      </div>
+      <div class="cg-cert-card" style="border:1px solid rgba(239,68,68,0.12)">
+        <div class="cg-cert-desc" style="color:var(--text-mid)">These terms have no legal standard and require no third-party audit. Any brand can put them on any product.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+          <div class="ri-chip bad">Natural</div>
+          <div class="ri-chip bad">Eco-Friendly</div>
+          <div class="ri-chip bad">Green</div>
+          <div class="ri-chip bad">Sustainable</div>
+          <div class="ri-chip bad">Clean</div>
+          <div class="ri-chip bad">Non-Toxic</div>
+          <div class="ri-chip bad">Planet-Friendly</div>
+          <div class="ri-chip bad">Better for Earth</div>
+        </div>
+        <div class="cg-cert-scope" style="margin-top:10px">If this is the only claim \u2014 ask what it actually means. Probably nothing.</div>
+      </div>
+    </div>
+    <div style="height:16px"></div>
+  </div>
+</div>
+
+<!-- \u2550\u2550 CERT DETAIL SHEET \u2550\u2550 -->
+<div class="swap-sheet-backdrop" id="cert-backdrop" onclick="closeCertDetail()"></div>
+<div class="swap-sheet" id="cert-sheet">
+  <div class="swap-handle-row"><div class="swap-handle"></div></div>
+  <div class="swap-sheet-header">
+    <div class="swap-sheet-title" id="cert-sheet-title">Certification</div>
+    <button class="swap-close" onclick="closeCertDetail()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="swap-sheet-body" id="cert-sheet-body"></div>
+</div>
+
 <!-- \u2550\u2550 INSIGHT SHEET \u2550\u2550 -->
 <div class="swap-sheet-backdrop" id="insight-backdrop" onclick="closeInsightSheet()"></div>
 <div class="swap-sheet" id="insight-sheet">
@@ -1829,7 +2033,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260415-v9';
+const APP_VERSION = '20260415-v10';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -1995,6 +2199,9 @@ function showResult(scan) {
 
     // ── TIER 1: Instant answer (above fold) ──
     buildInstantCard(scan, rubricRows)
+
+    // Cert strip — certifications found on this product
+    + buildCertStrip(scan.certifications_found || [])
 
     // Win / Tradeoff — fast context
     + ((scan.win || scan.tradeoff)
@@ -2222,6 +2429,163 @@ function buildFullBreakdown(scan, rubricRows, tips) {
     + '<button class="action-btn secondary" onclick="shareScore()">Share</button>'
     + '</div>';
 }
+
+// ─── CERT GUIDE ───────────────────────────────────────────────────────────────
+var CERT_GUIDE = {
+  'USDA Organic': {
+    tier: 'gold', badge: 'Government', scope: 'Farm practices \u00b7 Ingredients \u00b7 Processing',
+    desc: 'A federal inspector visits the farm annually. No synthetic pesticides, no GMOs, soil health standards, and strict processing rules. One of the most meaningful labels in food.',
+    auditor: 'USDA accredited certifier', renewed: 'Annually',
+    compare: 'Stronger than Non-GMO Verified (covers the whole farm, not just GMOs). Weaker than Demeter Biodynamic or Regenerative Organic (no soil carbon requirement).'
+  },
+  'Demeter Biodynamic': {
+    tier: 'gold', badge: 'Farm', scope: 'Whole farm ecosystem \u00b7 Soil \u00b7 Animal welfare',
+    desc: 'The most rigorous farm certification. Builds on USDA Organic and treats the farm as a closed living system \u2014 composting, biodiversity corridors, livestock integration. Very few farms qualify.',
+    auditor: 'Demeter International', renewed: 'Annually',
+    compare: 'Stronger than USDA Organic. Requires the whole farm to function as an ecosystem, not just individual field practices.'
+  },
+  'Regenerative Organic Certified': {
+    tier: 'gold', badge: 'Farm', scope: 'Organic + soil carbon + farmer welfare',
+    desc: 'Built on top of USDA Organic. Adds measurable soil carbon sequestration, robust animal welfare standards, and farmer economic resilience. The newest and most comprehensive food cert.',
+    auditor: 'Regenerative Organic Alliance', renewed: 'Annually',
+    compare: 'Adds soil carbon and farmer equity to USDA Organic. Currently the highest standard for food crops.'
+  },
+  'B Corp Certified': {
+    tier: 'gold', badge: 'Company', scope: 'Entire company \u00b7 Workers \u00b7 Community \u00b7 Environment',
+    desc: 'The whole company is audited across workers, community impact, environment, and governance. Not just a product claim \u2014 the entire business model is reviewed. Score must exceed 80/200.',
+    auditor: 'B Lab', renewed: 'Every 3 years',
+    compare: 'Covers the company, not just ingredients. A B Corp selling conventional products is still better governed than a non-B Corp. Combine with organic certs for the full picture.'
+  },
+  'Fair Trade USA': {
+    tier: 'gold', badge: 'Farm', scope: 'Farmer wages \u00b7 Working conditions \u00b7 Community fund',
+    desc: 'Audits that farmers and workers receive fair minimum prices and safe working conditions. A community premium fund goes directly to the farming community for schools, clinics, and infrastructure.',
+    auditor: 'Fair Trade USA / FLO-CERT', renewed: 'Annually',
+    compare: 'Covers economic fairness at the farm level. Does not require organic practices. Best combined with USDA Organic for full impact.'
+  },
+  'Fair Trade Certified': {
+    tier: 'gold', badge: 'Farm', scope: 'Farmer wages \u00b7 Working conditions',
+    desc: 'Same as Fair Trade USA. Third-party audited fair wages and safe conditions for farmers and workers. The premium you pay reaches the people who grew it.',
+    auditor: 'Fair Trade USA / FLO-CERT', renewed: 'Annually',
+    compare: 'Same tier as Fair Trade USA. Look for both with USDA Organic for the strongest food choice.'
+  },
+  'Rainforest Alliance': {
+    tier: 'silver', badge: 'Farm', scope: 'Environment + worker welfare (variable)',
+    desc: 'Farm-level audit covering deforestation, biodiversity, water use, and basic worker welfare. Rigor varies by region and commodity. Better than no cert, but more variable than USDA Organic.',
+    auditor: 'Rainforest Alliance', renewed: 'Annually',
+    compare: 'Weaker than USDA Organic on farming practices but often combined with it on coffee and cocoa. The frog logo is real \u2014 just not as comprehensive as organic.'
+  },
+  'Non-GMO Verified': {
+    tier: 'silver', badge: 'Testing', scope: 'GMO absence only',
+    desc: 'Third-party testing confirms no genetically modified ingredients. A real test, but a narrow one \u2014 it says nothing about pesticides, soil health, or farming practices.',
+    auditor: 'Non-GMO Project', renewed: 'Annually',
+    compare: 'USDA Organic already includes non-GMO. If a product has USDA Organic, Non-GMO is redundant. If a product has Non-GMO but not Organic, it may still use conventional pesticides.'
+  },
+  'EPA Safer Choice': {
+    tier: 'silver', badge: 'Ingredients', scope: 'Cleaning + personal care ingredients',
+    desc: 'The EPA reviews every single ingredient for safety to human health and aquatic ecosystems. The real standard for cleaning products. Not easy to get.',
+    auditor: 'US Environmental Protection Agency', renewed: 'Ongoing',
+    compare: 'The best cert for cleaning products. More meaningful than natural, plant-based, or biodegradable claims. Look for it on cleaning products the way you look for USDA Organic on food.'
+  },
+  'Certified Humane': {
+    tier: 'silver', badge: 'Farm', scope: 'Animal welfare on farm',
+    desc: 'Third-party audited standards for space, enrichment, and treatment of farm animals. More meaningful than cage-free or free-range, which have looser definitions.',
+    auditor: 'Humane Farm Animal Care', renewed: 'Annually',
+    compare: 'Stronger than cage-free or free-range labels. Weaker than Animal Welfare Approved (AWA), which has stricter space requirements.'
+  },
+  'Animal Welfare Approved': {
+    tier: 'silver', badge: 'Farm', scope: 'Animal welfare \u00b7 Pasture access required',
+    desc: 'One of the highest animal welfare standards. Requires outdoor access and pasture for all animals. Only available to independent family farms.',
+    auditor: 'A Greener World', renewed: 'Annually',
+    compare: 'Stronger than Certified Humane on space and outdoor access requirements. Only available to family farms, not industrial operations.'
+  },
+  'FSC Certified': {
+    tier: 'silver', badge: 'Forest', scope: 'Paper \u00b7 Wood \u00b7 Packaging materials',
+    desc: 'Wood and paper from forests managed for long-term health. Third-party audited. The standard for paper, wood products, and fiber-based packaging.',
+    auditor: 'Forest Stewardship Council', renewed: 'Annually',
+    compare: 'The real standard for paper and wood products. Look for it on toilet paper, paper towels, packaging, and wood furniture.'
+  },
+  'NSF Certified': {
+    tier: 'bronze', badge: 'Testing', scope: 'Ingredient safety + label accuracy',
+    desc: 'Tests that the ingredients listed match what is actually in the product, and screens for common contaminants. Useful but does not evaluate farming, environmental impact, or full sustainability.',
+    auditor: 'NSF International', renewed: 'Annually',
+    compare: 'Good for supplements and personal care. Does not tell you about how ingredients were grown or sourced.'
+  },
+  'Made with Organic Ingredients': {
+    tier: 'bronze', badge: 'Partial', scope: 'At least 70% organic \u2014 the rest is not',
+    desc: 'Contains at least 70% USDA Organic certified ingredients. The remaining 30% is conventional. Better than fully conventional, but not the same as USDA Organic.',
+    auditor: 'USDA accredited certifier (partial)', renewed: 'Annually',
+    compare: 'A step below full USDA Organic. Worth noting, but look for the full certification when you can. Ask what the remaining 30% is.'
+  },
+  'Carbon Neutral Certified': {
+    tier: 'bronze', badge: 'Offset', scope: 'Net carbon emissions (often offset-based)',
+    desc: 'The company has measured and offset its carbon emissions, usually through carbon credits. The quality of offsets varies enormously \u2014 this is better than nothing but often relies on controversial credits.',
+    auditor: 'Various (Climate Neutral, PAS 2060)', renewed: 'Annually',
+    compare: 'Better than no carbon accounting. Weaker than actual Scope 3 reduction. The word "neutral" does not mean zero \u2014 it usually means "offset."'
+  },
+  'Leaping Bunny': {
+    tier: 'silver', badge: 'Animal', scope: 'No animal testing \u2014 company and suppliers',
+    desc: 'Verified cruelty-free: no animal testing by the company or any of its ingredient suppliers. More rigorous than the cruelty-free claims brands put on their own labels.',
+    auditor: 'Coalition for Consumer Information on Cosmetics', renewed: 'Annually',
+    compare: 'The gold standard for cruelty-free. Stricter than self-declared cruelty-free claims because it audits the supplier chain too.'
+  }
+};
+
+var _certList = [];
+
+function buildCertStrip(certs) {
+  if (!certs || !certs.length) return '';
+  _certList = certs;
+  var chipsHtml = certs.map(function(name, i) {
+    var info = CERT_GUIDE[name];
+    var tier = info ? info.tier : 'bronze';
+    var tierClass = 'ct-' + tier;
+    return '<button class="cert-chip ' + tierClass + '" onclick="showCertAtIdx(' + i + ')">'
+      + '<span class="cert-dot"></span>'
+      + escH(name)
+      + '</button>';
+  }).join('');
+  return '<div class="cert-strip">'
+    + '<div class="cert-strip-label">Certifications found</div>'
+    + '<div class="cert-chips-row">' + chipsHtml + '</div>'
+    + '<div class="cert-hint">Tap any cert to see what it actually requires.</div>'
+    + '</div>';
+}
+
+function showCertAtIdx(i) { showCertByName(_certList[i]); }
+
+function showCertByName(name) {
+  var info = CERT_GUIDE[name];
+  var titleEl = document.getElementById('cert-sheet-title');
+  var bodyEl  = document.getElementById('cert-sheet-body');
+  if (!titleEl || !bodyEl) return;
+  titleEl.textContent = name;
+  if (!info) {
+    bodyEl.innerHTML = '<div style="padding:20px 18px;font-size:14px;color:var(--text-mid)">No detailed guide entry for this certification yet.</div>';
+  } else {
+    var tierColors = { gold:'var(--forest)', silver:'#1D4ED8', bronze:'#92400e', none:'#b91c1c' };
+    var tierBgs    = { gold:'rgba(45,106,79,0.08)', silver:'rgba(59,130,246,0.08)', bronze:'rgba(245,158,11,0.09)', none:'rgba(239,68,68,0.06)' };
+    var tc = tierColors[info.tier] || 'var(--text)';
+    var tb = tierBgs[info.tier]    || 'var(--warm)';
+    bodyEl.innerHTML = '<div style="padding:16px 18px calc(16px + var(--safe-bottom))">'
+      + '<div class="cert-detail-name">' + escH(name) + '</div>'
+      + '<div class="cert-detail-badge" style="background:' + tb + ';color:' + tc + '">' + escH(info.badge || info.tier) + '</div>'
+      + '<div class="cert-detail-desc">' + escH(info.desc) + '</div>'
+      + '<div class="cert-detail-row"><div class="cert-detail-key">Auditor</div><div class="cert-detail-val">' + escH(info.auditor || 'Third party') + '</div></div>'
+      + '<div class="cert-detail-row"><div class="cert-detail-key">Renewed</div><div class="cert-detail-val">' + escH(info.renewed || 'Varies') + '</div></div>'
+      + '<div class="cert-detail-row"><div class="cert-detail-key">Scope</div><div class="cert-detail-val">' + escH(info.scope || '') + '</div></div>'
+      + (info.compare ? '<div class="cert-compare-note">' + escH(info.compare) + '</div>' : '')
+      + '</div>';
+  }
+  document.getElementById('cert-backdrop').classList.add('open');
+  document.getElementById('cert-sheet').classList.add('open');
+}
+
+function closeCertDetail() {
+  document.getElementById('cert-backdrop').classList.remove('open');
+  document.getElementById('cert-sheet').classList.remove('open');
+}
+
+function showCerts() { show('s-certs'); setActiveNav(''); }
 
 // ─── RATE & IMPROVE ───────────────────────────────────────────────────────────
 function rateGood() { rateScore('good'); }
