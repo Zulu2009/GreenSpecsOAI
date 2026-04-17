@@ -136,6 +136,7 @@ function formatScan(row: ScanRow) {
     sustainability_url: (safeJSON<Record<string,string>>(row.research_data, {})).sustainability_url || null,
     better_path: (safeJSON<Record<string,string>>(row.research_data, {})).better_path || null,
     certifications_found: (safeJSON<Record<string,unknown>>(row.research_data, {})).certifications_found || [],
+    carbon_estimate: (safeJSON<Record<string,unknown>>(row.research_data, {})).carbon_estimate || null,
     fiber_composition: (safeJSON<Record<string,unknown>>(row.research_data, {})).fiber_composition || null,
     pfc_free: (safeJSON<Record<string,unknown>>(row.research_data, {})).pfc_free ?? null,
     recycled_content_pct: (safeJSON<Record<string,unknown>>(row.research_data, {})).recycled_content_pct ?? null,
@@ -532,6 +533,13 @@ Return ONLY valid JSON, no markdown:
   "transparency": "3-5 words. e.g. Self-reported · thin",
   "verdict_tag": "5-8 words. The take. e.g. Safe default. Not leading.",
   "real_talk": "1 sentence. The single most important thing to know about this product. No hedging — name the biggest strength OR the most critical gap. e.g. 'The USDA Organic cert is real, but the plastic wrap mostly cancels it out.' or 'This scores high because the farm is actually audited every year — not just self-reported.'",
+  "carbon_estimate": {
+    "value": "Estimated carbon footprint as a number or tight range. Use well-established LCA benchmarks for the category. Examples: chocolate ~3-6 kg CO2e/100g, chicken ~0.6 kg CO2e/100g, cotton t-shirt ~10-15 kg CO2e/item. If you cannot estimate with reasonable confidence, use null.",
+    "unit": "The unit for the value: 'kg CO2e per 100g' | 'kg CO2e per kg' | 'kg CO2e per item' | 'kg CO2e per serving' | 'kg CO2e per litre' — choose the most meaningful unit for this product.",
+    "vs_category": "How this compares to the typical product in its category: 'below average' | 'average' | 'above average' | 'significantly above average'",
+    "confidence": "high | medium | low — how confident are you in this estimate given available data",
+    "context": "1 sentence. CRITICAL: if the carbon footprint is above average but the product has compensating factors (ethical sourcing, organic farming, fair trade, regenerative practices, certified supply chain), say so clearly. The number alone is often misleading. Example: 'Cocoa farming is inherently carbon-intensive — what matters more here is whether the supply chain is ethical and the farming regenerative.' Or if the number is genuinely bad with no offset: 'The carbon footprint is high and there are no certified practices here to compensate.' Do not moralize — just give the context a shopper needs."
+  },
   "scope3_text": "1 sentence. Everything upstream — where the real footprint hides.",
   "sustainability_url": "URL to brand's official sustainability page, or null if unknown",
   "tips": ["1 sentence, 12 words max. Real, useful. Max 2 items."],
@@ -698,7 +706,7 @@ async function analyzeWithGemini(
 // Comparison agent — single Gemini Flash call
 async function compareWithGemini(
   apiKey: string,
-  products: Array<{ id: string; name: string; brand: string; score: number; letter_grade: string; claim: string; headline: string | null; win: string | null; tradeoff: string | null; packaging: string | null; ingredients: string | null; transparency: string | null; verdict_tag: string | null }>,
+  products: Array<{ id: string; name: string; brand: string; score: number; letter_grade: string; claim: string; headline: string | null; win: string | null; tradeoff: string | null; packaging: string | null; ingredients: string | null; transparency: string | null; verdict_tag: string | null; carbon_estimate?: Record<string, unknown> | null }>,
 ): Promise<{ result: Record<string, unknown>; cost: number }> {
 
   const productLines = products.map((p, i) =>
@@ -714,7 +722,8 @@ async function compareWithGemini(
   ${p.packaging ? `packaging: "${p.packaging}"` : ''}
   ${p.ingredients ? `ingredients: "${p.ingredients}"` : ''}
   ${p.transparency ? `transparency: "${p.transparency}"` : ''}
-  ${p.verdict_tag ? `verdict_tag: "${p.verdict_tag}"` : ''}`
+  ${p.verdict_tag ? `verdict_tag: "${p.verdict_tag}"` : ''}
+  ${p.carbon_estimate ? `carbon: ~${(p.carbon_estimate as Record<string,unknown>).value} ${(p.carbon_estimate as Record<string,unknown>).unit} (${(p.carbon_estimate as Record<string,unknown>).vs_category})` : ''}`
   ).join('\n\n');
 
   const prompt = `Compare these ${products.length} products for a shopper who needs the fast truth right now.
@@ -1302,6 +1311,26 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   border-radius:16px;font-size:16px;color:rgba(255,255,255,0.9);line-height:1.5;
   font-style:italic}
 .better-path-card{border-left:3px solid var(--amber);background:var(--amber-bg)}
+/* carbon estimate card */
+.carbon-card{background:var(--card);border-radius:18px;margin:10px 14px 0;padding:16px 18px}
+.carbon-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.carbon-label{font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-light);margin-bottom:4px}
+.carbon-value{font-family:system-ui,-apple-system,sans-serif;font-size:24px;font-weight:700;color:var(--forest);letter-spacing:-0.5px;line-height:1}
+.carbon-unit{font-size:12px;color:var(--text-mid);margin-top:3px;font-weight:500}
+.carbon-bar{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.carbon-bar-track{flex:1;height:6px;border-radius:6px;background:var(--warm);position:relative;overflow:hidden}
+.carbon-bar-fill{height:100%;border-radius:6px;transition:width 0.6s ease}
+.carbon-bar-fill.co2-low{background:var(--sage);width:25%}
+.carbon-bar-fill.co2-avg{background:var(--amber);width:55%}
+.carbon-bar-fill.co2-high{background:#F97316;width:78%}
+.carbon-bar-fill.co2-very-high{background:#EF4444;width:95%}
+.carbon-vs{font-size:12px;font-weight:600;flex-shrink:0}
+.carbon-vs.co2-low{color:var(--sage)}
+.carbon-vs.co2-avg{color:var(--amber)}
+.carbon-vs.co2-high{color:#F97316}
+.carbon-vs.co2-very-high{color:#EF4444}
+.carbon-context{font-size:13px;color:var(--text-mid);line-height:1.55;border-top:1px solid var(--warm);padding-top:10px}
+.carbon-confidence{display:inline-block;margin-top:6px;font-size:11px;color:var(--text-light);background:var(--pale);padding:2px 8px;border-radius:10px}
 .better-path-text{font-size:17px;color:var(--text);line-height:1.7}
 
 /* ── MY SCANS ── */
@@ -2351,7 +2380,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260416-v14';
+const APP_VERSION = '20260416-v15';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -2734,6 +2763,39 @@ function buildProgressStrip(currentScore) {
 }
 
 // ─── FULL BREAKDOWN (collapsed tier-3 content) ────────────────────────────────
+// ─── CARBON ESTIMATE CARD ────────────────────────────────────────────────────
+function buildCarbonCard(scan) {
+  var ce = scan.carbon_estimate;
+  if (!ce || !ce.value) return '';
+  var vs = ce.vs_category || 'average';
+  var vsClass = vs === 'below average' ? 'co2-low'
+    : vs === 'average' ? 'co2-avg'
+    : vs === 'above average' ? 'co2-high'
+    : 'co2-very-high';
+  var vsLabel = vs === 'below average' ? 'Below category avg'
+    : vs === 'average' ? 'Near category avg'
+    : vs === 'above average' ? 'Above category avg'
+    : 'Much higher than avg';
+  var confLabel = ce.confidence === 'high' ? 'Estimate confidence: high'
+    : ce.confidence === 'low' ? 'Rough estimate — limited data'
+    : 'Estimated range';
+  return '<div class="carbon-card">'
+    + '<div class="carbon-top">'
+    + '<div>'
+    + '<div class="carbon-label">Carbon Footprint</div>'
+    + '<div class="carbon-value">~' + escH(String(ce.value)) + '</div>'
+    + '<div class="carbon-unit">' + escH(ce.unit || 'kg CO\u2082e') + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="carbon-bar">'
+    + '<div class="carbon-bar-track"><div class="carbon-bar-fill ' + vsClass + '"></div></div>'
+    + '<span class="carbon-vs ' + vsClass + '">' + vsLabel + '</span>'
+    + '</div>'
+    + (ce.context ? '<div class="carbon-context">' + escH(noEmoji(ce.context))
+      + '<br><span class="carbon-confidence">' + confLabel + '</span></div>' : '')
+    + '</div>';
+}
+
 function buildFullBreakdown(scan, rubricRows, tips) {
   var verdict = scan.verdict || buildVerdict(scan);
   return ''
@@ -2764,6 +2826,7 @@ function buildFullBreakdown(scan, rubricRows, tips) {
           + '<div class="rbar-track"><div class="rbar-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>';
       }).join('')
     + '</div>'
+    + buildCarbonCard(scan)
     + ((scan.scope && scan.scope.scope3) || scan.scope3_text
       ? '<div class="card"><div class="card-label">Where the footprint actually hides</div>'
         + '<div class="scope-row"><div class="scope-bub s3">S3</div><div>'
@@ -3438,6 +3501,13 @@ function renderCompareSnap() {
         + '<div class="cmp-card-row' + (pW ? ' winner' : '') + '">'
         + '<span class="cmp-row-label">Price</span>'
         + '<div class="cmp-row-val-wrap"><div class="cmp-row-val">' + escH(priceV) + '</div></div></div>'
+        + (d.carbon_est ? '<div class="cmp-card-row">'
+          + '<span class="cmp-row-label">Carbon est.</span>'
+          + '<div class="cmp-row-val-wrap">'
+          + '<div class="cmp-row-val">~' + escH(String(d.carbon_est)) + ' ' + escH(d.carbon_unit || 'kg CO\u2082e') + '</div>'
+          + (d.carbon_vs ? '<div class="cmp-row-note">' + escH(d.carbon_vs) + '</div>' : '')
+          + (d.carbon_context ? '<div class="cmp-row-note" style="font-style:italic">' + escH(d.carbon_context) + '</div>' : '')
+          + '</div></div>' : '')
         + '</div></div>';
     }
   });
@@ -4190,7 +4260,7 @@ app.post('/api/compare-snap', async (c) => {
         body: JSON.stringify({
           system_instruction: { parts: [{ text: COMPARE_SNAP_SYSTEM }] },
           contents: [{ parts: [
-            { text: 'Analyze this product. Return ONLY valid JSON, no markdown:\n{"product_name":"Full brand + product name","brand":"Brand only","price_detected":"Price shown or null","price_per_unit":"Price per oz/unit or null","price_per_unit_num":0.00,"ingredients_quality":"clean|mostly clean|mixed|avoid","ingredients_notes":"5-8 words why","sustainability_level":"high|medium|low|minimal","sustainability_notes":"5-8 words on key factor"}' },
+            { text: 'Analyze this product. Return ONLY valid JSON, no markdown:\n{"product_name":"Full brand + product name","brand":"Brand only","price_detected":"Price shown or null","price_per_unit":"Price per oz/unit or null","price_per_unit_num":0.00,"ingredients_quality":"clean|mostly clean|mixed|avoid","ingredients_notes":"5-8 words why","sustainability_level":"high|medium|low|minimal","sustainability_notes":"5-8 words on key factor","carbon_est":"Estimated kg CO2e per unit using category LCA benchmarks. Format: number or range e.g. 2.8 or 2-4. null if unknown.","carbon_unit":"e.g. per 100g or per item","carbon_vs":"below average|average|above average|significantly above average compared to category","carbon_context":"1 sentence. If carbon is high but ethical sourcing or organic farming compensates, say so. Otherwise note what drives it."}' },
             { inline_data: { mime_type: body.media_type || 'image/jpeg', data: body.image_base64 } }
           ]}],
           generationConfig: { temperature: 0.1, response_mime_type: 'application/json', maxOutputTokens: 350, thinkingConfig: { thinkingBudget: 0 } }
@@ -4214,6 +4284,12 @@ app.post('/api/compare-snap', async (c) => {
           if (rd.ingredients) result.ingredients_cached = rd.ingredients;
           if (rd.packaging) result.packaging_cached = rd.packaging;
           result.cached_score = cached.score;
+          if (rd.carbon_estimate) {
+            result.carbon_est = rd.carbon_estimate.value || result.carbon_est;
+            result.carbon_unit = rd.carbon_estimate.unit || result.carbon_unit;
+            result.carbon_vs = rd.carbon_estimate.vs_category || result.carbon_vs;
+            result.carbon_context = rd.carbon_estimate.context || result.carbon_context;
+          }
         } catch {}
       }
     }
