@@ -963,19 +963,22 @@ const PWA_HTML = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1B4332">
+<meta name="theme-color" content="#1e4020">
 <title>GreenSpecs</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --forest:#1B4332;--moss:#2D6A4F;--sage:#52B788;--mint:#95D5B2;--pale:#D8F3DC;
-  --cream:#F8F6F2;--warm:#EDE8DF;--card:#fff;
-  --amber:#F59E0B;--amber-bg:#FFFBEB;
+  --forest:#1e4020;--moss:#3d7a3a;--sage:#7ab85a;--mint:#d4e8c2;--pale:#d4e8c2;
+  --cream:#f2eedf;--warm:#e8dfc8;--card:#fffdf5;--fern:#3d7a3a;--gold:#e8c030;
+  --amber:#e8c030;--amber-bg:#fef8d8;
   --red:#DC2626;--red-bg:#FEF2F2;
-  --text:#1C2B22;--text-mid:#5A6B62;--text-light:#9DB0A0;
-  --shadow:0 2px 14px rgba(27,67,50,0.08);
-  --shadow-md:0 6px 28px rgba(27,67,50,0.13);
+  --text:#1a2f1c;--text-mid:#4e6050;--text-light:#859877;
+  --shadow:0 2px 14px rgba(30,64,32,0.08);
+  --shadow-md:0 6px 28px rgba(30,64,32,0.13);
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -1000,8 +1003,9 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .home-hamburger{width:40px;height:40px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:5px;cursor:pointer;border:none;background:none;padding:4px;flex-shrink:0}
 .home-hamburger span{display:block;width:22px;height:2px;background:var(--forest);border-radius:2px;transition:all 0.2s}
-.home-logo{font-family:system-ui,-apple-system,sans-serif;font-size:20px;font-weight:700;color:var(--forest);letter-spacing:-0.3px}
-.home-logo em{color:var(--sage);font-style:normal}
+.home-logo{font-family:'Fraunces',Georgia,serif;font-size:22px;font-weight:800;color:var(--forest);letter-spacing:-0.3px;display:flex;align-items:center;gap:3px}
+.home-logo em{color:var(--sage);font-style:italic}
+.logo-leaf{animation:leaf-float 3.2s ease-in-out infinite;flex-shrink:0;margin:0 1px}
 .home-user-btn{width:34px;height:34px;border-radius:50%;background:var(--warm);border:none;
   display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;overflow:hidden}
 .home-user-btn svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:1.8}
@@ -1014,14 +1018,15 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .scan-btn{width:100%;max-width:300px;padding:20px 24px;border-radius:24px;
   background:linear-gradient(135deg,var(--forest),var(--moss));
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:14px;
-  box-shadow:0 8px 32px rgba(27,67,50,0.28);transition:transform 0.14s,box-shadow 0.14s;
+  box-shadow:0 8px 32px rgba(30,64,32,0.3);
+  transition:transform 0.4s cubic-bezier(.34,1.56,.64,1),box-shadow 0.2s;
   -webkit-tap-highlight-color:transparent}
-.scan-btn:active{transform:scale(0.96);box-shadow:0 4px 16px rgba(27,67,50,0.22)}
+.scan-btn:active{transform:scale(0.93);box-shadow:0 3px 12px rgba(30,64,32,0.2)}
 .scan-btn-icon{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.15);
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .scan-btn-icon svg{width:26px;height:26px;stroke:white;fill:none;stroke-width:1.8}
 .scan-btn-text{text-align:left}
-.scan-btn-label{font-family:system-ui,-apple-system,sans-serif;font-size:18px;font-weight:600;color:white;line-height:1.2}
+.scan-btn-label{font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:700;color:white;line-height:1.2}
 .scan-btn-hint{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px}
 .type-link{margin-top:14px;font-size:13px;color:var(--text-light);cursor:pointer;
   text-decoration:underline;text-underline-offset:2px;padding:8px}
@@ -1049,7 +1054,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 /* ── HOME — ROTATING TAGLINE ── */
 .home-rotate{margin-bottom:16px;min-height:94px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:8px}
-.rotate-main{font-family:system-ui,-apple-system,sans-serif;font-size:28px;font-weight:700;color:var(--forest);line-height:1.22;letter-spacing:-0.4px;transition:opacity 0.35s ease}
+.rotate-main{font-family:'Fraunces',Georgia,serif;font-size:28px;font-weight:700;color:var(--forest);line-height:1.22;letter-spacing:-0.4px;transition:opacity 0.35s ease;text-decoration:underline wavy var(--gold);text-underline-offset:5px;text-decoration-thickness:2px}
 .rotate-sub{font-size:16px;color:var(--text-mid);line-height:1.6;max-width:290px;transition:opacity 0.35s ease}
 .rotate-fade{opacity:0!important}
 /* value ladder */
@@ -1066,13 +1071,14 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 /* cert teaser */
 .cert-teaser{margin:16px 18px 0;background:white;border-radius:18px;padding:14px 0 12px;box-shadow:var(--shadow);cursor:pointer}
 .cert-teaser-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
-.cert-teaser-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--moss)}
+.cert-teaser-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--moss);display:flex;align-items:center;gap:6px}
+.cert-teaser-title::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;animation:dot-pulse 2.2s ease-in-out infinite}
 .cert-teaser-cta{font-size:11px;color:var(--text-light);display:flex;align-items:center;gap:3px}
 .cert-teaser-cta svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5}
 .cert-teaser-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 16px 2px}
 .cert-teaser-scroll::-webkit-scrollbar{display:none}
 .ctp-chip{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:12px;border:1px solid transparent}
-.ctp-chip.ctp-gold{background:#FFF8E7;border-color:#F5C518}
+.ctp-chip.ctp-gold{background:#fef8d8;border-color:var(--gold)}
 .ctp-chip.ctp-silver{background:#F4F7F4;border-color:#B8CABA}
 .ctp-chip.ctp-warn{background:#FFF5F5;border-color:#FECACA}
 .ctp-name{font-size:13px;font-weight:600;color:var(--forest)}
@@ -1083,7 +1089,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .ctp-dot.bad{background:#F87171}
 /* method / why-this-app card */
 .method-card{margin:14px 18px 0;background:var(--forest);border-radius:18px;padding:18px 20px;cursor:pointer}
-.mc-stat{font-family:system-ui,-apple-system,sans-serif;font-size:36px;font-weight:800;color:white;letter-spacing:-1px;line-height:1}
+.mc-stat{font-family:'Fraunces',Georgia,serif;font-size:38px;font-weight:800;color:var(--gold);letter-spacing:-1px;line-height:1}
 .mc-stat-label{font-size:15px;color:rgba(255,255,255,0.58);margin-top:4px;margin-bottom:14px}
 .mc-signals{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .mc-signal{font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px}
@@ -1097,7 +1103,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .spin{width:52px;height:52px;border-radius:50%;border:3px solid rgba(255,255,255,0.15);
   border-top-color:var(--mint);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.an-title{font-family:system-ui,-apple-system,sans-serif;font-size:24px;color:white;font-weight:600}
+.an-title{font-family:'Fraunces',Georgia,serif;font-size:24px;color:white;font-weight:700}
 .an-sub{font-size:15px;color:rgba(255,255,255,0.55);letter-spacing:0.3px;text-align:center;max-width:240px}
 .an-phases{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .an-phase{font-size:14px;color:rgba(255,255,255,0.35);letter-spacing:0.3px;display:flex;align-items:center;gap:6px;transition:all 0.4s}
@@ -1107,6 +1113,14 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.2);animation:pulse 1.4s ease-in-out infinite}
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.3);background:var(--mint)}}
+@keyframes leaf-float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+@keyframes card-pop{0%{opacity:0;transform:scale(0.9) translateY(14px)}65%{transform:scale(1.025) translateY(-2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes dot-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:0.55}}
+@keyframes star-spin{to{transform:rotate(360deg)}}
+
+/* ── WAVE DIVIDER ── */
+.wave-divider{display:block;width:100%;overflow:hidden;line-height:0;pointer-events:none}
+.wave-divider svg{display:block;width:100%;height:28px}
 
 /* ── RESEARCH CARD ── */
 .research-card{background:linear-gradient(135deg,#F0F9F4,#EDF7F1);border:1px solid rgba(82,183,136,0.2)}
@@ -1138,7 +1152,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 /* ── BOTTOM NAV ── */
 .nav{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;
-  background:rgba(248,246,242,0.95);backdrop-filter:blur(20px);
+  background:rgba(242,238,223,0.95);backdrop-filter:blur(20px);
   display:flex;justify-content:space-around;align-items:center;
   padding:8px 0 calc(10px + var(--safe-bottom));
   border-top:1px solid rgba(82,183,136,0.12);z-index:200}
@@ -1168,8 +1182,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   display:flex;flex-direction:column;padding-top:var(--safe-top)}
 .drawer.open{transform:translateX(0)}
 .drawer-head{padding:28px 24px 22px;border-bottom:1px solid rgba(255,255,255,0.08)}
-.drawer-brand{font-family:system-ui,-apple-system,sans-serif;font-size:24px;font-weight:700;color:white;line-height:1}
-.drawer-brand em{color:var(--mint);font-style:normal}
+.drawer-brand{font-family:'Fraunces',Georgia,serif;font-size:24px;font-weight:800;color:white;line-height:1}
+.drawer-brand em{color:var(--mint);font-style:italic}
 .drawer-tagline{font-size:13px;color:rgba(255,255,255,0.45);margin-top:5px;font-style:italic}
 .drawer-nav{flex:1;padding:8px 0;overflow-y:auto}
 .d-item{display:flex;align-items:center;gap:14px;padding:15px 24px;cursor:pointer;
@@ -1191,15 +1205,16 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:5px;cursor:pointer;box-shadow:var(--shadow)}
 .topbar-menu span{display:block;width:18px;height:2px;background:var(--text);border-radius:2px}
-.topbar-title{font-family:system-ui,-apple-system,sans-serif;font-size:19px;font-weight:700;color:var(--forest)}
-.topbar-title em{color:var(--sage);font-style:normal}
+.topbar-title{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:800;color:var(--forest)}
+.topbar-title em{color:var(--sage);font-style:italic}
 .topbar-right{width:40px;height:40px;border-radius:50%;background:var(--pale);
   display:flex;align-items:center;justify-content:center;cursor:pointer}
 .topbar-right svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:2}
 
 /* ── RESULT SCREEN ── */
 .result-hero{background:linear-gradient(155deg,var(--forest) 0%,var(--moss) 100%);
-  padding:calc(var(--safe-top) + 48px) 20px 28px;position:relative;flex-shrink:0;text-align:center}
+  padding:calc(var(--safe-top) + 48px) 20px 28px;position:relative;flex-shrink:0;text-align:center;
+  animation:card-pop 0.5s cubic-bezier(.34,1.56,.64,1) both}
 .r-back{position:absolute;top:calc(var(--safe-top) + 12px);left:14px;
   width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
   display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -1211,9 +1226,9 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .grade-circle{width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.12);
   border:3px solid rgba(255,255,255,0.25);display:flex;flex-direction:column;
   align-items:center;justify-content:center;margin:0 auto 14px}
-.grade-letter{font-family:system-ui,-apple-system,sans-serif;font-size:42px;font-weight:700;color:white;line-height:1}
+.grade-letter{font-family:'Fraunces',Georgia,serif;font-size:44px;font-weight:800;color:white;line-height:1}
 .grade-num{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:0.5px}
-.r-name{font-family:system-ui,-apple-system,sans-serif;font-size:21px;font-weight:700;color:white;line-height:1.25;margin-bottom:4px}
+.r-name{font-family:'Fraunces',Georgia,serif;font-size:22px;font-weight:700;color:white;line-height:1.25;margin-bottom:4px}
 .r-brand-cat{font-size:15px;color:rgba(255,255,255,0.6);margin-bottom:6px;letter-spacing:0.2px}
 .r-yko-link{display:block;font-size:12px;color:var(--mint);opacity:0.8;text-decoration:none;
   margin-bottom:12px;letter-spacing:0.3px}
@@ -1282,7 +1297,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .action-btn.secondary{background:var(--card);color:var(--text);border:1.5px solid var(--warm)}
 
 /* ── NEW RESULT CARDS ── */
-.gs-headline{font-family:system-ui,-apple-system,sans-serif;font-size:26px;font-weight:700;color:var(--forest);
+.gs-headline{font-family:'Fraunces',Georgia,serif;font-size:26px;font-weight:700;color:var(--forest);
   line-height:1.2;padding:20px 18px 4px;letter-spacing:-0.3px}
 .quick-view{padding:14px 18px}
 .qv-row{display:flex;justify-content:space-between;align-items:baseline;
@@ -1586,13 +1601,13 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 /* ── SCORE RING ── */
 .score-ring-wrap{position:relative;width:116px;height:116px;margin:0 auto 14px}
 .score-ring-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.ring-track{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:7}
-.ring-fill{fill:none;stroke:rgba(255,255,255,0.88);stroke-width:7;stroke-linecap:round;
+.ring-track{fill:none;stroke:rgba(255,255,255,0.12);stroke-width:7}
+.ring-fill{fill:none;stroke:var(--gold);stroke-width:7;stroke-linecap:round;
   transition:stroke-dashoffset 1.15s cubic-bezier(0.4,0,0.2,1),stroke 0.55s ease;
   transform-origin:58px 58px;transform:rotate(-90deg)}
 .score-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center}
-.score-num{font-family:system-ui,-apple-system,sans-serif;font-size:40px;font-weight:700;
+.score-num{font-family:'Fraunces',Georgia,serif;font-size:40px;font-weight:800;
   color:white;line-height:1;letter-spacing:-2px}
 .score-denom{font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:0.5px}
 
@@ -1836,7 +1851,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
       <button class="home-hamburger" onclick="openDrawer()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="home-logo">Green<em>Specs</em></div>
+      <div class="home-logo">Green<svg class="logo-leaf" viewBox="0 0 12 18" width="11" height="15" aria-hidden="true"><path d="M6 16 C2.5 16 1 11.5 1 8 C1 3.5 3 1.5 6 1.5 C9 1.5 11 3.5 11 8 C11 11.5 9.5 16 6 16Z" fill="#7ab85a" opacity="0.92"/><line x1="6" y1="2" x2="6" y2="16" stroke="#1e4020" stroke-width="0.8" opacity="0.4"/></svg><em>Specs</em></div>
       <button class="home-user-btn" id="home-user-btn" onclick="openAuth()" aria-label="Account">
         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </button>
@@ -1884,6 +1899,9 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
       </div>
     </div>
 
+    <!-- Wave divider -->
+    <div class="wave-divider" aria-hidden="true"><svg viewBox="0 0 430 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,14 C60,24 120,4 180,14 C240,24 300,4 360,14 C390,20 420,10 430,14 L430,28 L0,28 Z" fill="var(--warm)" opacity="0.55"/></svg></div>
+
     <!-- Cert teaser strip -->
     <div class="cert-teaser" onclick="showCerts()">
       <div class="cert-teaser-header">
@@ -1903,6 +1921,9 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
         <div class="ctp-chip ctp-warn"><div class="ctp-name">Humanely Raised</div><div class="ctp-dots"><div class="ctp-dot bad"></div></div></div>
       </div>
     </div>
+
+    <!-- Wave divider -->
+    <div class="wave-divider" aria-hidden="true"><svg viewBox="0 0 430 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,10 C70,22 140,2 210,12 C280,22 350,4 430,14 L430,28 L0,28 Z" fill="var(--cream)" opacity="0.7"/></svg></div>
 
     <!-- Why this app / method card -->
     <div class="method-card" onclick="showMethod()">
@@ -2374,7 +2395,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260417-v16';
+const APP_VERSION = '20260417-v17';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -3839,8 +3860,8 @@ function letterGrade(s) {
 }
 function gradeColor(s) {
   s = Number(s);
-  if (s >= 80) return '#2D6A4F'; if (s >= 70) return '#52B788';
-  if (s >= 60) return '#F59E0B'; if (s >= 50) return '#F97316';
+  if (s >= 80) return '#3d7a3a'; if (s >= 70) return '#7ab85a';
+  if (s >= 60) return '#e8c030'; if (s >= 50) return '#F97316';
   return '#DC2626';
 }
 function renderResearchCard(research) {
