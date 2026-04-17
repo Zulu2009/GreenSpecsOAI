@@ -1043,6 +1043,49 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .home-stats-text{font-size:14px;color:var(--text-mid);line-height:1.5}
 .home-stats-text strong{color:var(--forest)}
 
+/* ── HOME — ROTATING TAGLINE ── */
+.home-rotate{margin-bottom:18px;min-height:88px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:7px}
+.rotate-main{font-family:system-ui,-apple-system,sans-serif;font-size:24px;font-weight:700;color:var(--forest);line-height:1.25;letter-spacing:-0.3px;transition:opacity 0.35s ease}
+.rotate-sub{font-size:14px;color:var(--text-mid);line-height:1.6;max-width:280px;transition:opacity 0.35s ease}
+.rotate-fade{opacity:0!important}
+/* value ladder */
+.value-ladder{display:flex;flex-direction:column;gap:7px;margin-bottom:26px;text-align:left;width:100%;max-width:280px}
+.vl-item{font-size:13px;color:var(--text-mid);display:flex;align-items:flex-start;gap:8px;line-height:1.45}
+.vl-dot{width:5px;height:5px;border-radius:50%;background:var(--sage);margin-top:5px;flex-shrink:0}
+/* how-it-works strip */
+.how-strip{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:20px;padding:14px 12px;background:white;border-radius:16px;width:100%;max-width:320px;box-shadow:var(--shadow)}
+.how-step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:0}
+.how-icon{width:30px;height:30px;border-radius:50%;background:var(--pale);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.how-icon svg{width:15px;height:15px;stroke:var(--moss);fill:none;stroke-width:2}
+.how-label{font-size:10px;font-weight:600;color:var(--forest);line-height:1.3;text-align:center}
+.how-arrow{font-size:13px;color:var(--text-light);flex-shrink:0;padding-bottom:10px}
+/* cert teaser */
+.cert-teaser{margin:16px 18px 0;background:white;border-radius:18px;padding:14px 0 12px;box-shadow:var(--shadow);cursor:pointer}
+.cert-teaser-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
+.cert-teaser-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--moss)}
+.cert-teaser-cta{font-size:11px;color:var(--text-light);display:flex;align-items:center;gap:3px}
+.cert-teaser-cta svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5}
+.cert-teaser-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 16px 2px}
+.cert-teaser-scroll::-webkit-scrollbar{display:none}
+.ctp-chip{flex-shrink:0;display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:12px;border:1px solid transparent}
+.ctp-chip.ctp-gold{background:#FFF8E7;border-color:#F5C518}
+.ctp-chip.ctp-silver{background:#F4F7F4;border-color:#B8CABA}
+.ctp-chip.ctp-warn{background:#FFF5F5;border-color:#FECACA}
+.ctp-name{font-size:12px;font-weight:600;color:var(--forest)}
+.ctp-dots{display:flex;gap:2px;align-items:center}
+.ctp-dot{width:5px;height:5px;border-radius:50%}
+.ctp-dot.on{background:var(--forest)}
+.ctp-dot.off{background:var(--warm)}
+.ctp-dot.bad{background:#F87171}
+/* method / why-this-app card */
+.method-card{margin:14px 18px 0;background:var(--forest);border-radius:18px;padding:18px 20px;cursor:pointer}
+.mc-stat{font-family:system-ui,-apple-system,sans-serif;font-size:36px;font-weight:800;color:white;letter-spacing:-1px;line-height:1}
+.mc-stat-label{font-size:13px;color:rgba(255,255,255,0.58);margin-top:4px;margin-bottom:14px}
+.mc-signals{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.mc-signal{font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.12);border-radius:20px;padding:4px 10px}
+.mc-link{font-size:13px;color:rgba(255,255,255,0.65);display:flex;align-items:center;gap:5px}
+.mc-link svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5}
+
 /* ── ANALYZING OVERLAY ── */
 .analyzing{position:fixed;inset:0;background:linear-gradient(160deg,var(--forest),var(--moss));
   display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
@@ -1777,19 +1820,79 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <div class="scrollable" id="home-scroll">
     <!-- Hero -->
     <div class="home-hero">
-      <div class="home-tagline">Seeing through labels<br>is a <em>superpower.</em></div>
-      <div class="home-sub">That "eco-friendly" label? Usually marketing, not fact.</div>
-      <div class="home-sub2">Scan anything and get an honest score — what's real, what's not, and why it matters.</div>
+      <!-- Rotating mission hook -->
+      <div class="home-rotate">
+        <div class="rotate-main" id="rotate-main">Your spending is a vote.</div>
+        <div class="rotate-sub" id="rotate-sub">Consumer choice moves markets faster than any policy. This app amplifies that power.</div>
+      </div>
+      <!-- Value ladder -->
+      <div class="value-ladder">
+        <div class="vl-item"><div class="vl-dot"></div>Decode what certifications actually mean</div>
+        <div class="vl-item"><div class="vl-dot"></div>Compare products by real impact, not marketing</div>
+        <div class="vl-item"><div class="vl-dot"></div>Know which brands walk the talk</div>
+      </div>
+      <!-- Scan CTA -->
       <button class="scan-btn" onclick="openNativeCamera()">
         <div class="scan-btn-icon">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
         </div>
         <div class="scan-btn-text">
-          <div class="scan-btn-label">Scan a Product</div>
-          <div class="scan-btn-hint">Point camera at the label</div>
+          <div class="scan-btn-label">Score a Product</div>
+          <div class="scan-btn-hint">Scan label or type name</div>
         </div>
       </button>
       <div class="type-link" onclick="showManualInput()">or type the product name</div>
+      <!-- How it works -->
+      <div class="how-strip">
+        <div class="how-step">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg></div>
+          <div class="how-label">Scan or search</div>
+        </div>
+        <div class="how-arrow">&#8594;</div>
+        <div class="how-step">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <div class="how-label">AI scores 5 real signals</div>
+        </div>
+        <div class="how-arrow">&#8594;</div>
+        <div class="how-step">
+          <div class="how-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <div class="how-label">Tap any score to see why</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cert teaser strip -->
+    <div class="cert-teaser" onclick="showCerts()">
+      <div class="cert-teaser-header">
+        <div class="cert-teaser-title">Cert Translator</div>
+        <div class="cert-teaser-cta">See all <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="cert-teaser-scroll">
+        <div class="ctp-chip ctp-gold"><div class="ctp-name">USDA Organic</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot on"></div><div class="ctp-dot on"></div></div></div>
+        <div class="ctp-chip ctp-gold"><div class="ctp-name">Demeter Biodynamic</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot on"></div><div class="ctp-dot on"></div></div></div>
+        <div class="ctp-chip ctp-gold"><div class="ctp-name">B Corp</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot on"></div><div class="ctp-dot on"></div></div></div>
+        <div class="ctp-chip ctp-gold"><div class="ctp-name">Bluesign</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot on"></div><div class="ctp-dot on"></div></div></div>
+        <div class="ctp-chip ctp-silver"><div class="ctp-name">Rainforest Alliance</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot on"></div><div class="ctp-dot off"></div></div></div>
+        <div class="ctp-chip ctp-silver"><div class="ctp-name">Certified Humane</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot on"></div><div class="ctp-dot off"></div></div></div>
+        <div class="ctp-chip ctp-silver"><div class="ctp-name">OEKO-TEX 100</div><div class="ctp-dots"><div class="ctp-dot on"></div><div class="ctp-dot off"></div><div class="ctp-dot off"></div></div></div>
+        <div class="ctp-chip ctp-warn"><div class="ctp-name">Natural</div><div class="ctp-dots"><div class="ctp-dot bad"></div></div></div>
+        <div class="ctp-chip ctp-warn"><div class="ctp-name">Eco-Friendly</div><div class="ctp-dots"><div class="ctp-dot bad"></div></div></div>
+        <div class="ctp-chip ctp-warn"><div class="ctp-name">Humanely Raised</div><div class="ctp-dots"><div class="ctp-dot bad"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Why this app / method card -->
+    <div class="method-card" onclick="showMethod()">
+      <div class="mc-stat">73%</div>
+      <div class="mc-stat-label">of green claims are unverifiable</div>
+      <div class="mc-signals">
+        <div class="mc-signal">Claims</div>
+        <div class="mc-signal">Certifications</div>
+        <div class="mc-signal">Packaging</div>
+        <div class="mc-signal">Ingredients</div>
+        <div class="mc-signal">Supply Chain</div>
+      </div>
+      <div class="mc-link">See how we score <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
 
     <!-- Stats bar -->
@@ -2015,7 +2118,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   </div>
   <div class="nav-item" id="nav-learn" onclick="showLearn()">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    Learn
+    Ask
   </div>
 </div>
 
@@ -2248,7 +2351,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260415-v13';
+const APP_VERSION = '20260416-v14';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -2269,6 +2372,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (auth_token) verifyAuth();
   checkInstallPrompt();
   loadHomeData();
+  initRotatingTagline();
 });
 
 // ─── CAMERA — native file input approach (works on all iOS/Android) ──────────
@@ -3406,10 +3510,41 @@ function setActiveNav(id) {
   if (navMap[id]) document.getElementById(navMap[id])?.classList.add('active');
   if (drawMap[id]) document.getElementById(drawMap[id])?.classList.add('active');
 }
+// ─── ROTATING TAGLINE ────────────────────────────────────────────────────────
+var _taglines = [
+  ['Your spending is a vote.', 'Consumer choice moves markets faster than any policy. This app amplifies that power.'],
+  ['Most eco-friendly labels are unverified.', 'GreenSpecs scores what is actually real.'],
+  ['Organic grew from 1% to 6% of food sales in 15 years.', 'Shoppers did that. No legislation required.'],
+  ['The most powerful sustainability force is not regulation.', 'It is 330 million informed daily choices.']
+];
+var _taglineIdx = 0;
+var _taglineTimer = null;
+function initRotatingTagline() {
+  var main = document.getElementById('rotate-main');
+  var sub = document.getElementById('rotate-sub');
+  if (!main || !sub) return;
+  if (_taglineTimer) clearInterval(_taglineTimer);
+  _taglineIdx = 0;
+  main.textContent = _taglines[0][0];
+  sub.textContent = _taglines[0][1];
+  _taglineTimer = setInterval(function() {
+    main.classList.add('rotate-fade');
+    sub.classList.add('rotate-fade');
+    setTimeout(function() {
+      _taglineIdx = (_taglineIdx + 1) % _taglines.length;
+      main.textContent = _taglines[_taglineIdx][0];
+      sub.textContent = _taglines[_taglineIdx][1];
+      main.classList.remove('rotate-fade');
+      sub.classList.remove('rotate-fade');
+    }, 380);
+  }, 5000);
+}
+
 function goHome() {
   show('s-home');
   setActiveNav('s-home');
   loadHomeData();
+  initRotatingTagline();
 }
 
 // ─── HOME DATA ────────────────────────────────────────────────────────────────
