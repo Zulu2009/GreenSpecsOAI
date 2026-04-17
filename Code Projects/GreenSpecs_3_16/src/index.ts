@@ -995,8 +995,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 /* ── HOME SCREEN ── */
 #s-home{background:var(--cream);overflow:hidden}
 .home-topbar{display:flex;align-items:center;justify-content:space-between;
-  padding:calc(var(--safe-top) + 14px) 18px 14px;background:var(--cream);
-  border-bottom:1px solid var(--warm);flex-shrink:0;position:relative;z-index:10}
+  padding:calc(var(--safe-top) + 14px) 18px 12px;background:var(--cream);
+  position:relative;z-index:10}
 .home-hamburger{width:40px;height:40px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:5px;cursor:pointer;border:none;background:none;padding:4px;flex-shrink:0}
 .home-hamburger span{display:block;width:22px;height:2px;background:var(--forest);border-radius:2px;transition:all 0.2s}
@@ -1008,12 +1008,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .home-user-btn img{width:34px;height:34px;object-fit:cover}
 
 /* hero */
-.home-hero{padding:40px 28px 32px;display:flex;flex-direction:column;align-items:center;text-align:center}
-.home-tagline{font-family:system-ui,-apple-system,sans-serif;font-size:32px;font-weight:700;color:var(--forest);
-  line-height:1.18;letter-spacing:-0.5px;margin-bottom:10px}
-.home-tagline em{color:var(--sage);font-style:italic}
-.home-sub{font-size:16px;color:var(--text);line-height:1.6;max-width:290px;margin-bottom:8px;font-weight:500}
-.home-sub2{font-size:15px;color:var(--text-mid);line-height:1.65;max-width:290px;margin-bottom:32px}
+.home-hero{padding:24px 24px 20px;display:flex;flex-direction:column;align-items:center;text-align:center}
 
 /* scan button */
 .scan-btn{width:100%;max-width:300px;padding:20px 24px;border-radius:24px;
@@ -1053,21 +1048,21 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .home-stats-text strong{color:var(--forest)}
 
 /* ── HOME — ROTATING TAGLINE ── */
-.home-rotate{margin-bottom:18px;min-height:88px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:7px}
-.rotate-main{font-family:system-ui,-apple-system,sans-serif;font-size:24px;font-weight:700;color:var(--forest);line-height:1.25;letter-spacing:-0.3px;transition:opacity 0.35s ease}
-.rotate-sub{font-size:14px;color:var(--text-mid);line-height:1.6;max-width:280px;transition:opacity 0.35s ease}
+.home-rotate{margin-bottom:16px;min-height:94px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:8px}
+.rotate-main{font-family:system-ui,-apple-system,sans-serif;font-size:28px;font-weight:700;color:var(--forest);line-height:1.22;letter-spacing:-0.4px;transition:opacity 0.35s ease}
+.rotate-sub{font-size:16px;color:var(--text-mid);line-height:1.6;max-width:290px;transition:opacity 0.35s ease}
 .rotate-fade{opacity:0!important}
 /* value ladder */
-.value-ladder{display:flex;flex-direction:column;gap:7px;margin-bottom:26px;text-align:left;width:100%;max-width:280px}
-.vl-item{font-size:13px;color:var(--text-mid);display:flex;align-items:flex-start;gap:8px;line-height:1.45}
-.vl-dot{width:5px;height:5px;border-radius:50%;background:var(--sage);margin-top:5px;flex-shrink:0}
+.value-ladder{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;text-align:left;width:100%;max-width:290px}
+.vl-item{font-size:15px;color:var(--text-mid);display:flex;align-items:flex-start;gap:9px;line-height:1.45}
+.vl-dot{width:6px;height:6px;border-radius:50%;background:var(--sage);margin-top:6px;flex-shrink:0}
 /* how-it-works strip */
-.how-strip{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:20px;padding:14px 12px;background:white;border-radius:16px;width:100%;max-width:320px;box-shadow:var(--shadow)}
+.how-strip{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:18px;padding:14px 12px;background:white;border-radius:16px;width:100%;max-width:320px;box-shadow:var(--shadow)}
 .how-step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:0}
-.how-icon{width:30px;height:30px;border-radius:50%;background:var(--pale);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.how-icon svg{width:15px;height:15px;stroke:var(--moss);fill:none;stroke-width:2}
-.how-label{font-size:10px;font-weight:600;color:var(--forest);line-height:1.3;text-align:center}
-.how-arrow{font-size:13px;color:var(--text-light);flex-shrink:0;padding-bottom:10px}
+.how-icon{width:34px;height:34px;border-radius:50%;background:var(--pale);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.how-icon svg{width:17px;height:17px;stroke:var(--moss);fill:none;stroke-width:2}
+.how-label{font-size:12px;font-weight:600;color:var(--forest);line-height:1.3;text-align:center}
+.how-arrow{font-size:14px;color:var(--text-light);flex-shrink:0;padding-bottom:10px}
 /* cert teaser */
 .cert-teaser{margin:16px 18px 0;background:white;border-radius:18px;padding:14px 0 12px;box-shadow:var(--shadow);cursor:pointer}
 .cert-teaser-header{display:flex;align-items:center;justify-content:space-between;padding:0 16px 10px}
@@ -1080,7 +1075,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .ctp-chip.ctp-gold{background:#FFF8E7;border-color:#F5C518}
 .ctp-chip.ctp-silver{background:#F4F7F4;border-color:#B8CABA}
 .ctp-chip.ctp-warn{background:#FFF5F5;border-color:#FECACA}
-.ctp-name{font-size:12px;font-weight:600;color:var(--forest)}
+.ctp-name{font-size:13px;font-weight:600;color:var(--forest)}
 .ctp-dots{display:flex;gap:2px;align-items:center}
 .ctp-dot{width:5px;height:5px;border-radius:50%}
 .ctp-dot.on{background:var(--forest)}
@@ -1089,10 +1084,10 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 /* method / why-this-app card */
 .method-card{margin:14px 18px 0;background:var(--forest);border-radius:18px;padding:18px 20px;cursor:pointer}
 .mc-stat{font-family:system-ui,-apple-system,sans-serif;font-size:36px;font-weight:800;color:white;letter-spacing:-1px;line-height:1}
-.mc-stat-label{font-size:13px;color:rgba(255,255,255,0.58);margin-top:4px;margin-bottom:14px}
+.mc-stat-label{font-size:15px;color:rgba(255,255,255,0.58);margin-top:4px;margin-bottom:14px}
 .mc-signals{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.mc-signal{font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.12);border-radius:20px;padding:4px 10px}
-.mc-link{font-size:13px;color:rgba(255,255,255,0.65);display:flex;align-items:center;gap:5px}
+.mc-signal{font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px}
+.mc-link{font-size:15px;color:rgba(255,255,255,0.65);display:flex;align-items:center;gap:5px}
 .mc-link svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5}
 
 /* ── ANALYZING OVERLAY ── */
@@ -1834,19 +1829,18 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <!-- Native camera input — the iOS-safe way to open the camera -->
   <input type="file" id="cam-native" accept="image/*" capture="environment" style="display:none" onchange="handleCameraCapture(this)">
 
-  <!-- Top bar -->
-  <div class="home-topbar">
-    <button class="home-hamburger" onclick="openDrawer()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div class="home-logo">Green<em>Specs</em></div>
-    <button class="home-user-btn" id="home-user-btn" onclick="openAuth()" aria-label="Account">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </button>
-  </div>
-
-  <!-- Scrollable content -->
+  <!-- Scrollable content — topbar scrolls with content so full height is usable -->
   <div class="scrollable" id="home-scroll">
+    <!-- Top bar -->
+    <div class="home-topbar">
+      <button class="home-hamburger" onclick="openDrawer()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="home-logo">Green<em>Specs</em></div>
+      <button class="home-user-btn" id="home-user-btn" onclick="openAuth()" aria-label="Account">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </div>
     <!-- Hero -->
     <div class="home-hero">
       <!-- Rotating mission hook -->
@@ -2380,7 +2374,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260416-v15';
+const APP_VERSION = '20260417-v16';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
