@@ -1052,6 +1052,14 @@ const ANALYSIS_PROMPT = (productName: string, claim: string, hasImage: boolean, 
 Product: ${productName}
 Claim: "${claim}"
 ${researchContext ? `Context: ${researchContext}\n` : ''}
+STEP-BY-STEP SCORING (mandatory — do this reasoning in your thinking, not in the output):
+1. Identify the sub-category precisely (e.g. "laundry powder", "recycled toilet paper", "organic dairy yogurt", not just "cleaning" or "paper").
+2. Name the 3 most similar reference products and their likely scores using the calibration anchors in the rubric (e.g. "Tide Original = 32, Seventh Generation Free & Clear = 68, Blueland Tablet = 80").
+3. Score each of the 5 signals INDEPENDENTLY using the rubric's axis tables. Each signal must be 0-20.
+4. Before summing, check the differentiation rule: if your proposed total is within 8 points of a reference product that differs materially on any axis, reapply that axis.
+5. Only then emit the final JSON. The overall score is the SUM of the 5 rubric signals (0-100) and must fall in the range your axis analysis supports.
+6. DO NOT default to 65-70 as a safe middle. If you have 4 products to score and they all land 65-70, you have failed. The real distribution is wide: a conventional supermarket product is in the 25-40 range; a genuine category leader is 75-90.
+
 Return ONLY valid JSON, no markdown:
 {
   "product_name": "Full brand + product name",
@@ -1227,7 +1235,7 @@ async function analyzeWithGemini(
       body: JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: 'user', parts }],
-        generationConfig: { temperature: 0.3, response_mime_type: 'application/json', maxOutputTokens: 1200, thinkingConfig: { thinkingBudget: 0 } },
+        generationConfig: { temperature: 0.4, response_mime_type: 'application/json', maxOutputTokens: 2400, thinkingConfig: { thinkingBudget: 3500 } },
       }),
     }
   );
@@ -3035,7 +3043,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260418-v25';
+const APP_VERSION = '20260418-v26';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -5008,7 +5016,7 @@ app.post('/api/scan', async (c) => {
       Number(rubric.certifications_score ?? rubric.transparency_score ?? 0),
       Number(rubric.packaging_score ?? rubric.third_party_score ?? 0),
       Number(rubric.ingredient_score ?? rubric.bigimpact_score ?? 0),
-      Number(rubric.marketing_score ?? 0),
+      Number(rubric.supply_chain_score ?? rubric.marketing_score ?? 0),
       JSON.stringify(whatCoversArr),
       JSON.stringify(whatMissingArr),
       JSON.stringify(redFlagsArr),
