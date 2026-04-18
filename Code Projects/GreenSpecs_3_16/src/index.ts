@@ -205,6 +205,24 @@ tips: one sentence, 12 words max, like a text from a friend:
 SCORING RUBRIC — 5 signals, 0-20 each. Total = overall score out of 100.
 Score actual impact, not how well the brand communicates. Small farm, ugly bag, clean product beats big brand with beautiful sustainability PDF.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATEGORY RELATIVISM RULE — mandatory for every score
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Every product sits on a spectrum from the worst to the best in its specific sub-category. Use this distribution as your compass:
+- 20-38: Bottom of category — conventional, no differentiation, greenwashing or silence
+- 38-52: Below average — some positive signals but nothing verified or meaningful
+- 48-62: Average for category — most products on a supermarket shelf land here
+- 62-72: Above average — meaningful verified differentiators (real cert, real format, real transparency)
+- 72-84: Category leader — multiple verified certs, genuine supply-chain transparency, best-in-class format
+- 84-96: Exceptional — among the top products globally in this category
+
+CLUSTERING IS A SCORING FAILURE. If two products in the same sub-category land within 5 points of each other, you have not applied the rubric. Find the gap. Some examples of minimum spreads:
+- EPA Safer Choice-certified laundry vs. identical uncertified laundry: minimum 12-point spread
+- Powder in cardboard vs. equivalent liquid in plastic (same ingredients): minimum 8-point spread on Signal 3
+- USDA Organic vs. conventional version of same product: minimum 15-point spread
+- 100% post-consumer recycled paper vs. virgin fiber paper: minimum 18-point spread
+If your draft has scores within these ranges for products that clearly differ on these axes, reapply the axis that should be separating them.
+
 SIGNAL 1 — Claims & Disclosure (0-20)
 Are claims specific and verifiable — not just whether they sound good?
 - 0-4: Vague ("natural", "eco-friendly", "better for the planet") with nothing behind it.
@@ -228,38 +246,108 @@ CLOTHING & GEAR — disclosure has an extra dimension:
   "We are committed to transparency" with no data behind it = 0-4.
 
 SIGNAL 2 — Certifications (0-20)
-Third-party verification weight — not logo count, but what the certs actually require.
-The harder the cert is to earn, the more it proves. Certs that require annual farm visits,
-soil testing, biodiversity plans, and water management outweigh any number of easy badges.
+This is the deep-dive signal. Not a logo count — a weighted evaluation of what each certification actually requires, how rigorous the audit is, how often it renews, and how much of the product's real footprint it addresses. Most shoppers think certifications are interchangeable. They are not. A Demeter inspection is three days on the farm. A "Leaping Bunny" audit is paperwork. Reflect the gap.
 
-CRITICAL DISTINCTION: government-audited farm-level certs are fundamentally different from
-company-published sustainability reports. The cert means an auditor visited the farm.
-A PDF does not.
+THE FUNDAMENTAL DISTINCTION:
+- FARM-LEVEL / FIELD-LEVEL AUDIT: an inspector physically walks the land, checks soil, verifies inputs, tests samples. USDA Organic, Demeter Biodynamic, ROC, Rainforest Alliance, GOTS (fiber stage), RWS. THIS IS THE REAL WORK.
+- FACILITY-LEVEL AUDIT: an inspector visits the factory / packhouse / mill, checks inputs and discharge. Bluesign, OEKO-TEX MADE IN GREEN, ZDHC, EPA Safer Choice, GOTS (processing stage). MEANINGFUL but narrower.
+- COMPANY-LEVEL AUDIT: a review of governance, policies, and published data. B Corp, Carbon Neutral Certified, Science-Based Targets. VALUABLE but does not touch the farm.
+- SELF-CERTIFICATION / MARKETING LABEL: "natural," "eco," "green," "cage free," proprietary leaf logos, house-designed badges. NOT a cert.
 
-- 0-4: No certs, or only proprietary/self-designed logos. Marketing words on animal products
-  ("humanely raised," "cage free," "free range," "natural") with no third-party cert = 0-4.
-  These are NOT certifications. They are label claims.
-- 5-9: One lightweight cert (NSF, EPA Safer Choice, non-food single-signal cert); or
-  "Certified Humane" or "Animal Welfare Approved" alone on an animal product — these are
-  real third-party audits covering space, enrichment, and handling. Score 6-9 here.
-- 10-13: USDA Certified Organic alone — government-audited standard covering soil health,
-  synthetic pesticide exclusion, GMO exclusion, and farm practices. Score 10-13, not 5-9.
-- 11-14: USDA Organic + Non-GMO Verified, or USDA Organic + Fair Trade;
-  or USDA Organic + Certified Humane / Animal Welfare Approved for animal products.
-- 13-16: USDA Organic + B Corp, or USDA Organic + Rainforest Alliance; or
-  pasture-raised + Certified Humane + USDA Organic for egg/dairy products.
-- 17-20: Demeter Biodynamic or Regenerative Organic Certified (ROC).
-  These are the most rigorous land-management certifications in existence.
-  Demeter Biodynamic requires the entire farm to function as a self-sustaining ecosystem —
-  soil carbon building, biodiversity plans, water cycle management, animal integration,
-  and a closed-loop nutrient cycle. An annual inspector verifies all of it.
-  ROC requires USDA Organic PLUS verified soil carbon practices PLUS animal welfare PLUS
-  fair labor. These certs prove what USDA Organic does not: active land regeneration.
-  Score Demeter or ROC at 17-20 regardless of brand size. They earned it.
-- B Corp + USDA Organic supply chain + additional supply chain cert = 15-18
-A company sustainability PDF with no farm-level certs = 0-4 on this signal regardless of report quality.
-The deep work is in the soil — it is rarely seen and often overlooked by consumers.
-Reward it heavily.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEEP-DIVE CERT RANKING — by rigor, cost, and actual field impact
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TIER 1 — THE CEILING (individual certs that alone can anchor a 17-20 score):
+
+■ Demeter Biodynamic (est. 1928, oldest ecological cert in existence):
+  Requires: 10% of farmland as biodiversity reserve, closed-loop nutrient cycles (farm makes its own compost from its own animals), biodynamic preparations, lunar/seasonal planting calendars, animal integration, water cycle management. Annual inspection is 2-3 days on site. ~5x more rigorous than USDA Organic. Less than 0.1% of US farmland qualifies. Score: 17-20 standalone. ALWAYS score this at the top.
+
+■ Regenerative Organic Certified (ROC, launched 2020 by Rodale/Patagonia/Dr. Bronner's):
+  Requires: USDA Organic as the floor + verified soil carbon building practices (cover cropping, reduced tillage, rotational grazing) + animal welfare + fair labor wages. Three pillars, all audited. Gold/Silver/Bronze levels. This cert was designed specifically to prove active land regeneration, not just absence of synthetics. Score: 17-20 (Gold 19-20, Silver 17-19, Bronze 16-18).
+
+■ Cradle to Cradle Certified Gold/Platinum (for products/textiles):
+  Requires: material health assessment of every chemical, 100% renewable energy in manufacturing, water stewardship with third-party testing of discharge, social fairness audit, designed-for-circularity disassembly plan. The only cert that covers the entire product lifecycle. Platinum is held by fewer than 50 products globally. Score: Platinum 19-20, Gold 17-19, Silver 14-16, Bronze 11-13.
+
+■ Savory Institute's Ecological Outcome Verification (EOV) for regenerative ranching:
+  Outcome-based, not practice-based. Measures actual soil carbon, biodiversity, and water infiltration at the ranch level over time. A rancher has to prove their land improved. Score: 17-19.
+
+TIER 2 — DEEP CERTS (individual certs that anchor 13-16 on this signal):
+
+■ USDA Certified Organic (est. 2002, federal USDA NOP standard):
+  Requires: 3-year transition period with no synthetic pesticides, GMO exclusion, soil fertility plan, organic seed sourcing, no sewage sludge, no irradiation. Inspector visits the farm annually (minimum one visit; often unannounced). Covers 60,000+ US farms. The reliable floor for "this farm was actually audited." But note: does NOT require cover cropping, does not require soil carbon gain, does not cover animal welfare beyond outdoor access. Score standalone: 10-13.
+
+■ GOTS (Global Organic Textile Standard):
+  Requires: at least 70% certified organic fiber + every processing stage certified (ginning, spinning, knitting, dyeing, finishing, sewing) + restricted chemical list + minimum social criteria (ILO conventions, no child labor, living wages). The gold standard for organic textiles because it chains fiber origin to finished garment. Score standalone: 13-15.
+
+■ Bluesign (facility-level manufacturing cert):
+  Requires: approved chemical inputs list (blacklist of 900+ substances), verified water discharge testing, energy efficiency, worker safety. Covers dyeing and finishing — the stage where 80% of apparel's chemical impact happens. Does not certify the fiber origin. Score standalone: 12-14.
+
+■ Fair Trade USA / Fair Trade Certified (for food, textiles, flowers, coffee):
+  Requires: minimum price floor + Fair Trade premium paid to worker co-op + democratic governance + environmental criteria (no GMO, restricted pesticides, buffer zones) + annual audit. This is the grower-welfare cert. A farmer with Fair Trade earns 20-30% more per unit sold, verified. Score standalone: 11-13; combined with organic 14-17.
+
+■ Rainforest Alliance (merged with UTZ in 2018):
+  Requires: integrated pest management, biodiversity conservation, soil and water management, worker welfare, annual audit. Covers 2 million+ farms worldwide. Most common on coffee, cocoa, tea, tropical fruit. Score standalone: 10-12; note that the frog logo has been criticized for being easier to earn than organic.
+
+■ Animal Welfare Approved (AWA by A Greener World) — eggs, dairy, meat:
+  Requires: pasture access (not just outdoor access — actual grazing on pasture), species-appropriate diets, no cages, no dehorning without anesthetic, no tail docking. The strictest animal welfare cert in the US. Score standalone: 11-13.
+
+■ Certified Humane (HFAC) — eggs, dairy, meat:
+  Requires: species-specific space standards, enrichment (perches, dust baths), no growth hormones, no antibiotics as growth promoters, annual audit. Less strict than AWA but still a real cert. Score standalone: 9-12.
+
+■ Marine Stewardship Council (MSC) — wild-caught seafood:
+  Requires: sustainable stock levels, minimized ecosystem impact, effective management. Covers ~15% of global wild catch. Credible but criticized for some "sustainable" labels on declining stocks. Score standalone: 10-12.
+
+■ Aquaculture Stewardship Council (ASC) — farmed seafood:
+  Requires: water quality, feed sourcing, disease management, worker welfare. Strictest aquaculture cert. Score standalone: 9-12.
+
+■ Forest Stewardship Council (FSC) — paper, wood, packaging:
+  Requires: sustainable harvest levels, biodiversity protection, workers' rights. Chain of custody tracked from forest to product. Score standalone: 10-12; "FSC Mix" is less rigorous than "FSC 100%."
+
+TIER 3 — SUPPORTING CERTS (meaningful but narrow, 7-10 on this signal if standalone):
+
+■ Non-GMO Project Verified: rigorous testing of ingredients for GMO contamination. But does not address pesticides, soil, or labor. Score standalone: 7-9.
+■ Responsible Wool Standard (RWS) / Responsible Down Standard (RDS): animal welfare + land management for wool/down. Narrow but real. Score standalone: 8-11.
+■ Global Recycled Standard (GRS): third-party verified recycled content (% verified, chain of custody). Does not address dyeing or labor. Score standalone: 9-11.
+■ OEKO-TEX Standard 100: tests finished textile for harmful chemical residues. Human-health cert, not environmental. Score standalone: 7-9.
+■ OEKO-TEX MADE IN GREEN: combines Standard 100 + facility audit. Score standalone: 10-12.
+■ ZDHC (Zero Discharge of Hazardous Chemicals): manufacturing restricted substance list + third-party wastewater testing. Score standalone: 11-13.
+■ EPA Safer Choice: every ingredient screened for human and aquatic safety. US federal cleaning-product cert. Score standalone: 10-13.
+■ EU Ecolabel: EU equivalent of EPA Safer Choice, often stricter on biodegradability. Score standalone: 10-13.
+■ Leaping Bunny: cruelty-free only (no animal testing). Narrow but real. Score standalone: 5-7.
+
+TIER 4 — COMPANY-LEVEL CERTS (valuable but do not touch product, 6-10 on this signal if standalone):
+
+■ B Corp Certified: verified company-wide social and environmental performance (workers, community, environment, customers, governance). Score 80+ out of 200 on B Impact Assessment. Renewed every 3 years. Covers the company, not this product. A B Corp with conventional sourcing still has conventional farming upstream. Score standalone: 7-10.
+■ Carbon Neutral Certified / Climate Neutral: third-party verified carbon accounting + offset. Often uses low-quality offsets; criticized for letting emissions continue. Score standalone: 5-8.
+■ Science-Based Targets (SBTi): verified emissions reduction targets aligned with 1.5°C pathway. Score standalone: 6-9 — a real commitment but does not verify this product specifically.
+■ USDA BioPreferred: % biobased content. Does not guarantee low toxicity. Score standalone: 3-5.
+
+TIER 5 — MARKETING LABELS (score 0-4, do NOT treat as certifications):
+
+■ "Natural," "Eco-friendly," "Green," "Sustainable," "Better for the planet" — legally meaningless
+■ "Cage Free," "Free Range," "Humanely Raised," "Farm Fresh," "Happy Hens" — unverified
+■ Proprietary leaf logos, house-designed badges, "tested by our experts" — self-certification
+■ "Biodegradable" without OECD 301 / ASTM D6400 / TÜV verification — self-claimed
+■ "Recycled" without GRS verification — self-reported
+■ Vague supplier codes of conduct without published audit results
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMBINATION SCORING (how certs stack):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 0-4: No certs OR only Tier 5 marketing labels
+- 5-9: One Tier 3 cert (Non-GMO, RWS, GRS, OEKO-TEX Standard 100, Leaping Bunny) OR one Tier 4 cert (B Corp, Carbon Neutral) with no farm/facility cert
+- 10-13: USDA Organic alone, OR one Tier 2 cert standalone (Bluesign, GOTS, Fair Trade, Rainforest Alliance, AWA, Certified Humane, MSC, ASC, FSC 100%)
+- 11-14: USDA Organic + Non-GMO Verified, OR USDA Organic + Fair Trade, OR USDA Organic + Certified Humane (for animal products)
+- 13-16: USDA Organic + B Corp + a supply-chain cert, OR GOTS + Bluesign (textiles), OR USDA Organic + Rainforest Alliance, OR pasture-raised + Certified Humane + USDA Organic for egg/dairy
+- 15-18: Cradle to Cradle Gold, OR USDA Organic + Fair Trade + B Corp + a third supply-chain cert
+- 17-20: Demeter Biodynamic, Regenerative Organic Certified, Savory EOV, or Cradle to Cradle Platinum — each alone anchors this tier. A product with ROC alone scores higher than a product with 5 supporting certs but no land-regeneration cert.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE CRITICAL RULE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+A company sustainability PDF with no farm-level or facility-level certs = 0-4 on this signal regardless of report quality. A beautifully designed sustainability report from a conventional CPG scores the same as no report at all on this signal. The cert means an auditor was physically present. A report does not.
+The deep work is in the soil and in the factory. It is rarely seen, often overlooked, and dramatically undervalued. Reward it heavily — this is where GreenSpecs differentiates from surface-level consumer apps.
 
 CLOTHING & GEAR CERTIFICATIONS — different cert stack than food:
 - 0-4: No certs. "Sustainable collection" / "eco-conscious" / "recycled" with no third-party verification.
@@ -295,6 +383,27 @@ FOOD / CLEANING PACKAGING:
 - Certified compostable (home-compostable only): 13-15; industrial-only compostable: 8-11
 - Concentrate, tablet, powder, refill format: removes the bottle almost entirely — score 15-18
 - Refillable with deposit/return system: 17-20
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LAUNDRY & DISH — MANDATORY SIGNAL 3 FORMAT CAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+These override generic packaging tiers for all cleaning products. The format determines the weight shipped per load — a real, calculable number. Use these caps exactly:
+
+WEIGHT SHIPPED PER LOAD (approximate, active ingredient + packaging material):
+■ STANDARD LIQUID, 2x in HDPE bottle: ~90-110g/load (65-70% is water carrier). Non-recyclable HDPE in most US waste streams. This is the baseline worst format. Signal 3: 4-8. Cap at 8 regardless of bottle material.
+■ STANDARD LIQUID, 2x in recycled HDPE or plant-based bottle: marginally better packaging but still mostly water. Signal 3: 6-10. Cap at 10.
+■ CONCENTRATED LIQUID, 4x-8x in plastic: ~45-70g/load. Better transport, still plastic. Signal 3: 9-12. Cap at 12.
+■ CONCENTRATED LIQUID in paper-pouch or cardboard-laminate: 11-14.
+■ LAUNDRY SHEETS / STRIPS (Tru Earth, Earth Breeze, Kind Laundry): ~5-8g/load, minimal packaging. BUT PVA binder is a partially water-soluble plastic — aquatic persistence contested in peer review (25-75% persists depending on treatment plant). Offset: near-zero packaging waste. Net: Signal 3: 12-15.
+■ PODS / UNIT-DOSE CAPSULES: ~15-20g/load, typically minimal outer plastic. PVA film same caveat as sheets. No over-pouring. Signal 3: 12-15 (same as sheets; neither earns the cardboard premium).
+■ POWDER IN CARDBOARD BOX: 0% water carrier. ~30-45g/load of active ingredient only, zero plastic components, fully curbside-recyclable. Per pallet, ships 2-3x more loads than liquid. This is the physical packaging ceiling for cleaning products. Signal 3 FLOOR for this format: 14. Good recycled cardboard, minimal ink: 15-17. Powder + bulk/refill + cardboard: 17-19. This is the only format that genuinely deserves "15-18."
+■ CONCENTRATED TABLET / BRICK (Blueland, Eco Egg): ~8-15g/load. No plastic film. Minimal packaging. Similar footprint to cardboard powder without the cardboard. Signal 3: 15-17.
+■ REFILL POUCH + REUSABLE BOTTLE: 16-18.
+■ GLASS BOTTLE refill-deposit system: 17-20.
+
+THE CARDBOARD MANDATE: A laundry or dish powder in a cardboard box MUST score at least 6 points higher on Signal 3 than an equivalent product in a standard plastic bottle. If your Signal 3 for the plastic-bottle version is 8, the cardboard powder must be at least 14. The weight, recyclability, and zero-plastic-waste of cardboard are measurable physical facts. Do not collapse this gap.
+
+THE SHEET NUANCE: Laundry sheets/strips are often marketed as "the most eco" format. They are good — very light, minimal packaging. But they are not better than a certified cardboard powder on Signal 3. The PVA polymer matrix is real plastic, even if dissolving. Score sheets 1-3 points below a comparable cardboard powder on Signal 3.
 
 CLOTHING & GEAR — CIRCULARITY (use this tier instead of packaging for apparel/gear):
 The circularity score reflects: Can this product be recycled, repaired, or returned at end of life?
@@ -340,56 +449,494 @@ Score accordingly:
   water retention, and biodiversity outcomes are orders of magnitude above conventional.
   This is the ceiling because it is the hardest to achieve and proves the most.
 
-FOOD & BEVERAGES:
-- Ultra-processed (additives, isolates, artificial flavors, 20+ ingredients, unrecognizable names) = 0-5
-- Conventional processed (canned, preserved, HFCS or conventional refined sugar, additives, no organic) = 4-8
-- Conventional, simple recognizable ingredients, no organic certification = 6-9
-- USDA Certified Organic ingredients, simple processing, 5-8 recognizable kitchen ingredients = 12-15
-  Examples: organic jelly (fruit, organic cane sugar, pectin), organic pasta sauce, organic oats.
-  USDA Organic certification means the farm was audited — score this tier, not the "processed" tier.
-- USDA Certified Organic + very short ingredient list (under 5 items) + minimal transformation = 14-17
-- Single-origin, certified organic, traceable to named farm or region, under 5 ingredients = 16-20
-- Demeter Biodynamic or ROC food products = 17-20. The land and ingredient sourcing is the best
-  available. The deep soil work is invisible to the consumer but fully audited.
-- One organic ingredient + 15 synthetic additives = never above 7 here
-IMPORTANT: A conventional product with recognizable ingredients scores 6-9 here. A USDA Organic
-equivalent scores 12-15. Organic certification is a meaningful farming and land-care intervention.
+FOOD & BEVERAGES — THE FULL NATURAL-FOOD RUBRIC:
+Food is where sustainability meets the ground. Every calorie in a grocery aisle is tied to a piece of land, a watershed, and a person who tended it. This rubric scores food on four linked dimensions: what it does to the ground, what it does for the grower, how much of the story the brand actually tells, and whether the processing stays out of the way.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIMENSION A — LAND STEWARDSHIP (the ground is the product)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Agriculture consumes 50% of habitable land and 70% of freshwater. The single biggest variable in a food's real footprint is whether the land it came from is being depleted or rebuilt. Score aggressively here — this is the dimension most apps ignore.
+
+SIGNS OF ACTIVE LAND REGENERATION (reward heavily):
+- Regenerative Organic Certified (ROC), Demeter Biodynamic, Savory EOV: these are the proof. See Signal 2. +6 to +8 on ingredient signal.
+- Cover cropping disclosed, named: protects soil from erosion between cash crops, feeds microbial life, sequesters carbon. +2 if mentioned on package or site.
+- No-till / reduced-till farming disclosed: protects soil carbon by not turning it over every season. +2.
+- Rotational grazing / mob grazing (ranching): livestock move in tight groups, mimicking wild herds; dung fertilizes, hooves break crust, grass rests. Contrast with feedlot finishing. +3 if audited/claimed credibly.
+- Named watershed protection: buffer zones, riparian restoration, water cycle management. +1 to +2.
+- Biodiversity commitments: pollinator strips, native plantings, hedgerows, wildlife corridors, dedicated reserves (Demeter requires 10% of farm as reserve). +2.
+- Dry farming / limited irrigation (common in California winegrowing, some stone fruit): growers choosing water stewardship over yield. +2.
+- Named soil-carbon programs: Kiss the Ground, Carbon Underground, Indigo Ag verification. +1 if linked.
+- Agroforestry / silvopasture: trees integrated into grazing or cropping (cocoa grown under shade canopy, olive/pasture combinations). +2.
+
+SIGNS OF EXTRACTIVE / DEPLETIVE AGRICULTURE (penalize):
+- Conventional monoculture with no soil commitment, commodity crops (corn, soy, wheat, cotton) with no regenerative language or cert = 0-6 baseline.
+- Feedlot meat: CAFO (concentrated animal feeding operations), grain-finished, no pasture finish, manure lagoons. -3 to -5.
+- Palm oil without RSPO certification: deforestation driver. -3. RSPO "Mass Balance" is weaker than "Segregated" or "Identity Preserved." RSPO-Identity Preserved is the only credible tier.
+- Industrial soy / beef from the Amazon / Cerrado frontier: unless traceable to a Soy Moratorium-aligned supplier or a named grass-fed ranch, assume deforestation link. -4.
+- Industrial cocoa from West Africa without Rainforest Alliance, Fair Trade, or direct-trade relationship: known deforestation and child-labor zones. -3.
+- Long-distance water-intensive crops (almonds, avocados, rice) with no water-stewardship claim: flag in narrative, -1 to -2 if the region is drought-stressed (Central Valley almonds, etc.).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIMENSION B — CARE FOR THE GROWER (the person is the product)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Sustainability that ignores the farmer isn't sustainability. Score this dimension based on verified relationships between brand and grower.
+
+SIGNS OF GENUINE GROWER CARE (reward):
+- Fair Trade Certified / Fair Trade USA: minimum price floor + premium paid to worker co-op + democratic governance. +3 to +4. See Signal 2.
+- Fair for Life: slightly stricter than Fair Trade, covers the full supply chain including workers in packhouses. +3.
+- Direct-trade relationship: brand publishes named farms, pays above Fair Trade minimum, returns to the same farms annually. Coffee: Counter Culture, Intelligentsia, Equal Exchange. Cocoa: Dandelion, Askinosie, Taza. +3 if demonstrable.
+- B Corp + Fair Trade + organic stack: +4.
+- Named farmers / growers on the package or site: "This coffee is from Finca La Soledad, Aida Batlle, El Salvador." This level of transparency is rare and always worth rewarding. +2.
+- Equity ownership in supply chain (worker-owned co-ops, farmer-owned brands like Organic Valley, Equal Exchange, Alter Eco). +2.
+- Published living wage data for growers: +2 if specific numbers given.
+- Indigenous stewardship, tribal sovereignty partnerships (Native Harvest wild rice, Ramona Farms tepary beans, Bedré Fine Chocolate): irreplaceable ecological and cultural knowledge. +3.
+
+SIGNS OF EXTRACTIVE GROWER RELATIONSHIPS (penalize):
+- Commodity sourcing with no Fair Trade / direct-trade language: default assumption is the grower got spot price minus markups. Baseline penalty, no explicit points but informs the story.
+- Known labor issues in category (cocoa from West Africa with no cert, tomatoes from Florida without Fair Food Program, grapes from non-union CA vineyards): -2 on ingredient signal, flag in narrative.
+- Sustainability PDF that talks about "farmer partnerships" without naming a single one: marketing, not care. 0 credit.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIMENSION C — THE STORY THE BRAND TELLS (transparency and traceability)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+A brand that names the farm, the variety, the season, and the practices is a brand that has done the work. Short, sourced stories beat long, polished reports.
+
+HIGH STORY DEPTH (reward):
+- Single-origin + named producer + named variety + harvest year: full traceability. +3. (Common in specialty coffee, fine chocolate, olive oil, wine.)
+- Named region + named co-op + processing method: +2. (Example: "Jinotega, Nicaragua, CECOCAFEN co-op, fully washed.")
+- Harvest/seasonal context: "Arrived from the 2025 fall harvest in Calabria": +1. Shows the brand treats food as seasonal.
+- Open books / supply chain disclosure published: Patagonia Provisions, Dr. Bronner's, Alter Eco. +2.
+- Farm story with specific practices described (cover crops named, compost program described, water program described): +2.
+
+LOW STORY DEPTH (neutral to penalize):
+- "Premium ingredients," "sourced from the best farms," "a commitment to quality" — empty language, no origin info = 0 credit.
+- Ingredient list only (no origin info at all) = default.
+- Conflict between front of package ("farm fresh, small batch") and reality (mega-brand owned by PepsiCo/Kraft/Nestlé): call it out in the narrative; no bonus for the claim.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIMENSION D — INGREDIENT COMPOSITION AND PROCESSING (keep it clean)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The simpler the ingredient list and the less industrial the processing, the more the dimensions above actually matter. A regeneratively sourced ingredient inside a hyper-processed product loses most of its impact to additives and isolates.
+
+- Ultra-processed (NOVA 4): isolates, artificial flavors, dyes, emulsifiers, high-fructose corn syrup, 20+ ingredients, unrecognizable names = 0-5.
+- Conventional processed (canned, preserved, refined sugar, conventional additives, no organic) = 4-8.
+- Conventional but simple, recognizable ingredients, no organic cert = 6-9.
+- USDA Certified Organic ingredients, simple processing, 5-8 recognizable ingredients = 12-15.
+- USDA Organic + very short list (under 5 items) + minimal transformation = 14-17.
+- USDA Organic + single-origin + named producer + under 5 ingredients = 16-19.
+- Demeter Biodynamic or ROC ingredients + transparent story + simple list = 17-20.
+- One organic ingredient + 15 synthetic additives = never above 7. The organic certification is for the farm, but the product is a processed package.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCORING TIERS — combining all four dimensions:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 0-4: Ultra-processed + no cert + no origin + commodity sourcing
+- 5-9: Conventional processed OR single organic ingredient inside industrial product
+- 10-13: USDA Organic + conventional processing, OR conventional + direct-trade grower relationship, OR named farm + clean ingredients with no cert
+- 14-16: USDA Organic + clean ingredient list + some origin info OR Fair Trade + organic + named region
+- 17-18: Demeter / ROC OR (USDA Organic + Fair Trade + direct-trade named farm + cover crop disclosure) OR Indigenous-stewarded single-origin
+- 19-20: ROC Gold / Demeter + named farm + Fair Trade + living wage + short ingredient list — the ceiling
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATEGORY-SPECIFIC DEPTH NOTES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COFFEE: origin is the main axis. Single-origin named farm + Fair Trade + organic + shade-grown = 17-20. Supermarket commodity blend with "sustainable" on bag = 20-35. Starbucks C.A.F.E. Practices is a real audited program but weaker than Fair Trade or Rainforest Alliance. La Colombe's direct-trade = strong story; Counter Culture publishes every grower price.
+
+CHOCOLATE: cocoa supply chain is notoriously exploitative. Askinosie, Dandelion, Taza publish every grower relationship and pay 2-3x commodity price. Hershey / Mondelez / Cargill-sourced bars without Rainforest Alliance or Fair Trade = baseline low.
+
+OLIVE OIL: 70% of "Italian" olive oil is adulterated. Look for named estate, harvest year, single varietal, cold-pressed. California Olive Ranch is good; any supermarket "pure olive oil" with no harvest year = 25-40.
+
+WINE: biodynamic wine is a well-developed tradition (Demeter-certified vineyards in France, Austria, California). Natural wine movement (no added sulfites, native yeasts) is distinct but often aligned. Robert Sinskey (ROC), Tablas Creek (ROC), Frey Vineyards (Demeter) = top tier.
+
+DAIRY: Alexandre Family Farm (Demeter + ROC), Straus Family Creamery (organic, pasture), Jersey Mike (ROC Gold) = top tier. Organic Valley = solid; commodity organic like Horizon = lower within organic.
+
+GRAINS AND FLOUR: freshly milled regional grain (Bluebird Grain Farms, Cairnspring Mills, Castle Valley Mill) beats commodity organic flour. Named grain variety (e.g., "Emmer wheat, 2024 harvest") = bonus.
+
+PRODUCE: CSA membership, farmers' market, local organic beats supermarket organic on freshness and per-mile footprint, but supermarket organic beats conventional.
+
+SEAFOOD: MSC wild / ASC farmed + traceable fishery = 12-15. Named small fishery + MSC (e.g., Alaska salmon) = 14-17. Farmed shrimp without ASC = 5-10 (mangrove destruction issue).
+
+MEAT: grass-fed + finished + ROC = 17-20. AWA + pasture-raised = 13-16. USDA Organic alone = 10-13. Feedlot = 3-8.
+
+EGGS & DAIRY — covered in depth above under EGGS, DAIRY & ANIMAL PRODUCTS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KEY RULE: The more of the four dimensions (land, grower, story, ingredients) a product addresses, the higher the score. A product strong on one dimension only (e.g., USDA Organic alone, no origin, no grower info, standard package) caps around 62. A product strong on all four — with real certs, named farm, Fair Trade, clean list — reaches 85+.
+
 A conventional food company with ESG reports but conventional farming does NOT score above 65.
-CLEANING PRODUCTS:
-- Conventional synthetic, no biodegradability data = 0-5; some plant-derived = 6-10; EPA Safer Choice, fully biodegradable = 11-15; certified fully plant-derived with ingredient transparency = 16-20
+Publishing a PDF about sustainability goals is not the same as actually farming organically.
+CLEANING PRODUCTS — LAUNDRY, DISH, SURFACE, ALL-PURPOSE — THE FULL RUBRIC:
+Cleaning products are the most straightforward category to score rigorously because every ingredient has published aquatic toxicity data. There is no excuse for three different products scoring the same. Score Signal 4 for cleaning on SIX explicit axes. Apply them sequentially.
 
-CLOTHING, OUTERWEAR & OUTDOOR GEAR — Material Impact & LCA:
-The environmental footprint of a garment is 70-90% determined at the material and dyeing stage.
-Score this signal based on fiber type, chemical processing, and PFAS status.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 1 — FORMAT AND DOSE (baseline: what ships and how much water is added)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Format shapes both Signal 3 (packaging) AND Signal 4 because dose per load changes the absolute mass of ingredient entering waterways. Don't double-count, but weight the ingredient signal toward the best format:
+- POWDER, concentrated: 0-3% water, cardboard, lowest transport carbon per load, sodium carbonate base is inherently aquatic-safe. This format is the ingredient-signal ceiling for laundry.
+- TABLETS / DRY CONCENTRATES (Blueland, Dropps powder, Tru Earth sheets): zero to minimal water, minimal packaging, pre-dosed so no over-pouring. Same ingredient-signal ceiling as powder.
+- LIQUID, ULTRA-CONCENTRATED (2x, 4x, 10x): 40-60% water, but per-load dose is small. If plant-based and certified, can reach the high tier — but cap ingredient signal 1-2 points below an equivalent powder.
+- LIQUID, STANDARD: 60-75% water, heavy transport, consumer over-dosing common. Even plant-based formulas lose credibility here. Cap ingredient signal at 15.
+- PODS (PVA/PVOH film): no bottle, pre-dosed, low transport weight. BUT: PVA biodegradability is genuinely contested in recent peer-reviewed research — 25-75% of PVA may persist in waterways depending on treatment plant microbial acclimation. If the brand does not publish third-party cold-water biodegradation data, treat PVA as an unknown aquatic load and cap ingredient signal 2 points below an equivalent powder. If the brand does publish verified data (Dropps has published, Tide has not), no penalty.
+- LAUNDRY SHEETS (Tru Earth, Earth Breeze, Kind Laundry): PVA-based dissolvable matrix — same PVA caveat as pods. The marketing often overstates their environmental advantage. Score them same tier as pods.
 
-FIBER TIERS (from worst to best):
-- Virgin polyester or virgin nylon: petroleum-derived, high global warming potential, microplastic
-  shedding in every wash. No other claims offset this at the fiber level = 0-5.
-- Conventional cotton: 2nd most pesticide-intensive crop globally, extremely water-intensive = 2-6.
-  "Cotton" with no organic cert scores here regardless of how it is marketed.
-- Bamboo / viscose / rayon without OEKO-TEX or certified closed-loop processing: the raw
-  material may be renewable but the chemical processing is often highly polluting = 3-7.
-- Recycled polyester (rPET from post-consumer bottles or textile waste): approximately 50-70%
-  lower GWP than virgin polyester. Microplastic shedding still present but fossil input reduced = 8-12.
-- Recycled nylon (Econyl, Repreve Nylon): made from ocean plastic, fishing nets, or industrial waste.
-  Comparable to rPET in GWP reduction. Strong story if third-party verified = 9-13.
-- GOTS-certified organic cotton: chemical-free cultivation verified, better soil outcomes = 10-14.
-- Lyocell / Tencel with OEKO-TEX or closed-loop certification (Lenzing): wood-pulp fiber with
-  verified solvent recovery. Significantly better than conventional viscose = 10-13.
-- Bluesign-certified fabric: water discharge, chemical inputs, energy use in dyeing verified = 10-14.
-  Bluesign does not certify the fiber origin — it certifies the factory processes.
-- Post-consumer recycled fiber + Bluesign-certified dyeing = 13-16.
-- GOTS-certified organic fiber + responsible dyeing (OEKO-TEX or Bluesign) = 13-16.
-- Responsible Wool Standard (RWS) or Responsible Down Standard (RDS): animal welfare and
-  land management verified for natural fiber sourcing = 11-15.
-- PFAS / DWR STATUS — applies specifically to outerwear and rain gear:
-  PFC-free DWR (Nikwax, Teflon EcoElite, Grangers, etc.) = full points for this category; add 2 pts.
-  C6 fluorocarbon DWR: still PFAS, still persistent forever chemicals, EU-restricted under REACH.
-    Score -2 pts penalty. A brand using C6 in 2026 has made a conscious choice to lag.
-  C8 fluorocarbon DWR: older, more bioaccumulative PFAS chemistry. Score -3 pts penalty.
-  Unknown / undisclosed DWR: score as C6 (assume PFAS until proven otherwise) = -1 pt.
-- Cradle to Cradle certified material health = 16-20.
-  This cert verifies not just what the fiber is, but what every chemical in it does.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 2 — PRIMARY SURFACTANT (the #1 aquatic signal; most of your score comes from here)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This is the ingredient that actually cleans and the one that ends up in waterways at the highest mass. Identify the primary surfactant(s) and score accordingly.
+
+BEST — full credit, +6 to +8 toward ingredient signal:
+- Alkyl polyglucosides (APGs): lauryl glucoside, decyl glucoside, coco glucoside, caprylyl/capryl glucoside. Plant-derived from corn or coconut + glucose, hydrolyze in water to glucose + fatty acid (both benign). Fully biodegradable in <28 days per OECD 301. EWG hazard score 1-2. Low fish gill irritation. Safe for greywater systems. This is the modern gold standard.
+- Sodium coco sulfate (SCS): plant-derived alternative to SLES, meets EU Ecolabel biodegradability (>60% in 28 days). Slightly higher irritation than APGs but no 1,4-dioxane risk.
+- Soap nuts (Sapindus mukorossi) / saponins: natural saponin cleansers, zero processing, 100% biodegradable. Rare but always positive.
+
+ACCEPTABLE — neutral to +2:
+- Sodium lauryl sulfoacetate (SLSA): coconut-derived, not the same as SLS despite similar name. Readily biodegradable, no dioxane risk.
+- Lauryl/myristyl glucamide, coco-glucamide: plant-derived mild surfactants.
+- Disodium/sodium cocoyl glutamate: amino-acid-based, plant-derived, very mild.
+- Plant-based, unnamed ("coconut-derived surfactants"): partial credit only — unverifiable.
+
+PENALIZE — -3 to -6:
+- Sodium laureth sulfate (SLES): the #1 conventional liquid detergent surfactant. Manufactured by ethoxylation of lauryl alcohol — this process creates 1,4-dioxane as a byproduct. 1,4-dioxane is an EPA-classified "likely human carcinogen" and "unreasonable risk" chemical (2020 TSCA review). It is rarely removed from the finished product unless the manufacturer specifically invests in vacuum stripping. Products containing SLES and no published dioxane-removal protocol: -5 to -6. SLES is also slower to biodegrade than APGs.
+- Sodium lauryl sulfate (SLS): petroleum- or palm-derived, not ethoxylated (no dioxane risk) but moderately toxic to aquatic life above 0.1 mg/L. Causes gill membrane damage in fish. -3 to -5.
+- Linear alkylbenzene sulfonate (LAS, dodecylbenzene sulfonate): petroleum-derived, accumulates in sediment, slower biodegradation than APGs, persistent under anaerobic conditions. -4.
+- Alkyl ethoxylates (AE, C12-15 pareth, alcohol ethoxylates): petroleum-derived nonionic surfactants. Same ethoxylation process as SLES — same 1,4-dioxane risk. -4.
+- Nonylphenol ethoxylates (NPE): endocrine disruptor, banned in EU for cleaning. If detected, this is a deal-breaker — cap ingredient score at 4.
+- Quaternary ammonium compounds (quats: benzalkonium chloride, DDAC) in laundry: uncommon but some "antibacterial" laundry has them. They kill aquatic bacteria essential to wastewater treatment. -5.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 3 — BUILDERS, CHELATORS, AND BRIGHTENERS (the hidden persistence story)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This is where "natural-looking" brands often get caught. Evaluate each additive:
+
+BUILDERS (water softeners to help surfactant work in hard water):
+- Sodium carbonate (washing soda), sodium bicarbonate (baking soda): fully biodegradable, benign, plant-benefit in greywater. +1.
+- Sodium citrate, citric acid: biodegradable, safe, replaces EDTA. +1.
+- Sodium silicate, sodium metasilicate: mineral, benign. Neutral.
+- Zeolite A (aluminum silicate): insoluble, ends up as sludge but not toxic. Neutral.
+- Sodium tripolyphosphate (STPP) and other phosphates: cause eutrophication and algal blooms. Largely banned in US/EU consumer laundry since 1994-2010 but still in some dish and industrial products. If PRESENT: CAP ingredient score at 5. This is a deal-breaker.
+
+CHELATORS (metal-ion binders):
+- Sodium citrate, citric acid: fully biodegradable. Preferred alternative. No penalty.
+- EDDS (ethylenediamine disuccinate) / GLDA (tetrasodium glutamate diacetate): biodegradable EDTA replacements. Minimal penalty.
+- EDTA (tetrasodium EDTA, disodium EDTA): poorly biodegradable, remobilizes heavy metals (lead, cadmium) from river sediment, persists in waterways. -4.
+- Phosphonates (HEDP, ATMP, DTPMP): slower-biodegrading than even EDTA, hydrolyze in sunlight to release phosphate → eutrophication. -4.
+- NTA (nitrilotriacetic acid): possible carcinogen, bioaccumulates. -5. Deal-breaker — cap at 6.
+
+OPTICAL BRIGHTENERS / FLUORESCENT WHITENING AGENTS (FWAs):
+These are Tinopal, DMS, CBS-X, or undisclosed "optical brighteners" in most conventional whites. They absorb UV and re-emit blue light to mask yellowing. 75%+ persist in surface waters post-treatment; detected in fish tissue globally; photolytic but slow. Skin-sensitizing in some populations. Essentially no functional cleaning benefit — pure cosmetic.
+- If optical brighteners present: -3 to -4.
+- If brand EXPLICITLY excludes OBs ("no optical brighteners" on label): +1 credibility bonus. This is a common natural-brand trust signal.
+- Most "free & clear" conventional products (Tide Free, All Free) remove fragrance and dye but KEEP optical brighteners — not a full pass.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 4 — FRAGRANCE, COLOR, AND ENCAPSULATION (the invisible microplastic story)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FRAGRANCE:
+- Unspecified "Fragrance" / "Parfum": legally a trade-secret blanket term covering 3,000+ possible chemicals including synthetic musks. Synthetic musks (HHCB/galaxolide, AHTN/tonalide, nitro-musks) bioaccumulate in fish, cross placenta in humans, detected in breast milk. Most conventional scented products contain them. -2 to -3.
+- Named essential oils (lavender oil, tea tree oil, lemon oil): biodegradable, disclosed. Neutral to +0.5.
+- "Fragrance-free" / "unscented" — different from "free of dyes": reward with +1 if explicitly fragrance-free (not just "lightly scented").
+- Persil, Gain, Tide "Downy Scent Pearls" / Unstopables / scent boosters: concentrated polymer-encapsulated fragrance beads. These beads are microplastic-sized polymer capsules that release fragrance over time. They do not fully dissolve in water and contribute to the 35% of ocean microplastics attributed to laundry. If product is a scent booster: cap ingredient score at 8. If product contains integrated scent-boosters: -3.
+
+DYES AND COLOR:
+- Clear/colorless product: +1. Signals simpler formulation.
+- Natural colorants (spinach extract, beet): no penalty.
+- Synthetic dyes (Acid Blue 9, Acid Red, etc.): azo dyes can be mutagenic under reductive conditions, persist post-treatment. -1 to -2.
+- Products explicitly "dye-free" or "free & clear": +1.
+
+ENCAPSULATED FRAGRANCE / POLYMER DELIVERY SYSTEMS:
+- Any "long-lasting scent" or "scent for weeks" technology = polymer-encapsulated microcapsules. These are a primary source of laundry microplastic emission. -3. Examples: Downy Unstopables, Tide with Febreze, Snuggle Scent Boost.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 5 — ENZYMES, BLEACH, AND ACTIVE BOOSTERS (mostly benign, sometimes excellent)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENZYMES (named or generic):
+- Protease, amylase, lipase, cellulase, mannanase, pectinase: biodegradable proteins, fully digested by wastewater microbes. Enable lower-temperature washing, which reduces the carbon footprint of the wash itself. +1 to +2 if named.
+- "Enzyme blend" unnamed: +0.5.
+- GMO-derived enzymes: same aquatic profile as non-GMO. No penalty.
+
+OXYGEN BLEACH:
+- Sodium percarbonate: decomposes to oxygen + water + sodium carbonate. Chlorine-free, benign. +1.
+- Hydrogen peroxide: benign. Neutral to +1.
+- Chlorine bleach (sodium hypochlorite): reacts with organic matter to form AOX (adsorbable organic halogens), some of which are persistent organochlorines. In laundry specifically: -2 to -3. (In stain removers it's more acceptable because dose is tiny and targeted.)
+- TAED (bleach activator): enables low-temperature oxygen bleach activation. Neutral.
+
+OTHERS:
+- Borax (sodium borate): used in some natural detergents. Mildly toxic to aquatic life but biodegradable and naturally occurring. Neutral to -1 at high concentrations.
+- Sodium perborate: releases borate; similar concern to borax but with less toxicity per dose. Neutral.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 6 — CERTIFICATIONS FOR CLEANING (validate or discount the ingredient story)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TIER A — MEANINGFUL (full credit on Signal 4):
+- EPA Safer Choice: every ingredient screened against EPA's CleanGredients database for human and aquatic toxicity, persistence, and bioaccumulation. No optical brighteners, no phosphates, no SLS, no 1,4-dioxane risk. pH between 2 and 11.5. This is the most reliable cleaning-product cert in the US. Presence alone bumps ingredient signal to 15-18.
+- EU Ecolabel for Detergents: all surfactants ≥60% biodegradable in 28 days, strict persistent-compound limits, fragrance restrictions. Equivalent to EPA Safer Choice. 14-17.
+- Nordic Swan Ecolabel: similar to EU Ecolabel, slightly stricter on fragrance allergens. 14-17.
+- Cradle to Cradle Certified Gold or Platinum for cleaning: rare but exceptional — covers material health, circularity, clean water. 16-19.
+
+TIER B — HELPFUL (partial credit):
+- EWG Verified: requires full ingredient disclosure, no SLS/SLES/phthalates/phosphates, no 1,4-dioxane, no PEGs. Stricter on fragrance than EPA. 13-16.
+- Made Safe: aquatic toxicity and human health screening. 13-15.
+- Leaping Bunny / Cruelty-Free: cruelty-free only, no ingredient safety implication. +0.5 only.
+
+TIER C — NEARLY MEANINGLESS:
+- "Biodegradable" self-claimed: not a certification. 5-9 only.
+- "Natural" / "plant-based" / "eco-friendly" self-claimed: not a certification. Score on actual ingredients.
+- USDA Biobased label: measures % renewable feedstock, not toxicity. Biobased toxic formulations exist. +1 only if combined with transparency.
+- B Corp: certifies the company, not the formula. +0.5 only on ingredient signal. Full credit goes to Signal 5 (supply chain).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLEANING INGREDIENT SIGNAL TIER MAP (combine all 6 axes, land on):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 0-4: Conventional synthetic (SLES/SLS/LAS primary) + optical brighteners + synthetic fragrance + EDTA + no cert. Classic supermarket liquid laundry.
+- 5-9: One of: plant-derived surfactant OR no optical brighteners OR no synthetic fragrance. Partial improvement, no certification.
+- 10-14: Plant-based surfactant named (APGs/SCS) + no optical brighteners + no EDTA + biodegradable chelator + no certification but transparent ingredient list.
+- 15-17: EPA Safer Choice OR EU Ecolabel, plant-based surfactants, no OBs, no synthetic musks, full disclosure.
+- 18-20: EPA Safer Choice + full ingredient disclosure + powder or tablet format + no encapsulated fragrance + fragrance-free or named essential oils + biodegradable chelator confirmed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEAL-BREAKER RULES (these cap the overall score, not just Signal 4):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Phosphates detected: overall score cap 50.
+- NTA detected: overall score cap 50.
+- Nonylphenol ethoxylates detected: overall score cap 45.
+- Encapsulated polymer fragrance beads as the main product (Unstopables class): overall score cap 35.
+- SLES with no dioxane-removal documentation + optical brighteners + synthetic fragrance (the conventional-liquid triple): overall score cap 55.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIFFERENTIATION RULE — THREE PRODUCTS MUST NOT TIE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When scoring multiple products in the same cleaning sub-category (e.g. three laundry powders), you MUST produce a meaningful spread. Use this decision hierarchy to break ties:
+1. Is EPA Safer Choice / EU Ecolabel present? (the single biggest differentiator)
+2. Are the primary surfactants NAMED and plant-derived (APGs, SCS)? Or generic "surfactants" + conventional brand?
+3. Are optical brighteners explicitly excluded, explicitly present, or undisclosed?
+4. Is the chelator citrate (biodegradable) or EDTA/phosphonate (persistent)?
+5. Is fragrance fully absent, named essential oils, or generic "fragrance"?
+6. Is the brand publishing third-party biodegradation data (cold-water, marine)?
+7. Is the format powder (ceiling), concentrated tablet (ceiling), concentrate liquid, pods with verified PVA, or standard liquid?
+
+A Seventh Generation EPA Safer Choice powder vs an Arm & Hammer conventional powder vs a Tru Earth sheet SHOULD spread by 20-30 points on the total score. If your draft has them within 5 points of each other, you have failed to apply this rubric — rerun the axes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CALIBRATION ANCHORS — CLEANING (use these as hard reference points):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Tide Original Liquid: SLES + LAS + optical brighteners + synthetic fragrance + no cert + standard liquid = 28-38
+- Tide Pods Original: SLES + OBs + synthetic fragrance + PVA contested + no cert = 30-40
+- Tide Free & Gentle Liquid: SLES (kept) + no dye + no fragrance + OBs removed + no cert = 44-54
+- Gain Flings Pods: synthetic + heavy encapsulated fragrance = 26-36 (encapsulated fragrance is a serious penalty)
+- Arm & Hammer Clean Burst Powder: LAS + OBs + synthetic fragrance + sodium carbonate base + powder format = 40-50
+- All Free Clear Liquid: SLES + dye-free + fragrance-free + OBs removed = 48-56
+- Persil ProClean: SLES + enzymes + optical brighteners + fragrance = 32-42
+- Method Laundry (plant-based, no cert): named plant surfactants + no OBs + synthetic fragrance allowed = 52-62
+- Mrs. Meyer's Laundry (plant-based, no cert): plant surfactants + essential oil fragrance + no OBs = 54-64
+- ECOS Liquid (EPA Safer Choice): plant surfactants + EPA cert + no OBs + fragrance-free options = 66-74
+- Seventh Generation Free & Clear Liquid (EPA Safer Choice): 65-73
+- Seventh Generation Free & Clear Powder (EPA Safer Choice, powder format): 70-78
+- Earth Breeze Eco Sheets (PVA-based, no cert, marketing heavy): 50-60 (PVA penalty, no verified data)
+- Tru Earth Laundry Strips (PVA-based, no cert): 50-60
+- Dropps Laundry Pods (EPA Safer Choice + published PVA biodegradation data): 70-78
+- Meliora Laundry Powder (MADE SAFE, plant-based, minimal ingredients, powder): 72-80
+- Branch Basics Concentrate (APGs, full disclosure, refill model, no cert but transparent): 72-80
+- Blueland Laundry Tablet (EPA Safer Choice, plant surfactants, zero plastic, tablet format): 76-84
+- Meliora Soap Flakes (single-ingredient soap nuts or pure soap, plant-based, powder): 78-86
+
+DISH SOAP ANCHORS:
+- Dawn Original: SLES-based, no cert, synthetic fragrance = 30-40
+- Mrs. Meyer's Dish: plant-based, no cert, essential oils = 54-62
+- Seventh Generation Dish (EPA Safer Choice): 62-72
+- ECOS Dish (EPA Safer Choice): 62-72
+- Blueland Dish Soap Tablet (EPA Safer Choice, zero plastic): 74-82
+
+SURFACE / ALL-PURPOSE ANCHORS:
+- Lysol / Clorox conventional: quats, synthetic fragrance, optical brighteners not relevant = 30-40
+- Method All-Purpose (plant-based, no cert): 54-64
+- Mrs. Meyer's Multi-Surface: 54-62
+- Seventh Generation Multi-Surface (EPA Safer Choice): 64-72
+- Branch Basics Concentrate (APGs, full disclosure): 72-82
+
+KEY POINT: The spread between conventional and genuinely green laundry is 30-45 points. Do not collapse this. A shopper asking "which of these three detergents is actually better" deserves a clear answer — that is the entire value of this app.
+
+CLOTHING, OUTERWEAR & OUTDOOR GEAR — FULL LIFE CYCLE ASSESSMENT (LCA):
+A garment's environmental footprint spans five stages: (1) fiber production, (2) yarn and fabric manufacture, (3) dyeing and finishing, (4) transport and retail, (5) use-phase (washing, drying, repair) and end-of-life. Published LCAs consistently show material + dyeing account for 65-80% of total emissions, water use, and toxicity. The use phase adds 20-30% mostly from washing/drying. End-of-life losses are ~7% of global textile value — $500B lost annually to landfill.
+
+Score apparel on the full LCA. Do not stop at "is it recycled."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STAGE 1 — FIBER PRODUCTION (30-50% of garment LCA):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Published per-kg fiber benchmarks:
+
+■ VIRGIN POLYESTER / PET: 5.5 kg CO2e/kg, fossil-derived, non-biodegradable, sheds 500-1900 microfibers per wash (Plymouth University 2016). 0-5.
+
+■ VIRGIN NYLON 6/6,6: 7-9 kg CO2e/kg — highest GWP of common synthetics. N2O from manufacture is 300x more warming than CO2. 0-4.
+
+■ CONVENTIONAL COTTON: 2-3 kg CO2e/kg, BUT 2,700 liters water per t-shirt, 16% of global pesticide use on 2.5% of farmland. Severe soil depletion in Uzbekistan and India. 2-6.
+
+■ CONVENTIONAL VISCOSE / BAMBOO RAYON: 3-4 kg CO2e/kg. Chemical processing (carbon disulfide, NaOH) causes worker health crises in Asia. Lenzing is cleanest; generic Chinese viscose is worst. 3-7.
+
+■ CONVENTIONAL MERINO WOOL: 20-30 kg CO2e/kg (sheep methane), BUT fully biodegradable, naturally antibacterial (extends wash cycles), excellent durability, renewable. 8-11 conventional; 11-14 RWS-certified.
+
+■ CONVENTIONAL DOWN: 50+ kg CO2e/kg, BUT unmatched warmth-to-weight, decades-long use, biodegradable. 6-9 conventional; 10-13 RDS-certified.
+
+■ RECYCLED POLYESTER (rPET): 1.5-2 kg CO2e/kg — 50-60% lower GWP than virgin. Microfiber shedding persists. Only post-consumer rPET (bottles diverted from waste) counts; pre-consumer rPET (factory scrap) is lower value. 8-12 post-consumer; 6-9 pre-consumer.
+
+■ RECYCLED NYLON (Econyl from fishing nets, Repreve Nylon): 1.8-3 kg CO2e/kg. Comparable or better than rPET. Strong circularity story when third-party verified. 9-13.
+
+■ GOTS-CERTIFIED ORGANIC COTTON: 2 kg CO2e/kg, 91% less water when rain-fed, no synthetic pesticides, verified practices, social floor. 11-14.
+
+■ LYOCELL / TENCEL (Lenzing closed-loop): 1.2-1.6 kg CO2e/kg, 99% solvent recovery, FSC-certified pulp. Best-scoring cellulosic. 11-14.
+
+■ HEMP: 2 kg CO2e/kg, minimal water, grows without pesticides, regenerates soil, biodegradable. 12-15.
+
+■ LINEN (FLAX): 1.8-2.2 kg CO2e/kg, rain-fed in N. Europe, minimal pesticides, biodegradable — oldest cultivated plant fiber. 12-15.
+
+■ REGENERATIVELY GROWN COTTON (ROC-certified, e.g., Patagonia ROC cotton from India): builds soil carbon — net carbon negative in some LCAs. 15-18.
+
+■ BIO-SYNTHETICS (partial plant-based polyester, Allbirds SweetFoam from sugarcane): 25-50% bio content, still plastic. 8-11.
+
+■ EMERGING ALTERNATIVES (Mylo/Reishi mushroom leather, Piñatex pineapple leaf, Mirum plant-based vegan leather): case-by-case; generally 13-16 if verified and scaled.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STAGE 2-3 — FABRIC MANUFACTURE, DYEING & FINISHING (20-35% of LCA):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This stage produces 20% of global industrial water pollution. A conventional cotton tee made in a Bluesign dye house scores above an organic cotton tee from an unaudited facility.
+
+DYEING & FINISHING:
+- Bluesign-certified fabric: +3 to +4. Chemical blacklist, wastewater tested, energy verified.
+- ZDHC-compliant dyeing (MRSL-aligned): +2 to +3.
+- OEKO-TEX MADE IN GREEN: +3. Combines chemical safety + facility audit.
+- OEKO-TEX Standard 100 alone: +1 to +2. Tests finished product only.
+- GOTS dyeing (for organic fibers): +3. Restricted chemical list, no heavy metals or azo dyes, social criteria.
+- Natural / low-impact / plant-based dyes: +1 to +2.
+- Undyed / natural color: +1.
+- Unknown dyeing process (typical fast fashion): 0 baseline, assume AOX discharge.
+
+DWR / WATERPROOF FINISH (outerwear):
+- PFC-free DWR (Nikwax EcoHydro, Teflon EcoElite, Grangers Performance Repel): +2. Performance now at parity for most activities.
+- Wax-based DWR (Fjallraven Greenland Wax, Barbour wax jackets): +2. Zero synthetic chemistry, field-renewable.
+- C6 fluorocarbon DWR: -2. EU REACH-restricted 2023. Any C6 in 2026 is a margin-over-chemistry choice.
+- C8 fluorocarbon DWR: -3. Bioaccumulative forever chemicals.
+- Undisclosed DWR: -1 (assume C6).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STAGE 4 — TRANSPORT, PACKAGING, RETAIL (5-10% of LCA):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Ocean freight: ~0.05 kg CO2e per garment per 10,000 km. Negligible.
+- Air freight (Shein / Zara express model): 0.8-1.5 kg CO2e per garment per 10,000 km. -1 to -2 if documented.
+- Regional manufacture (NA for NA, EU for EU): +1.
+- Recycled / minimal packaging: +1.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STAGE 5 — USE PHASE & END-OF-LIFE (the durability multiplier):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+A garment worn 200 times has 1/5 the per-wear impact of one worn 40 times. Durability is a real sustainability lever — score it.
+
+DURABILITY SIGNALS:
+- Reinforced stitching, bar tacks, gusseted construction: +1.
+- Lifetime warranty / Ironclad Guarantee (Patagonia, Arc'teryx, Osprey All Mighty Guarantee): +2.
+- Brand-run repair (Patagonia Worn Wear, Arc'teryx ReBird, Fjallraven Stitching, Nudie Jeans Free Repair Forever, Filson Restoration): +2 to +3.
+- Modular hardware (swappable zippers, replaceable draw cords, replaceable Nano Puff insulation): +1.
+- Published "designed to last X years" / wear-count data: +1.
+
+MICROPLASTIC SHEDDING (use-phase water pollution):
+Synthetic garments shed 500-1900 microfibers per wash; 6-9 million per garment lifetime. Apparel washing contributes 35% of ocean microplastics. Natural fibers (cotton, wool, linen, hemp) biodegrade; synthetics do not.
+- Brand ships with Guppyfriend / washing filter guidance: +1.
+- Natural fiber composition: built-in advantage, implicitly captured in Stage 1.
+
+END-OF-LIFE:
+- Mono-material construction (100% polyester, 100% wool, 100% Nylon 6): mechanically recyclable. +2.
+- Blended fibers (poly-cotton, nylon-spandex): not commercially recyclable. Designed for landfill. Baseline penalty.
+- Verified take-back with named recycling partner (Patagonia Worn Wear, Eileen Fisher Renew, The North Face Clothes the Loop, Arc'teryx ReBird): +2 to +3.
+- "Drop box in store" without named partner: +0.5.
+- Rental / library / subscription (Nuuly, Rent the Runway): +3 on circularity — garment never becomes waste.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FULL-LCA SCORING TIERS (combine all 5 stages):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 0-4: Virgin synthetic + conventional dyeing + blended + no cert + fast fashion
+- 5-8: Partial recycled content + conventional dyeing + no cert, OR conventional cotton + OEKO-TEX 100 only
+- 9-12: GRS-verified rPET + Bluesign dyeing, OR GOTS organic cotton + standard dyeing
+- 13-16: GOTS organic + Bluesign + PFC-free + mono-material + repair program, OR rPET + Bluesign + repair + lifetime warranty
+- 17-18: ROC cotton OR Regeneratively grown fiber OR rPET + Bluesign + PFC-free + repair + take-back, stacked
+- 19-20: Cradle to Cradle Gold/Platinum, OR ROC fiber + full Tier 4 supply chain + Bluesign + PFC-free + lifetime repair + closed-loop recycling partner
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PER-WEAR CARBON INTENSITY (the real apparel metric):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+When estimating carbon_estimate for apparel, ALWAYS think in per-wear. A 10 kg CO2e cotton t-shirt worn 200 times = 0.05 kg CO2e per wear. A 6 kg CO2e fast-fashion polyester blouse worn 8 times = 0.75 kg CO2e per wear — 15x worse. Put this in carbon_estimate.context when you can.
+
+KEY RULE: A Patagonia Nano Puff with recycled fill + PFC-free DWR + repair program worn 10 years (repaired twice) outperforms any "sustainable" fast-fashion eco-collection jacket. Never reward low durability just because fiber is recycled.
+
+Cradle to Cradle Certified material health alone: 16-20 on ingredient signal. This cert verifies every chemical.
+
+PAPER PRODUCTS — TOILET PAPER, PAPER TOWELS, FACIAL TISSUE, NAPKINS:
+Paper is cut-and-dry once you understand three axes: where the fiber came from, how it was bleached, and whether the packaging adds plastic waste. These axes alone create a 40-point spread in this category. There is no excuse for two paper products scoring within 5 points of each other unless they are literally identical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 1 — FIBER SOURCE (the biggest differentiator; drives 50% of the score)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- VIRGIN TREE FIBER, no certification: forests felled with no verified sustainable management. Deforestation risk. The industry standard that most conventional brands use. Signal 4: 2-6.
+- VIRGIN FIBER, SFI (Sustainable Forestry Initiative): weaker chain-of-custody, criticized for certifying clearcuts. Signal 4: 5-9.
+- VIRGIN FIBER, FSC Mix: a fraction of the fiber pool is FSC-certified. Better than nothing. Signal 4: 8-12.
+- VIRGIN FIBER, FSC 100%: all fiber from FSC-certified forests. Annual forest-level audits. Real verification. Signal 4: 11-14.
+- SUGARCANE BAGASSE (agricultural byproduct): made from sugarcane stalks that would otherwise be burned or composted. No trees felled, no new cropland needed. Signal 4: 12-15.
+- 100% BAMBOO: bamboo regrows in 3-5 years vs 20-60 for trees. Naturally pest-resistant, minimal water. BUT: bamboo pulping uses the same chemical process as virgin wood — give no credit for "bamboo = green" without verifying the pulping method and bleaching. FSC-certified bamboo with PCF bleaching: Signal 4: 13-16.
+- POST-CONSUMER RECYCLED (PCR), unverified: usually at least partially true. Signal 4: 10-14.
+- POST-CONSUMER RECYCLED, 80-100%, third-party verified: no new trees felled, uses fiber already in the waste stream. This is the most defensible fiber story. Signal 4: 14-17.
+- 100% POST-CONSUMER RECYCLED + FSC/SCS recycled certification + fully disclosed: 15-18.
+
+THE RECYCLED PREMIUM: 100% post-consumer recycled fiber MUST outscore virgin fiber in the same product category by at least 10 points on Signal 4. Virgin fiber represents trees; recycled fiber represents diverted waste. The difference is real and large.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 2 — BLEACHING CHEMISTRY (water quality; dioxin risk)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- CHLORINE BLEACHED (Cl2): creates dioxins and furans — carcinogens, endocrine disruptors, persistent in aquatic environments. This was the industry standard pre-1990s; still used in some markets. -4 to -6 penalty if confirmed or suspected.
+- ECF (Elemental Chlorine Free): chlorine dioxide replaces molecular chlorine. Industry standard today. Still produces some organochlorines but far less than Cl2. Baseline — 0 points additional, 0 penalty.
+- TCF (Totally Chlorine Free — for virgin fiber): no chlorine chemicals at all. Hydrogen peroxide or ozone bleaching only. +2 to +3 on ingredient signal.
+- PCF (Processed Chlorine Free — for recycled fiber): the recycled-fiber equivalent of TCF. No chlorine added in reprocessing. The quality signal that separates Seventh Generation from bargain recycled brands. +2 to +3 on ingredient signal.
+- UNBLEACHED: brown / natural-colored tissue. Zero bleach chemicals. Rare in consumer tissue but the cleanest. +3.
+
+THE PCF PREMIUM: A 100% recycled paper product that is PCF-bleached MUST score higher than a 100% recycled paper product bleached with chlorine chemicals. If the bleaching method is unknown, assume ECF (neutral). If the brand claims PCF but has no third-party verification, give partial credit (+1).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AXIS 3 — PACKAGING FORMAT (how the rolls arrive to the consumer)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This maps directly to Signal 3. For paper products, packaging is a secondary but meaningful differentiator:
+- Individual rolls in plastic polybag, plastic outer wrap: worst format. Signal 3: 4-8.
+- Standard 6-12 roll pack in thick HDPE shrink-wrap: Signal 3: 5-9.
+- Cardboard box or paper-wrapped (no plastic film): meaningfully better. Signal 3: 13-16.
+- 100% plastic-free — paper wrap or cardboard case: Signal 3: 14-17.
+- Direct-ship in cardboard case, no individual plastic wrapping (Who Gives A Crap model): Signal 3: 16-19.
+- Bulk club size (24+ rolls): per-roll packaging dramatically reduced. +2 on Signal 3 vs. standard pack.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAPER PRODUCTS — SIGNAL 4 TIER MAP (combine all axes):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 2-6: Virgin fiber, no cert, chlorine or unknown bleaching. Conventional mass-market TP/paper towel.
+- 5-10: Virgin fiber, ECF bleaching, FSC Mix. Industry standard "green" tier.
+- 10-14: Virgin fiber, FSC 100%, ECF; OR 50% recycled content, PCF, no cert.
+- 12-16: 100% bamboo or sugarcane, TCF/PCF, FSC certified.
+- 14-17: 80-100% post-consumer recycled, PCF, third-party verified recycled content cert.
+- 15-18: 100% post-consumer recycled, PCF, FSC-certified or SCS recycled content cert, plastic-free packaging.
+- 17-20: 100% PCR or 100% bamboo, PCF, FSC, plastic-free packaging, B Corp company — the full stack.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAPER PRODUCTS — CALIBRATION ANCHORS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Charmin Ultra Soft / Angel Soft (virgin, ECF, SFI or uncert, plastic wrap): 22-34
+- Bounty Paper Towels (virgin, FSC Mix, ECF, plastic wrap): 32-44
+- Scott 1000 (virgin, FSC Mix, ECF, plastic wrap): 34-44
+- Kirkland/Costco TP (virgin, FSC Mix, ECF, bulk): 38-48 (bulk format credit)
+- Amazon Basics Recycled TP (100% recycled, PCF claim, no independent cert, plastic wrap): 52-62
+- Seventh Generation TP (100% recycled, PCF, FSC, plastic wrap): 60-70
+- Seventh Generation Paper Towels (100% recycled, PCF, FSC, plastic wrap): 58-68
+- Grove Collaborative TP (100% recycled, PCF): 60-70
+- Bim Bam Boo (100% bamboo, FSC, plastic-free paper wrap): 64-74
+- Caboo (bamboo + sugarcane, PCF, FSC): 62-72
+- Who Gives A Crap (100% recycled OR 100% bamboo, PCF, FSC, 100% plastic-free paper/cardboard wrap, B Corp, 50% profits to sanitation charity): 72-82 — category leader because it stacks every axis: fiber, bleaching, packaging, company mission.
+- NooTrees Bamboo (100% bamboo, FSC, PCF, plastic-free): 65-75
+
+KEY SPREADS THAT MUST HOLD: Charmin (32) to Who Gives A Crap (77) = 45-point gap. Seventh Generation (65) to Charmin (32) = 33-point gap. These are not close calls — they represent completely different supply-chain decisions. Never let conventional mass-market paper score within 20 points of recycled/certified paper.
 
 PERSONAL CARE:
 - Fewer ingredients, better provenance, more transparency = higher score. Use food signal logic.
@@ -967,6 +1514,7 @@ const PWA_HTML = `<!DOCTYPE html>
 <title>GreenSpecs</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon.svg">
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d103b88f164e4dacae73891e1a18696f"}'></script><!-- End Cloudflare Web Analytics -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&display=swap" rel="stylesheet">
@@ -1426,8 +1974,31 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .cmp-snap-add{display:flex;align-items:center;justify-content:center;background:rgba(27,67,50,0.05);border-radius:14px;padding:14px;border:2px dashed rgba(27,67,50,0.15);cursor:pointer;gap:8px;font-size:14px;font-weight:600;color:var(--moss)}
 .cmp-snap-add svg{width:18px;height:18px;stroke:var(--moss);fill:none;stroke-width:2.5}
 .cmp-snap-add:active{opacity:0.7}
+.cmp-snap-add.half{flex:1}
+.cmp-add-row{display:flex;gap:10px}
+.cmp-add-options{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.cmp-history-btn{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--forest);border:2px solid var(--forest);border-radius:16px;padding:13px 22px;font-size:15px;font-weight:600;cursor:pointer}
+.cmp-history-btn svg{width:18px;height:18px;stroke:var(--forest);fill:none;stroke-width:1.8}
+.cmp-history-btn:active{opacity:0.75}
+.cmp-card-winner-badge{display:inline-block;background:var(--sage);color:white;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.cmp-card-rationale{margin-top:10px;padding-top:10px;border-top:1px solid var(--warm);font-size:13px;color:var(--moss);line-height:1.55;font-style:italic}
 .cmp-summary-bar{margin:8px 14px 0;padding:14px 16px;background:var(--pale);border-radius:14px;font-size:15px;color:var(--forest);font-weight:500;line-height:1.55}
 .cmp-summary-label{font-size:11px;font-weight:700;color:var(--moss);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px}
+.cmp-history-overlay{position:absolute;inset:0;background:var(--cream);z-index:20;display:flex;flex-direction:column}
+.cmp-history-overlay.hidden{display:none}
+.cho-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid var(--warm)}
+.cho-title{font-size:17px;font-weight:700;color:var(--forest)}
+.cho-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-mid)}
+.cho-close svg{width:20px;height:20px;stroke:var(--text-mid);fill:none;stroke-width:2}
+.cho-list{flex:1;overflow-y:auto;padding:10px 0}
+.cho-item{display:flex;align-items:center;padding:12px 18px;gap:14px;cursor:pointer;border-bottom:1px solid var(--warm)}
+.cho-item:active{background:var(--pale)}
+.cho-grade{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:800;color:white}
+.cho-info{flex:1;min-width:0}
+.cho-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cho-brand{font-size:12px;color:var(--text-light);margin-top:1px}
+.cho-action{font-size:12px;font-weight:600;color:var(--moss);flex-shrink:0}
+.cho-action.added{color:var(--text-light)}
 .cmp-skeleton{background:white;border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(27,67,50,0.08)}
 .sk-line{height:12px;border-radius:6px;background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;margin-bottom:10px}
 .sk-line.tall{height:18px;margin-bottom:12px}
@@ -1435,6 +2006,48 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 .sk-line.med{width:75%}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .cmp-reading{font-size:12px;color:var(--text-light);text-align:center;padding:8px 0;font-style:italic}
+/* ─── Compare v2 — clean ranked cards ─── */
+.cmp-verdict-bar{margin:14px 14px 10px;padding:14px 16px;background:linear-gradient(135deg,var(--pale) 0%,var(--warm) 100%);border-radius:16px;font-size:14px;color:var(--forest);line-height:1.55;font-weight:500;border-left:3px solid var(--sage)}
+.cmp-verdict-label{font-size:10px;font-weight:800;color:var(--moss);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.cmp-rcard{position:relative;background:white;border-radius:20px;padding:16px 18px 18px;box-shadow:0 2px 12px rgba(27,67,50,0.08);display:flex;flex-direction:column;gap:10px}
+.cmp-rcard.winner{box-shadow:0 6px 22px rgba(27,67,50,0.18);border:2px solid var(--sage)}
+.cmp-rcard.loser{opacity:0.92}
+.cmp-rcard-head{display:flex;align-items:center;gap:12px}
+.cmp-rank{width:28px;height:28px;border-radius:10px;background:var(--warm);color:var(--forest);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.cmp-rcard.winner .cmp-rank{background:var(--sage);color:white}
+.cmp-rcard-title{flex:1;min-width:0}
+.cmp-rcard-name{font-size:16px;font-weight:700;color:var(--forest);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp-rcard-brand{font-size:12px;color:var(--text-light);margin-top:1px}
+.cmp-rcard-x{width:26px;height:26px;border-radius:50%;background:rgba(27,67,50,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.cmp-rcard-x svg{width:14px;height:14px;stroke:var(--text-mid);stroke-width:2.2;fill:none}
+.cmp-rcard-x:active{background:rgba(27,67,50,0.12)}
+.cmp-rcard-score{display:flex;align-items:baseline;gap:12px;padding-top:4px}
+.cmp-rcard-num{font-family:"Fraunces",serif;font-size:38px;font-weight:700;line-height:1;color:var(--forest)}
+.cmp-rcard-grade{font-family:"Fraunces",serif;font-size:20px;font-weight:700;color:var(--moss)}
+.cmp-rcard-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-mid)}
+.cmp-rcard-meta-item{display:inline-flex;align-items:center;gap:4px}
+.cmp-rcard-meta-item strong{color:var(--forest);font-weight:700}
+.cmp-rcard-reason{font-size:14px;color:var(--text-mid);line-height:1.55;padding-top:2px;border-top:1px solid var(--warm);padding-top:10px;margin-top:2px}
+.cmp-rcard.winner .cmp-rcard-reason{color:var(--forest)}
+.cmp-rcard-badge{display:inline-flex;align-items:center;gap:4px;background:var(--sage);color:white;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;align-self:flex-start}
+.cmp-add-footer{padding:4px 14px 0}
+.cmp-add-more-btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:rgba(27,67,50,0.05);border:2px dashed rgba(27,67,50,0.2);border-radius:16px;padding:14px;font-size:14px;font-weight:600;color:var(--moss);cursor:pointer}
+.cmp-add-more-btn svg{width:16px;height:16px;stroke:var(--moss);stroke-width:2.5;fill:none}
+.cmp-add-more-btn:active{background:rgba(27,67,50,0.1)}
+/* Picker sheet */
+.cmp-picker-sheet{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.cmp-picker-sheet.hidden{display:none}
+.cmp-picker-card{width:100%;max-width:480px;background:var(--cream);border-radius:22px 22px 0 0;padding:8px 18px 28px;display:flex;flex-direction:column;gap:10px;animation:sheetUp 0.22s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.cmp-picker-grip{width:40px;height:4px;border-radius:4px;background:var(--warm);margin:6px auto 10px}
+.cmp-picker-title{font-size:16px;font-weight:700;color:var(--forest);text-align:center;margin-bottom:6px}
+.cmp-picker-opt{display:flex;align-items:center;gap:14px;background:white;border:none;border-radius:16px;padding:14px 16px;cursor:pointer;text-align:left;font-family:inherit}
+.cmp-picker-opt:active{background:var(--pale)}
+.cmp-picker-opt svg{width:22px;height:22px;stroke:var(--forest);fill:none;stroke-width:1.8;flex-shrink:0}
+.cmp-picker-opt-text{flex:1}
+.cmp-picker-opt-t{font-size:15px;font-weight:700;color:var(--forest)}
+.cmp-picker-opt-s{font-size:12px;color:var(--text-light);margin-top:2px}
+.cmp-picker-cancel{background:transparent;border:none;padding:12px;font-size:14px;color:var(--text-light);cursor:pointer;margin-top:4px;font-family:inherit}
 
 /* ── HOW WE SCORE ── */
 .method-hero{background:linear-gradient(155deg,var(--forest),var(--moss));
@@ -2013,26 +2626,52 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
   <div class="topbar">
     <div class="topbar-menu" onclick="openDrawer()"><span></span><span></span><span></span></div>
     <div class="topbar-title"><em>Compare</em></div>
-    <div onclick="clearCompareSnap()" style="font-size:12px;color:var(--text-light);cursor:pointer;padding:8px">Clear</div>
+    <div id="cmp-clear-btn" onclick="clearCompareSnap()" style="font-size:12px;color:var(--text-light);cursor:pointer;padding:8px;display:none">Clear</div>
   </div>
   <div class="scrollable" id="compare-scroll">
-    <div id="cmp-entry-hero" class="cmp-snap-hero">
-      <div class="cmp-snap-title">Snap to compare</div>
-      <div class="cmp-snap-sub">Photograph up to 3 products.<br>We find the real differences.</div>
-      <button class="cmp-snap-btn" onclick="startCompareSnap()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
-        Add first product
+    <div id="cmp-verdict" class="cmp-verdict-bar" style="display:none"></div>
+    <div id="cmp-cards-area" class="cmp-cards-wrap"></div>
+    <div id="cmp-empty" class="cmp-snap-hero">
+      <div class="cmp-snap-title">Compare products</div>
+      <div class="cmp-snap-sub">Add up to 3 products — see which wins, and why.</div>
+      <button class="cmp-snap-btn" onclick="openComparePicker()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add a product
       </button>
     </div>
-    <div id="cmp-cards-area" class="cmp-cards-wrap"></div>
-    <div id="cmp-add-more" style="display:none;margin:12px 14px">
-      <div class="cmp-snap-add" onclick="startCompareSnap()">
+    <div id="cmp-add-btn" class="cmp-add-footer" style="display:none">
+      <button class="cmp-add-more-btn" onclick="openComparePicker()">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add another product
+        Add another
+      </button>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+  <!-- Add-product picker sheet -->
+  <div id="cmp-picker-sheet" class="cmp-picker-sheet hidden" onclick="if(event.target===this)closeComparePicker()">
+    <div class="cmp-picker-card">
+      <div class="cmp-picker-grip"></div>
+      <div class="cmp-picker-title">Add a product</div>
+      <button class="cmp-picker-opt" onclick="closeComparePicker();startCompareSnap()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+        <div class="cmp-picker-opt-text"><div class="cmp-picker-opt-t">Scan a label</div><div class="cmp-picker-opt-s">Quick snap of the product</div></div>
+      </button>
+      <button class="cmp-picker-opt" onclick="closeComparePicker();showCompareHistory()">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+        <div class="cmp-picker-opt-text"><div class="cmp-picker-opt-t">Pick from my scans</div><div class="cmp-picker-opt-s">Reuse a product you already scanned</div></div>
+      </button>
+      <button class="cmp-picker-cancel" onclick="closeComparePicker()">Cancel</button>
+    </div>
+  </div>
+  <!-- History picker overlay -->
+  <div id="cmp-history-overlay" class="cmp-history-overlay hidden">
+    <div class="cho-header">
+      <div class="cho-title">Pick from my scans</div>
+      <div class="cho-close" onclick="hideCompareHistory()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </div>
     </div>
-    <div id="cmp-summary-area" style="display:none"></div>
-    <div style="height:20px"></div>
+    <div id="cho-list" class="cho-list"></div>
   </div>
 </div>
 
@@ -2053,6 +2692,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
     <div class="signal-card"><div class="sig-top"><div class="sig-num">5</div><div><div class="sig-title">Supply Chain</div><div class="sig-worth">Worth up to 20 pts</div></div></div><div class="sig-desc">Where was it made and how did it get here? Clean ingredients shipped globally with no offset cap this signal. Short chains, published Scope 3 data, and verified supplier standards score highest.</div></div>
     <div class="card" style="background:var(--forest);margin-bottom:16px">
       <div class="card-label" style="color:var(--mint)">The scope breakdown</div>
+      <div class="scope-rationale" style="color:rgba(255,255,255,0.65);font-size:12px;margin-bottom:12px;line-height:1.5">"Scope" is the industry word for <em style="color:rgba(255,255,255,0.85)">how far out you look</em> when counting a company's emissions — from their own building, to the power they buy, to every farm and factory that touched the product before it reached you.</div>
       <div class="scope-row"><div class="scope-bub s1">S1</div><div><div class="scope-name" style="color:white">Scope 1 — Direct ops</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">Their factories, their trucks, their direct burn.</div></div></div>
       <div class="scope-row"><div class="scope-bub s2">S2</div><div><div class="scope-name" style="color:white">Scope 2 — Purchased energy</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">The electricity and heat they buy to run operations.</div></div></div>
       <div class="scope-row" style="margin-bottom:0"><div class="scope-bub s3">S3</div><div><div class="scope-name" style="color:white">Scope 3 — Everything upstream</div><div class="scope-desc" style="color:rgba(255,255,255,0.7)">The farms, ingredients, suppliers, shipping. Usually 70-90% of the real footprint — and almost never on the label. This is where the story lives.</div></div></div>
@@ -2395,7 +3035,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260417-v17';
+const APP_VERSION = '20260418-v24';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -2421,10 +3061,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── CAMERA — native file input approach (works on all iOS/Android) ──────────
 function openNativeCamera() {
-  // Reset file input so same file can be selected again
-  const input = document.getElementById('cam-native');
-  input.value = '';
-  input.click();
+  var existing = document.getElementById('cam-native');
+  if (existing) {
+    try { existing.value = ''; } catch(e) {}
+    existing.click();
+    return;
+  }
+  // Fallback: build input dynamically if element missing
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+  inp.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(inp);
+  inp.onchange = function() {
+    document.body.removeChild(inp);
+    handleCameraCapture(inp);
+  };
+  inp.click();
 }
 
 async function handleCameraCapture(input) {
@@ -3407,11 +4059,98 @@ let compareSnaps = [];
 
 function showCompare() { show('s-compare'); setActiveNav('s-compare'); renderCompareSnap(); }
 
+async function showCompareHistory() {
+  var overlay = document.getElementById('cmp-history-overlay');
+  var list = document.getElementById('cho-list');
+  if (!overlay || !list) return;
+  overlay.classList.remove('hidden');
+  list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-light);font-size:13px">Loading scans...</div>';
+  if (!session_id) {
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-light);font-size:14px">Scan some products first and they will appear here.</div>';
+    return;
+  }
+  try {
+    var res = await fetch(API + '/api/session/' + session_id + '/scans');
+    var data = await res.json();
+    var scans = (data.scans || []).slice(0, 20);
+    if (!scans.length) {
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-light);font-size:14px">No scans yet — scan a product first.</div>';
+      return;
+    }
+    var alreadyIn = compareSnaps.filter(function(s) { return s.status === 'done' && s.data && s.data.scan_id; }).map(function(s) { return s.data.scan_id; });
+    list.innerHTML = scans.map(function(s) {
+      var sc = Number(s.score) || 0;
+      var grade = letterGrade(sc);
+      var gColor = gradeColor(sc);
+      var inList = alreadyIn.indexOf(s.id) >= 0 || compareSnaps.some(function(c) { return c.status === 'done' && c.data && c.data.product_name === s.product_name; });
+      return '<div class="cho-item" data-id="' + escH(s.id) + '" onclick="addFromHistory(this.dataset.id)">'
+        + '<div class="cho-grade" style="background:' + gColor + '">' + escH(grade.replace('+','').replace('-','')) + '</div>'
+        + '<div class="cho-info">'
+        + '<div class="cho-name">' + escH(s.product_name) + '</div>'
+        + '<div class="cho-brand">' + escH(s.brand || '') + ' · ' + sc + '/100</div>'
+        + '</div>'
+        + '<div class="cho-action' + (inList ? ' added' : '') + '">' + (inList ? 'Added' : '+ Add') + '</div>'
+        + '</div>';
+    }).join('');
+  } catch {
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-light);font-size:13px">Could not load scans.</div>';
+  }
+}
+
+function hideCompareHistory() {
+  var overlay = document.getElementById('cmp-history-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+async function addFromHistory(scanId) {
+  if (compareSnaps.length >= 3) { showToast('Max 3 products to compare'); hideCompareHistory(); return; }
+  try {
+    var res = await fetch(API + '/api/scan/' + scanId);
+    var d = await res.json();
+    var scan = d.scan || d;
+    var sc = Number(scan.score) || 0;
+    var ingQ = sc >= 87 ? 'clean' : sc >= 70 ? 'mostly clean' : sc >= 50 ? 'mixed' : 'avoid';
+    var susL = sc >= 87 ? 'high' : sc >= 70 ? 'medium' : sc >= 50 ? 'low' : 'minimal';
+    var priceRaw = scan.price || '';
+    compareSnaps.push({
+      status: 'done',
+      data: {
+        scan_id: scan.id,
+        product_name: scan.product_name || 'Unknown',
+        brand: scan.brand || '',
+        gs_score: sc,
+        gs_grade: scan.letter_grade || letterGrade(sc),
+        ingredients_quality: ingQ,
+        ingredients_notes: scan.compare_hook || (scan.whats_good && scan.whats_good[0] ? scan.whats_good[0] : ''),
+        sustainability_level: susL,
+        sustainability_notes: scan.primary_claim || '',
+        price_detected: priceRaw,
+        price_per_unit: priceRaw || null,
+        price_per_unit_num: parseFloat(priceRaw.replace(/[^0-9.]/g,'')) || Infinity,
+        verdict: scan.verdict || '',
+        compare_hook: scan.compare_hook || '',
+        carbon_est: null
+      },
+      timer: null
+    });
+    hideCompareHistory();
+    renderCompareSnap();
+    showToast((scan.product_name || 'Product') + ' added');
+  } catch { showToast('Could not load scan'); }
+}
+
+var _cmpSnapInp = null;
 function startCompareSnap() {
   if (compareSnaps.length >= 3) { showToast('Max 3 products to compare'); return; }
+  if (_cmpSnapInp && _cmpSnapInp.parentNode) { _cmpSnapInp.parentNode.removeChild(_cmpSnapInp); _cmpSnapInp = null; }
   var inp = document.createElement('input');
+  _cmpSnapInp = inp;
   inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+  inp.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(inp);
   inp.onchange = function(e) {
+    if (inp.parentNode) inp.parentNode.removeChild(inp);
+    _cmpSnapInp = null;
     var file = e.target.files && e.target.files[0];
     if (!file) return;
     var idx = compareSnaps.length;
@@ -3422,6 +4161,14 @@ function startCompareSnap() {
       var el = document.getElementById('cmp-reading-' + idx);
       if (el) el.style.display = 'block';
     }, 4000);
+    var timeoutId = setTimeout(function() {
+      clearTimeout(entry.timer);
+      if (compareSnaps[idx] && compareSnaps[idx].status === 'loading') {
+        compareSnaps[idx].status = 'error';
+        renderCompareSnap();
+        showToast('Scan timed out — try a clearer photo');
+      }
+    }, 30000);
     var t0 = performance.now();
     fileToBase64(file).then(function(b64) {
       return fetch(API + '/api/compare-snap', {
@@ -3431,12 +4178,14 @@ function startCompareSnap() {
       });
     }).then(function(r) { return r.json(); }).then(function(d) {
       clearTimeout(entry.timer);
+      clearTimeout(timeoutId);
       console.log('Compare card ' + idx + ' resolved in ' + Math.round(performance.now() - t0) + 'ms');
       compareSnaps[idx].status = 'done';
       compareSnaps[idx].data = d.result || d;
       renderCompareSnap();
     }).catch(function() {
       clearTimeout(entry.timer);
+      clearTimeout(timeoutId);
       compareSnaps[idx].status = 'error';
       renderCompareSnap();
     });
@@ -3445,106 +4194,187 @@ function startCompareSnap() {
 }
 
 function clearCompareSnap() { compareSnaps = []; renderCompareSnap(); }
-function addToCompare() { showToast('Use Compare tab to snap products'); }
+function addToCompare() {
+  if (!currentScan) { showToast('No product loaded'); return; }
+  if (compareSnaps.length >= 3) { showToast('Max 3 products to compare'); return; }
+  var sc = Number(currentScan.score) || 0;
+  var ingQ = sc >= 87 ? 'clean' : sc >= 70 ? 'mostly clean' : sc >= 50 ? 'mixed' : 'avoid';
+  var susL = sc >= 87 ? 'high' : sc >= 70 ? 'medium' : sc >= 50 ? 'low' : 'minimal';
+  var priceRaw = currentScan.price || '';
+  var priceNum = parseFloat(priceRaw.replace(/[^0-9.]/g, '')) || Infinity;
+  var covers = safeParseArr(currentScan.what_covers);
+  var ingNote = currentScan.compare_hook || (covers.length ? covers[0] : '');
+  var susNote = currentScan.primary_claim || '';
+  compareSnaps.push({
+    status: 'done',
+    data: {
+      product_name: currentScan.product_name || 'Unknown',
+      brand: currentScan.brand || '',
+      gs_score: sc,
+      gs_grade: currentScan.letter_grade || letterGrade(sc),
+      ingredients_quality: ingQ,
+      ingredients_notes: ingNote ? String(ingNote).slice(0, 60) : '',
+      sustainability_level: susL,
+      sustainability_notes: susNote ? String(susNote).slice(0, 60) : '',
+      price_detected: priceRaw,
+      price_per_unit: priceRaw || null,
+      price_per_unit_num: priceNum,
+      verdict: currentScan.verdict || '',
+      compare_hook: currentScan.compare_hook || '',
+      carbon_est: null
+    },
+    timer: null
+  });
+  showCompare();
+  showToast((currentScan.product_name || 'Product') + ' added to compare');
+}
+
+function safeParseArr(v) {
+  try { var a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
+}
 
 function ingRank(q) { return {clean:4,'mostly clean':3,mixed:2,avoid:1}[q]||0; }
 function susRank(q) { return {high:4,medium:3,low:2,minimal:1}[q]||0; }
 function ingClass(q) { return {clean:'clean','mostly clean':'mostly-clean',mixed:'mixed',avoid:'avoid'}[q]||''; }
 function susClass(q) { return {high:'high',medium:'medium',low:'low',minimal:'minimal'}[q]||''; }
 
+function openComparePicker() {
+  if (compareSnaps.length >= 3) { showToast('Max 3 products to compare'); return; }
+  var s = document.getElementById('cmp-picker-sheet');
+  if (s) s.classList.remove('hidden');
+}
+function closeComparePicker() {
+  var s = document.getElementById('cmp-picker-sheet');
+  if (s) s.classList.add('hidden');
+}
+function removeFromCompare(idx) {
+  if (idx < 0 || idx >= compareSnaps.length) return;
+  compareSnaps.splice(idx, 1);
+  renderCompareSnap();
+}
+
 function renderCompareSnap() {
-  var hero = document.getElementById('cmp-entry-hero');
+  var empty = document.getElementById('cmp-empty');
   var area = document.getElementById('cmp-cards-area');
-  var more = document.getElementById('cmp-add-more');
-  var sumArea = document.getElementById('cmp-summary-area');
-  if (!hero || !area) return;
+  var addBtn = document.getElementById('cmp-add-btn');
+  var verdict = document.getElementById('cmp-verdict');
+  var clearBtn = document.getElementById('cmp-clear-btn');
+  if (!area) return;
+
   if (compareSnaps.length === 0) {
-    hero.style.display = '';
+    if (empty) empty.style.display = '';
     area.innerHTML = '';
-    if (more) more.style.display = 'none';
-    if (sumArea) { sumArea.style.display = 'none'; sumArea.innerHTML = ''; }
+    if (addBtn) addBtn.style.display = 'none';
+    if (verdict) { verdict.style.display = 'none'; verdict.innerHTML = ''; }
+    if (clearBtn) clearBtn.style.display = 'none';
     return;
   }
-  hero.style.display = 'none';
-  // Find winners
-  var ingWinner = -1, susWinner = -1, priceWinner = -1;
-  var bestIng = 0, bestSus = 0, bestPrice = Infinity;
-  var doneCount = 0;
-  compareSnaps.forEach(function(s, i) {
-    if (s.status !== 'done' || !s.data) return;
-    doneCount++;
-    var ing = ingRank(s.data.ingredients_quality);
-    var sus = susRank(s.data.sustainability_level);
-    var pr = s.data.price_per_unit_num || Infinity;
-    if (ing > bestIng) { bestIng = ing; ingWinner = i; }
-    if (sus > bestSus) { bestSus = sus; susWinner = i; }
-    if (pr < bestPrice) { bestPrice = pr; priceWinner = i; }
+
+  if (empty) empty.style.display = 'none';
+  if (clearBtn) clearBtn.style.display = '';
+
+  // Rank: highest score first; loading/error go to the end
+  var ranked = compareSnaps.map(function(s, i) {
+    var sc = (s.status === 'done' && s.data) ? (Number(s.data.gs_score) || 0) : -1;
+    return { snap: s, origIdx: i, sc: sc };
+  }).sort(function(a, b) {
+    if (a.sc < 0 && b.sc < 0) return 0;
+    if (a.sc < 0) return 1;
+    if (b.sc < 0) return -1;
+    return b.sc - a.sc;
   });
-  if (doneCount < 2) { ingWinner = -1; susWinner = -1; priceWinner = -1; }
-  // Build cards HTML
+
+  var doneSnaps = ranked.filter(function(r) { return r.snap.status === 'done' && r.snap.data; });
+  var showWinner = doneSnaps.length >= 2;
+
+  // Summary verdict — use compare_hook of the winner; if only one done, skip
+  if (verdict) {
+    if (showWinner) {
+      var datas = doneSnaps.map(function(r) { return r.snap.data; });
+      var verdictText = buildSnapSummary(datas);
+      verdict.innerHTML = '<div class="cmp-verdict-label">The verdict</div>' + escH(verdictText);
+      verdict.style.display = '';
+    } else {
+      verdict.style.display = 'none';
+      verdict.innerHTML = '';
+    }
+  }
+
   var html = '';
-  compareSnaps.forEach(function(snap, idx) {
+  ranked.forEach(function(item, rank) {
+    var snap = item.snap;
+    var idx = item.origIdx;
+    var isWinner = showWinner && rank === 0 && snap.status === 'done';
+    var isLoser = showWinner && rank === ranked.length - 1 && snap.status === 'done';
+
     if (snap.status === 'loading') {
       html += '<div class="cmp-skeleton" id="cmp-card-' + idx + '">'
         + '<div class="sk-line tall med"></div><div class="sk-line short"></div>'
-        + '<div style="height:6px"></div>'
-        + '<div class="sk-line"></div><div class="sk-line"></div><div class="sk-line short"></div>'
+        + '<div style="height:6px"></div><div class="sk-line"></div><div class="sk-line short"></div>'
         + '<div class="cmp-reading" id="cmp-reading-' + idx + '" style="display:none">still reading label...</div>'
         + '</div>';
     } else if (snap.status === 'error') {
-      html += '<div class="cmp-card" id="cmp-card-' + idx + '">'
-        + '<div class="cmp-card-name" style="color:var(--text-light)">Could not read label</div>'
-        + '<div class="cmp-card-brand">Try a clearer photo</div></div>';
+      html += '<div class="cmp-rcard">'
+        + '<div class="cmp-rcard-head">'
+          + '<div class="cmp-rank">' + (rank+1) + '</div>'
+          + '<div class="cmp-rcard-title"><div class="cmp-rcard-name" style="color:var(--text-light)">Could not read label</div>'
+          + '<div class="cmp-rcard-brand">Try a clearer photo</div></div>'
+          + '<div class="cmp-rcard-x" data-idx="' + idx + '" onclick="removeFromCompare(Number(this.dataset.idx))"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>'
+        + '</div></div>';
     } else {
       var d = snap.data;
-      var iW = ingWinner === idx, sW = susWinner === idx, pW = priceWinner === idx;
-      var ingQ = d.ingredients_quality || 'not detected';
-      var susL = d.sustainability_level || 'not detected';
-      var priceV = d.price_per_unit || d.price_detected || 'not detected';
-      html += '<div class="cmp-card" id="cmp-card-' + idx + '">'
-        + '<div class="cmp-card-name">' + escH(d.product_name || 'Product ' + (idx+1)) + '</div>'
-        + '<div class="cmp-card-brand">' + escH(d.brand || '') + '</div>'
-        + '<div class="cmp-card-rows">'
-        + '<div class="cmp-card-row' + (iW ? ' winner' : '') + '">'
-        + '<span class="cmp-row-label">Ingredients</span>'
-        + '<div class="cmp-row-val-wrap"><div class="cmp-row-val ' + ingClass(d.ingredients_quality) + '">' + escH(ingQ) + '</div>'
-        + (d.ingredients_notes ? '<div class="cmp-row-note">' + escH(d.ingredients_notes) + '</div>' : '') + '</div></div>'
-        + '<div class="cmp-card-row' + (sW ? ' winner' : '') + '">'
-        + '<span class="cmp-row-label">Sustainability</span>'
-        + '<div class="cmp-row-val-wrap"><div class="cmp-row-val ' + susClass(d.sustainability_level) + '">' + escH(susL) + '</div>'
-        + (d.sustainability_notes ? '<div class="cmp-row-note">' + escH(d.sustainability_notes) + '</div>' : '') + '</div></div>'
-        + '<div class="cmp-card-row' + (pW ? ' winner' : '') + '">'
-        + '<span class="cmp-row-label">Price</span>'
-        + '<div class="cmp-row-val-wrap"><div class="cmp-row-val">' + escH(priceV) + '</div></div></div>'
-        + (d.carbon_est ? '<div class="cmp-card-row">'
-          + '<span class="cmp-row-label">Carbon est.</span>'
-          + '<div class="cmp-row-val-wrap">'
-          + '<div class="cmp-row-val">~' + escH(String(d.carbon_est)) + ' ' + escH(d.carbon_unit || 'kg CO\u2082e') + '</div>'
-          + (d.carbon_vs ? '<div class="cmp-row-note">' + escH(d.carbon_vs) + '</div>' : '')
-          + (d.carbon_context ? '<div class="cmp-row-note" style="font-style:italic">' + escH(d.carbon_context) + '</div>' : '')
-          + '</div></div>' : '')
-        + '</div></div>';
+      var score = Number(d.gs_score) || 0;
+      var grade = d.gs_grade || letterGrade(score);
+      var priceV = d.price_per_unit || d.price_detected || '';
+      var reason = d.compare_hook || d.verdict || '';
+      var cls = 'cmp-rcard' + (isWinner ? ' winner' : '') + (isLoser ? ' loser' : '');
+      html += '<div class="' + cls + '">'
+        + (isWinner ? '<div class="cmp-rcard-badge">Best pick</div>' : '')
+        + '<div class="cmp-rcard-head">'
+          + '<div class="cmp-rank">' + (rank+1) + '</div>'
+          + '<div class="cmp-rcard-title">'
+            + '<div class="cmp-rcard-name">' + escH(d.product_name || 'Product ' + (rank+1)) + '</div>'
+            + (d.brand ? '<div class="cmp-rcard-brand">' + escH(d.brand) + '</div>' : '')
+          + '</div>'
+          + '<div class="cmp-rcard-x" data-idx="' + idx + '" onclick="removeFromCompare(Number(this.dataset.idx))"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>'
+        + '</div>'
+        + '<div class="cmp-rcard-score">'
+          + '<div class="cmp-rcard-num">' + score + '</div>'
+          + '<div class="cmp-rcard-grade">' + escH(grade) + '</div>'
+        + '</div>'
+        + (priceV ? '<div class="cmp-rcard-meta"><div class="cmp-rcard-meta-item"><strong>' + escH(priceV) + '</strong></div></div>' : '')
+        + (reason ? '<div class="cmp-rcard-reason">' + escH(reason) + '</div>' : '')
+      + '</div>';
     }
   });
   area.innerHTML = html;
-  if (more) more.style.display = (compareSnaps.length > 0 && compareSnaps.length < 3) ? '' : 'none';
-  // Summary
-  var dones = compareSnaps.filter(function(s) { return s.status === 'done' && s.data; }).map(function(s) { return s.data; });
-  if (dones.length >= 2 && sumArea) {
-    sumArea.innerHTML = '<div class="cmp-summary-bar"><div class="cmp-summary-label">Bottom line</div>' + escH(buildSnapSummary(dones)) + '</div>';
-    sumArea.style.display = '';
-  } else if (sumArea) { sumArea.style.display = 'none'; }
+  if (addBtn) addBtn.style.display = compareSnaps.length < 3 ? '' : 'none';
 }
 
 function buildSnapSummary(datas) {
+  // Use gs_score when available for more precise ranking
+  var hasScores = datas.every(function(d) { return d.gs_score > 0; });
   var ranked = datas.map(function(d) {
-    return { d: d, s: ingRank(d.ingredients_quality) + susRank(d.sustainability_level) };
+    var s = hasScores ? (d.gs_score || 0) : (ingRank(d.ingredients_quality) + susRank(d.sustainability_level)) * 10;
+    return { d: d, s: s };
   }).sort(function(a,b) { return b.s - a.s; });
   var winner = ranked[0].d;
   var loser = ranked[ranked.length-1].d;
   var wName = (winner.brand || winner.product_name || 'One').split(' ')[0];
   var lName = (loser.brand || loser.product_name || 'Another').split(' ')[0];
-  if (ranked[0].s === ranked[ranked.length-1].s) return 'Similar overall — price and availability are the deciding factors.';
+  var gap = ranked[0].s - ranked[ranked.length-1].s;
+  // Use compare_hook from winner if it has one — it's written for exactly this
+  if (winner.compare_hook) return winner.compare_hook;
+  // Score-based verdict
+  if (hasScores) {
+    if (gap < 5) return wName + ' and ' + lName + ' score within ' + gap + ' points — a close call. Price is the tiebreaker.';
+    if (gap >= 20) return wName + ' scores ' + winner.gs_score + ' vs ' + lName + '\u2019s ' + loser.gs_score + ' — a significant gap worth paying attention to.';
+    if (winner.ingredients_quality === 'clean' && loser.ingredients_quality !== 'clean') return wName + ' (' + winner.gs_score + ') has meaningfully cleaner ingredients than ' + lName + ' (' + loser.gs_score + ').';
+    if (winner.sustainability_level === 'high' && loser.sustainability_level !== 'high') return wName + ' (' + winner.gs_score + ') leads on sustainability. ' + lName + ' (' + loser.gs_score + ') hasn\u2019t closed that gap yet.';
+    return wName + ' scores ' + winner.gs_score + ' to ' + lName + '\u2019s ' + loser.gs_score + ' — ahead on both ingredients and sustainability.';
+  }
+  // Photo-only fallback
+  if (gap === 0) return 'Similar overall — price and availability are the deciding factors.';
   if (winner.ingredients_quality === 'clean' && loser.ingredients_quality !== 'clean') return wName + ' has cleaner ingredients — the stronger pick.';
   if (winner.sustainability_level === 'high' && loser.sustainability_level !== 'high') return wName + ' leads on sustainability vs ' + lName + '.';
   return wName + ' edges ahead on ingredients and sustainability vs ' + lName + '.';
@@ -4131,9 +4961,27 @@ app.post('/api/scan', async (c) => {
       transport: String(r.transport ?? ''),
       transparency: String(r.transparency ?? ''),
       verdict_tag: String(r.verdict_tag ?? ''),
+      real_talk: String(r.real_talk ?? ''),
       sustainability_url: String(r.sustainability_url ?? ''),
       better_path: String(r.better_path ?? ''),
+      certifications_found: r.certifications_found ?? [],
+      carbon_estimate: r.carbon_estimate ?? null,
+      fiber_composition: r.fiber_composition ?? null,
+      pfc_free: r.pfc_free ?? null,
+      recycled_content_pct: r.recycled_content_pct ?? null,
+      has_repair_program: r.has_repair_program ?? null,
+      dpp_status: r.dpp_status ?? null,
     };
+
+    // Derive what_covers / what_missing / red_flags from AI response fields
+    const whatCoversArr = whatsGood.length ? whatsGood
+      : (r.certifications_found as string[] ?? []).length ? (r.certifications_found as string[])
+      : (r.win ? [String(r.win)] : []);
+    const whatMissingArr = whatsNotOnLabel.length ? whatsNotOnLabel
+      : (r.tradeoff ? [String(r.tradeoff)] : []);
+    const redFlagsArr = worthKnowing.length ? worthKnowing
+      : (r.real_talk ? [String(r.real_talk)] : []);
+    const betterAltArr = r.better_path ? [String(r.better_path)] : [];
 
     await c.env.DB.prepare(
       `INSERT INTO scans (id, session_id, cache_key, product_name, brand, category,
@@ -4155,11 +5003,11 @@ app.post('/api/scan', async (c) => {
       Number(rubric.packaging_score ?? rubric.third_party_score ?? 0),
       Number(rubric.ingredient_score ?? rubric.bigimpact_score ?? 0),
       Number(rubric.marketing_score ?? 0),
+      JSON.stringify(whatCoversArr),
+      JSON.stringify(whatMissingArr),
+      JSON.stringify(redFlagsArr),
       JSON.stringify((r.tips ?? []) as string[]),
-      JSON.stringify([]),
-      JSON.stringify([]),
-      JSON.stringify((r.tips ?? []) as string[]),
-      JSON.stringify([]),
+      JSON.stringify(betterAltArr),
       JSON.stringify([]),
       '',
       '',
