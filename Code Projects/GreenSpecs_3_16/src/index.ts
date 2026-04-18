@@ -2652,13 +2652,13 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
     <div class="cmp-picker-card">
       <div class="cmp-picker-grip"></div>
       <div class="cmp-picker-title">Add a product</div>
-      <button class="cmp-picker-opt" onclick="closeComparePicker();startCompareSnap()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
-        <div class="cmp-picker-opt-text"><div class="cmp-picker-opt-t">Scan a label</div><div class="cmp-picker-opt-s">Quick snap of the product</div></div>
-      </button>
       <button class="cmp-picker-opt" onclick="closeComparePicker();showCompareHistory()">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
         <div class="cmp-picker-opt-text"><div class="cmp-picker-opt-t">Pick from my scans</div><div class="cmp-picker-opt-s">Reuse a product you already scanned</div></div>
+      </button>
+      <button class="cmp-picker-opt" onclick="closeComparePicker();goHomeToScan()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>
+        <div class="cmp-picker-opt-text"><div class="cmp-picker-opt-t">Scan a new product</div><div class="cmp-picker-opt-s">Opens home camera \u2014 tap Compare on the result</div></div>
       </button>
       <button class="cmp-picker-cancel" onclick="closeComparePicker()">Cancel</button>
     </div>
@@ -3035,7 +3035,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans
 
 <script>
 // ─── VERSION CHECK — forces PWA to reload if cached version is old ────────────
-const APP_VERSION = '20260418-v24';
+const APP_VERSION = '20260418-v25';
 (function(){ const prev = localStorage.getItem('gs_app_version'); localStorage.setItem('gs_app_version', APP_VERSION); if (prev && prev !== APP_VERSION) location.reload(); })();
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -4455,6 +4455,12 @@ function initRotatingTagline() {
   }, 5000);
 }
 
+function goHomeToScan() {
+  show('s-home');
+  setActiveNav('s-home');
+  loadHomeData();
+  setTimeout(function(){ try { openNativeCamera(); } catch(e) {} }, 180);
+}
 function goHome() {
   show('s-home');
   setActiveNav('s-home');
